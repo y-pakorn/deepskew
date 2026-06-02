@@ -130,9 +130,9 @@
   --radius-lg: calc(var(--radius) + 4px);
   --radius-xl: calc(var(--radius) + 10px);
 
-  /* fonts */
+  /* fonts — Inter only (Tatem). Tabular figures give column alignment. */
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-mono: var(--font-inter);
 }
 
 @layer base {
@@ -159,12 +159,18 @@
 }
 
 @layer components {
-  /* Bloomberg function-code micro-label */
+  /* Panel identity — calm sentence-case, value-contrast for hierarchy. */
+  .panel-title {
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: -0.005em;
+    color: var(--text-sec);
+  }
+  /* Quiet data / section label — calm lowercase, recedes so values lead. */
   .label-micro {
     font-size: 11px;
-    line-height: 1;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    line-height: 1.35;
+    letter-spacing: 0.005em;
     color: var(--text-dim);
   }
   /* 1px hairline grid for the panel desk */

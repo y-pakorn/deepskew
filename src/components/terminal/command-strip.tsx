@@ -13,7 +13,7 @@ export function CommandStrip() {
     <header className="flex h-11 shrink-0 items-center gap-3 border-b border-hairline bg-canvas px-3">
       <Link
         href="/"
-        className="font-mono text-[13px] font-bold tracking-tight text-foreground transition-opacity hover:opacity-80"
+        className="font-mono text-[13px] font-medium tracking-tight text-foreground transition-opacity hover:opacity-80"
       >
         DEEPSKEW
       </Link>

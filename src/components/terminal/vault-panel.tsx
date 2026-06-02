@@ -63,7 +63,7 @@ export function VaultPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="VAULT · PLP RISK"
+      title="Vault · PLP risk"
       code="dUSDC"
       className={className}
       right={
@@ -129,7 +129,7 @@ export function VaultPanel({ className }: { className?: string }) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-3">
             <div>
               <Stat label="utilization" value={fmtPct(data.utilization)} />
               <Meter value={data.utilization} tone="accent" />

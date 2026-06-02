@@ -1,8 +1,17 @@
-/** Smile cross-section: IV vs log-moneyness, with ATM marker. SVG draws the
- *  curve (stretched to fill, crisp via non-scaling-stroke); labels are HTML. */
+"use client";
+
+import { useRef, useState } from "react";
+
+/** Smile cross-section: IV vs log-moneyness, ATM marker, hover crosshair + IV
+ *  readout. SVG draws the curve (crisp via non-scaling-stroke); labels are HTML. */
 const VB = 100;
 
 export function SmileChart({ pts }: { pts: { k: number; iv: number }[] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [hover, setHover] = useState<{ frac: number; k: number; iv: number } | null>(
+    null,
+  );
+
   if (pts.length < 2) return null;
   const ivs = pts.map((p) => p.iv);
   let lo = Math.min(...ivs);
@@ -17,13 +26,26 @@ export function SmileChart({ pts }: { pts: { k: number; iv: number }[] }) {
     .map((p, i) => `${i ? "L" : "M"}${sx(i).toFixed(2)} ${sy(p.iv).toFixed(2)}`)
     .join(" ");
   const area = `${line} L${VB} ${VB} L0 ${VB} Z`;
-
   const k0 = pts[0].k;
   const k1 = pts[pts.length - 1].k;
   const atmX = ((0 - k0) / (k1 - k0)) * VB;
 
+  const onMove = (e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const p = pts[Math.round(frac * (pts.length - 1))];
+    setHover({ frac, k: p.k, iv: p.iv });
+  };
+
   return (
-    <div className="relative min-h-[140px] w-full flex-1">
+    <div
+      ref={ref}
+      className="relative min-h-[140px] w-full flex-1"
+      onMouseMove={onMove}
+      onMouseLeave={() => setHover(null)}
+    >
       <svg
         viewBox={`0 0 ${VB} ${VB}`}
         preserveAspectRatio="none"
@@ -53,6 +75,18 @@ export function SmileChart({ pts }: { pts: { k: number; iv: number }[] }) {
           strokeDasharray="2 2"
           vectorEffect="non-scaling-stroke"
         />
+        {hover ? (
+          <line
+            x1={hover.frac * VB}
+            y1="0"
+            x2={hover.frac * VB}
+            y2={VB}
+            stroke="var(--accent-brand)"
+            strokeWidth="0.6"
+            opacity="0.7"
+            vectorEffect="non-scaling-stroke"
+          />
+        ) : null}
         <path d={area} fill="url(#smileFill)" />
         <path
           d={line}
@@ -62,7 +96,7 @@ export function SmileChart({ pts }: { pts: { k: number; iv: number }[] }) {
           vectorEffect="non-scaling-stroke"
         />
       </svg>
-      <span className="label-micro absolute left-1 top-0.5 text-text-faint">
+      <span className="label-micro absolute top-0.5 left-1 text-text-faint">
         {(hi * 100).toFixed(0)}%
       </span>
       <span className="label-micro absolute bottom-0.5 left-1 text-text-faint">
@@ -74,6 +108,18 @@ export function SmileChart({ pts }: { pts: { k: number; iv: number }[] }) {
       <span className="label-micro absolute right-1 bottom-0.5 text-text-faint">
         +{(k1 * 100).toFixed(0)}%
       </span>
+      {hover ? (
+        <div
+          className="pointer-events-none absolute top-0.5 z-10 -translate-x-1/2 rounded border border-hairline bg-panel-elev px-1.5 py-0.5 text-[11px] whitespace-nowrap tabular"
+          style={{ left: `${Math.max(14, Math.min(hover.frac * 100, 86))}%` }}
+        >
+          <span className="text-accent-brand">{(hover.iv * 100).toFixed(1)}%</span>{" "}
+          <span className="text-text-faint">
+            {hover.k >= 0 ? "+" : ""}
+            {(hover.k * 100).toFixed(0)}%
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }

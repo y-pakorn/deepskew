@@ -29,7 +29,7 @@ export function Panel({
     >
       <header className="flex h-8 shrink-0 items-center justify-between gap-2 border-b border-hairline px-3">
         <div className="flex items-baseline gap-2 truncate">
-          <span className="label-micro text-text-sec">{title}</span>
+          <span className="panel-title">{title}</span>
           {code ? <span className="label-micro text-text-faint">{code}</span> : null}
         </div>
         {right ? <div className="flex shrink-0 items-center gap-2">{right}</div> : null}

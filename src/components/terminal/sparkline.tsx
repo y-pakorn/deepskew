@@ -23,7 +23,6 @@ export function Sparkline({
         ).toFixed(2)}`,
     )
     .join(" ");
-  const up = values[values.length - 1] >= values[0];
   return (
     <svg
       viewBox={`0 0 ${w} ${h}`}
@@ -34,7 +33,7 @@ export function Sparkline({
       <path
         d={d}
         fill="none"
-        stroke={up ? "var(--safe)" : "var(--breach)"}
+        stroke="var(--accent-brand)"
         strokeWidth="1.4"
         vectorEffect="non-scaling-stroke"
       />

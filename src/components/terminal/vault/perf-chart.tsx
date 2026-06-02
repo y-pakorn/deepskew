@@ -3,23 +3,29 @@
 import {
   AreaSeries,
   ColorType,
+  CrosshairMode,
   createChart,
   type IChartApi,
   type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface PerfPoint {
   time: number; // unix seconds
   value: number;
 }
 
-/** PLP share-price area chart (lightweight-charts v5). Client-only. */
+/** PLP share-price area chart (lightweight-charts v5) with a hover tooltip. */
 export function PerfChart({ data }: { data: PerfPoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+  const [tip, setTip] = useState<{
+    left: number;
+    value: number;
+    date: string;
+  } | null>(null);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -30,13 +36,13 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
       layout: {
         background: { type: ColorType.Solid, color: "rgba(0,0,0,0)" },
         textColor: "#5A626E",
-        fontFamily: "var(--font-mono), monospace",
+        fontFamily: "var(--font-inter), sans-serif",
         fontSize: 10,
         attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
-        horzLines: { color: "#1E222A", style: 1 },
+        horzLines: { color: "#1E222A" },
       },
       rightPriceScale: {
         borderVisible: false,
@@ -46,8 +52,9 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
       handleScroll: false,
       handleScale: false,
       crosshair: {
-        horzLine: { visible: false, labelVisible: false },
-        vertLine: { visible: false, labelVisible: false },
+        mode: CrosshairMode.Magnet,
+        vertLine: { color: "#3b3b3b", width: 1, style: 3, labelVisible: false },
+        horzLine: { color: "#3b3b3b", width: 1, style: 3, labelVisible: false },
       },
     });
     const series = chart.addSeries(AreaSeries, {
@@ -61,6 +68,26 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
     });
     chartRef.current = chart;
     seriesRef.current = series;
+
+    chart.subscribeCrosshairMove((param) => {
+      const s = seriesRef.current;
+      if (!s || !param.point || param.time == null) {
+        setTip(null);
+        return;
+      }
+      const point = param.seriesData.get(s) as { value?: number } | undefined;
+      if (!point || typeof point.value !== "number") {
+        setTip(null);
+        return;
+      }
+      const d = new Date((param.time as number) * 1000);
+      const left = Math.max(30, Math.min(param.point.x, el.clientWidth - 30));
+      setTip({
+        left,
+        value: point.value,
+        date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      });
+    });
 
     const ro = new ResizeObserver(() => {
       chart.applyOptions({ width: el.clientWidth, height: el.clientHeight });
@@ -77,7 +104,6 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
   useEffect(() => {
     const series = seriesRef.current;
     if (!series || !data.length) return;
-    // Defensive: lightweight-charts needs strictly ascending, unique times.
     const bySecond = new Map<number, number>();
     for (const d of data) bySecond.set(d.time, d.value);
     const cleaned = [...bySecond.entries()]
@@ -87,5 +113,18 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
     chartRef.current?.timeScale().fitContent();
   }, [data]);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  return (
+    <div className="relative h-full w-full">
+      <div ref={containerRef} className="absolute inset-0" />
+      {tip ? (
+        <div
+          className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded border border-hairline bg-panel-elev px-1.5 py-0.5 text-[11px] whitespace-nowrap tabular"
+          style={{ left: tip.left }}
+        >
+          <span className="text-accent-brand">{tip.value.toFixed(4)}</span>{" "}
+          <span className="text-text-faint">{tip.date}</span>
+        </div>
+      ) : null}
+    </div>
+  );
 }

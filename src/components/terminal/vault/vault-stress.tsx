@@ -46,14 +46,14 @@ export function VaultStress({
   const LADDER = [1, 2, 3, 5];
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-3">
       <Verdict tone={tone} sub={`±${sigmaLabel}σ · 1-day shock · payouts capped`}>
         {buffer >= 1
-          ? `SURVIVES ${sigmaLabel}σ · ${Number.isFinite(buffer) ? fmtNum(buffer, buffer >= 100 ? 0 : 1) : "∞"}× BUFFER`
-          : `BREACH AT ${sigmaLabel}σ`}
+          ? `Survives ${sigmaLabel}σ · ${Number.isFinite(buffer) ? fmtNum(buffer, buffer >= 100 ? 0 : 1) : "∞"}× buffer`
+          : `Breach at ${sigmaLabel}σ`}
       </Verdict>
       <div>
-        <div className="mb-1.5 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between">
           <span className="label-micro">stress ±σ</span>
           <span className="font-mono text-[11px] tabular text-text-sec">
             {sigma.toFixed(1)}σ

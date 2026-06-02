@@ -67,7 +67,7 @@ export function SmilePanel() {
 
   return (
     <Panel
-      title="SMILE / SKEW"
+      title="Smile / skew"
       code={isLive ? "live" : "replay"}
       right={
         model ? (
@@ -77,7 +77,7 @@ export function SmilePanel() {
               isLive ? "text-safe" : "text-warn",
             )}
           >
-            {isLive ? "● LIVE" : utcClock(new Date(model.ts))}
+            {isLive ? "● live" : utcClock(new Date(model.ts))}
           </span>
         ) : null
       }
@@ -126,7 +126,7 @@ export function SmilePanel() {
           </div>
           {n > 1 ? (
             <div>
-              <div className="mb-1.5 flex items-center justify-between">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="label-micro">time-travel</span>
                 <button
                   type="button"
@@ -162,11 +162,11 @@ export function SmilePanel() {
 function ArbVerdict({ bf }: { bf: ButterflyCheck }) {
   return bf.butterflyFree ? (
     <Verdict tone="safe" sub="butterfly · Durrleman g(k) ≥ 0">
-      ARB-FREE ✓
+      Arb-free ✓
     </Verdict>
   ) : (
     <Verdict tone="breach" sub={`${bf.violations.length} butterfly violations`}>
-      BUTTERFLY ✕
+      Butterfly ✕
     </Verdict>
   );
 }

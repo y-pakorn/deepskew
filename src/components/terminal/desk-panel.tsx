@@ -25,7 +25,7 @@ export function DeskPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="DESK"
+      title="Desk"
       code="live flow · settle"
       className={className}
       right={

@@ -58,7 +58,7 @@ export function OraclePanel() {
 
   return (
     <Panel
-      title="ORACLE STATE"
+      title="Oracle state"
       code="SVI params"
       right={oracle ? <StatusChip status={oracle.status} /> : null}
     >
@@ -93,7 +93,7 @@ export function OraclePanel() {
               <span className="label-micro">spot</span>
             </div>
             {spots.length >= 2 ? (
-              <div className="mt-1.5 flex items-center gap-3">
+              <div className="mt-2 flex items-center gap-3">
                 <Sparkline values={spots} />
                 <span
                   className={cn(
@@ -187,7 +187,7 @@ function VolMatrix({ p, T }: { p: SviParams; T: number }) {
   return (
     <div className="border-t border-hairline pt-2">
       <span className="label-micro">vol by strike · IV</span>
-      <div className="mt-1.5 grid grid-cols-5 gap-1 text-center">
+      <div className="mt-2 grid grid-cols-5 gap-1 text-center">
         {MATRIX_K.map((k) => {
           const iv = impliedVol(k, p, T) * 100;
           const atm = k === 0;

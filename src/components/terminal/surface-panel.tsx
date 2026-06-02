@@ -27,7 +27,7 @@ export function SurfacePanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="IV SURFACE"
+      title="IV surface"
       code="BTC · SVI"
       className={className}
       right={
@@ -37,10 +37,10 @@ export function SurfacePanel({ className }: { className?: string }) {
               className={cn("label-micro", arbOk ? "text-safe" : "text-breach")}
             >
               {arbOk
-                ? "ARB-FREE ✓"
+                ? "arb-free ✓"
                 : !arb.calendarFree
-                  ? "CALENDAR ✕"
-                  : "BUTTERFLY ✕"}
+                  ? "calendar ✕"
+                  : "butterfly ✕"}
             </span>
           ) : null}
           <span className="label-micro text-text-faint">
@@ -61,7 +61,7 @@ export function SurfacePanel({ className }: { className?: string }) {
           </div>
         )}
 
-        <div className="pointer-events-none absolute left-3 top-2 flex items-center gap-1.5">
+        <div className="pointer-events-none absolute left-3 top-2 flex items-center gap-2">
           <span className="label-micro text-text-faint">IV</span>
           <div
             className="h-1.5 w-14 rounded-full"

@@ -13,16 +13,18 @@ export function toneClass(tone: Tone = "default"): string {
   }[tone];
 }
 
-const verdictRing: Record<Tone, string> = {
-  default: "border-hairline",
-  safe: "border-safe/30",
-  warn: "border-warn/30",
-  breach: "border-breach/40",
-  accent: "border-accent-brand/30",
-  dim: "border-hairline",
-};
+function dotClass(tone: Tone): string {
+  return {
+    default: "bg-text-dim",
+    safe: "bg-safe",
+    warn: "bg-warn",
+    breach: "bg-breach",
+    accent: "bg-accent-brand",
+    dim: "bg-text-faint",
+  }[tone];
+}
 
-/** A label → value row. Values are tabular mono and right-aligned. */
+/** A label → value row. Quiet label, tabular-mono value, right-aligned. */
 export function Stat({
   label,
   value,
@@ -35,7 +37,7 @@ export function Stat({
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 py-[3px]">
+    <div className="flex items-baseline justify-between gap-3 py-1">
       <span className="label-micro shrink-0">{label}</span>
       <span
         className={cn(
@@ -50,7 +52,8 @@ export function Stat({
   );
 }
 
-/** The big "answer" of a panel: one verdict in mono with a semantic tone. */
+/** The panel's headline answer: a status dot + tone-colored verdict. Emphasis
+ *  comes from size + color (no bold), per the Tatem system. */
 export function Verdict({
   tone = "safe",
   children,
@@ -65,25 +68,27 @@ export function Verdict({
   return (
     <div
       className={cn(
-        "flex flex-col gap-1 rounded-md border px-3 py-2",
-        verdictRing[tone],
+        "flex items-center gap-3 rounded-md border border-hairline bg-panel-elev/40 px-3 py-2",
         className,
       )}
     >
-      <span
-        className={cn(
-          "font-mono text-[15px] font-medium leading-none tracking-tight",
-          toneClass(tone),
-        )}
-      >
-        {children}
-      </span>
-      {sub ? <span className="label-micro">{sub}</span> : null}
+      <span className={cn("size-1.5 shrink-0 rounded-full", dotClass(tone))} />
+      <div className="min-w-0 flex-1">
+        <div
+          className={cn(
+            "truncate font-mono text-[15px] leading-tight",
+            toneClass(tone),
+          )}
+        >
+          {children}
+        </div>
+        {sub ? <div className="label-micro mt-0.5 truncate">{sub}</div> : null}
+      </div>
     </div>
   );
 }
 
-/** A thin utilization meter (value 0..1). */
+/** A thin meter (value 0..1). */
 export function Meter({
   value,
   tone = "accent",

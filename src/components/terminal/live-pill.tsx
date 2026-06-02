@@ -14,7 +14,7 @@ export function LivePill() {
   const text = offline ? "offline" : isLoading && !data ? "sync" : "live";
 
   return (
-    <span className="inline-flex items-center gap-1.5">
+    <span className="inline-flex items-center gap-2">
       <span className="relative flex size-1.5">
         {ok ? (
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-safe/60" />
