@@ -1,66 +1,129 @@
+"use client";
+
+import { useMemo } from "react";
+import { useSurfaceSvis } from "@/lib/indexer/hooks";
+import type { OracleInfo } from "@/lib/indexer/types";
+import { fmtDuration } from "@/lib/format";
+import type { SurfaceRow } from "@/lib/surface";
+import { decodeSvi, yearsToExpiry } from "@/lib/svi";
+import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
+import { useMarket } from "./market-context";
 import { Panel } from "./panel";
+import { SurfaceScene } from "./surface/scene";
 
-const EXPIRIES = ["1H", "2H", "4H", "1D"];
+// Sample a real term structure (log-spaced ~30m → ~2w), not just the nearest
+// expiries — otherwise the surface is nine exploding intraday smiles in a row.
+const TENOR_TARGETS_MIN = [30, 60, 120, 240, 480, 1440, 2880, 10080, 20160];
 
-/**
- * The visual hero. The glowing 3-D react-three-fiber surface mounts here in the
- * Surface room (Days 3–8); for now an atmospheric, on-brand placeholder.
- */
+function selectTermStructure(
+  oracles: OracleInfo[],
+  nowMs: number,
+): OracleInfo[] {
+  if (!oracles.length) return [];
+  const picked = new Map<string, OracleInfo>();
+  for (const min of TENOR_TARGETS_MIN) {
+    const want = nowMs + min * 60_000;
+    let best: OracleInfo | null = null;
+    let bestD = Infinity;
+    for (const o of oracles) {
+      const d = Math.abs(o.expiry - want);
+      if (d < bestD) {
+        bestD = d;
+        best = o;
+      }
+    }
+    if (best) picked.set(best.oracle_id, best);
+  }
+  return [...picked.values()].sort((a, b) => a.expiry - b.expiry);
+}
+
+interface Row extends SurfaceRow {
+  oracleId: string;
+  expiry: number;
+}
+
+/** The visual hero — a live glowing 3-D IV surface across the term structure. */
 export function SurfacePanel({ className }: { className?: string }) {
+  const { activeOracles } = useMarket();
+  const now = useNow();
+
+  // Re-pick the tenor set at most once a minute (keeps the SVI fetch set stable).
+  const refNow = Math.floor(now / 60_000) * 60_000;
+  const tenors = useMemo(
+    () => selectTermStructure(activeOracles, refNow),
+    [activeOracles, refNow],
+  );
+  const svis = useSurfaceSvis(tenors);
+
+  // Cheap per render; the heavy geometry build (VolSurface) is keyed on
+  // `version` (the SVI checksum) so it only rebuilds when the data ticks.
+  const rows: Row[] = [];
+  let version = 0;
+  svis.forEach((q, i) => {
+    const o = tenors[i];
+    const svi = q.data;
+    if (!o || !svi) return;
+    const T = yearsToExpiry(o.expiry, svi.checkpoint_timestamp_ms);
+    if (T <= 0) return;
+    rows.push({
+      T,
+      params: decodeSvi(svi),
+      oracleId: o.oracle_id,
+      expiry: o.expiry,
+    });
+    version += svi.checkpoint;
+  });
+  rows.sort((a, b) => a.T - b.T);
+
+  const ready = rows.length >= 2;
+
   return (
     <Panel
       title="IV SURFACE"
       code="BTC · SVI"
       className={className}
-      right={<span className="label-micro text-text-faint">hero</span>}
+      right={
+        <span className="label-micro text-text-faint">
+          {ready ? `${rows.length} tenors` : "hero"}
+        </span>
+      }
       bodyClassName="relative p-0"
     >
       <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute inset-x-0 top-0 h-2/3 opacity-20"
-          style={{
-            background:
-              "radial-gradient(120% 80% at 50% 0%, var(--sky-from), transparent 70%)",
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage:
-              "linear-gradient(var(--hairline) 1px, transparent 1px), linear-gradient(90deg, var(--hairline) 1px, transparent 1px)",
-            backgroundSize: "34px 34px",
-            maskImage:
-              "radial-gradient(75% 55% at 50% 42%, #000 25%, transparent 82%)",
-            WebkitMaskImage:
-              "radial-gradient(75% 55% at 50% 42%, #000 25%, transparent 82%)",
-          }}
-        />
-        <div className="relative flex h-full flex-col items-center justify-center gap-2.5 px-4 text-center">
-          <span className="font-mono text-2xl font-medium tracking-tight text-foreground">
-            live vol surface
-          </span>
-          <span className="label-micro max-w-[30ch] leading-relaxed">
-            glowing 3-D implied-vol surface · pulses cerulean on each oracle tick
-          </span>
-          <span className="rounded-full border border-hairline px-2 py-0.5 label-micro text-text-faint">
-            Surface room · Days 3–8
-          </span>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 border-t border-hairline bg-canvas/60 px-3 py-1.5 backdrop-blur-sm">
-          <span className="label-micro">expiry</span>
-          {EXPIRIES.map((e, i) => (
+        {ready ? (
+          <SurfaceScene rows={rows} version={version} />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <span className="label-micro animate-pulse text-text-dim">
+              {activeOracles.length ? "resolving surface…" : "no active market"}
+            </span>
+          </div>
+        )}
+
+        <span className="pointer-events-none absolute left-3 top-2 label-micro text-text-faint">
+          IV ↑
+        </span>
+        <span className="pointer-events-none absolute right-3 top-2 label-micro text-text-faint">
+          strike →
+        </span>
+
+        <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 overflow-hidden border-t border-hairline bg-canvas/50 px-3 py-1.5 backdrop-blur-sm">
+          <span className="label-micro">tenor</span>
+          {rows.map((r, i) => (
             <span
-              key={e}
+              key={r.oracleId}
               className={cn(
                 "font-mono text-[11px] tabular",
                 i === 0 ? "text-accent-brand" : "text-text-dim",
               )}
             >
-              {e}
+              {fmtDuration(r.expiry - now)}
             </span>
           ))}
-          <span className="ml-auto label-micro text-text-faint">⟵ scrub ⟶</span>
+          <span className="ml-auto label-micro shrink-0 text-text-faint">
+            drag to orbit
+          </span>
         </div>
       </div>
     </Panel>

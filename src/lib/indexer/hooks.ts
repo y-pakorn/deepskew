@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { PREDICT_ID } from "@/lib/sui/constants";
 import { indexer } from "./client";
+import type { OracleInfo } from "./types";
 
 /** Indexer sync/health — powers the `● live · lag Ns` pill. */
 export function useIndexerStatus() {
@@ -36,13 +37,27 @@ export function useOracleState(oracleId: string | null) {
   });
 }
 
-/** Latest SVI params for an oracle (used by the surface across expiries). */
+/** Latest SVI for an oracle (used by the surface across expiries). */
 export function useSviLatest(oracleId: string | null) {
   return useQuery({
     queryKey: ["oracle", oracleId, "svi", "latest"],
     queryFn: () => indexer.sviLatest(oracleId as string),
     enabled: !!oracleId,
     refetchInterval: 8_000,
+  });
+}
+
+/** Latest SVI for many oracles at once — feeds the 3-D surface. Shares query
+ *  keys with useSviLatest/useOracleState, so the selected oracle is deduped. */
+export function useSurfaceSvis(oracles: OracleInfo[]) {
+  return useQueries({
+    queries: oracles.map((o) => ({
+      queryKey: ["oracle", o.oracle_id, "svi", "latest"],
+      queryFn: () => indexer.sviLatest(o.oracle_id),
+      enabled: !!o.oracle_id,
+      refetchInterval: 8_000,
+      staleTime: 4_000,
+    })),
   });
 }
 
