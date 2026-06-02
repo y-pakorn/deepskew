@@ -1,7 +1,11 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOracleState, useSpotHistory } from "@/lib/indexer/hooks";
+import {
+  useOracleState,
+  useSpotHistory,
+  useTermStructure,
+} from "@/lib/indexer/hooks";
 import {
   fmtDuration,
   fmtPctValue,
@@ -9,7 +13,13 @@ import {
   fmtSigned,
   truncateAddr,
 } from "@/lib/format";
-import { decodeSvi, impliedVol, totalVariance, yearsToExpiry } from "@/lib/svi";
+import {
+  decodeSvi,
+  impliedVol,
+  totalVariance,
+  yearsToExpiry,
+  type SviParams,
+} from "@/lib/svi";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { FlashValue } from "./flash-value";
@@ -18,10 +28,13 @@ import { Panel } from "./panel";
 import { Sparkline } from "./sparkline";
 import { Stat } from "./stat";
 
+const MATRIX_K = [-0.2, -0.1, 0, 0.1, 0.2];
+
 export function OraclePanel() {
   const { selectedOracleId } = useMarket();
   const { data, isLoading, isError } = useOracleState(selectedOracleId);
   const { data: spotHist = [] } = useSpotHistory(selectedOracleId);
+  const { rows: term } = useTermStructure();
   const now = useNow();
 
   const oracle = data?.oracle;
@@ -57,7 +70,7 @@ export function OraclePanel() {
         <div className="space-y-2">
           <Skeleton className="h-8 w-1/2 bg-panel-elev" />
           <Skeleton className="h-7 w-full bg-panel-elev" />
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-4 w-full bg-panel-elev" />
           ))}
         </div>
@@ -112,6 +125,29 @@ export function OraclePanel() {
             />
           </div>
 
+          {p && T > 0 ? <VolMatrix p={p} T={T} /> : null}
+
+          {term.length >= 2 ? (
+            <div className="border-t border-hairline pt-2">
+              <div className="mb-1 flex items-baseline justify-between">
+                <span className="label-micro">ATM IV term structure</span>
+                <span className="font-mono text-[11px] tabular text-text-dim">
+                  {(term[0].atmIV * 100).toFixed(0)}% →{" "}
+                  {(term.at(-1)!.atmIV * 100).toFixed(0)}%
+                </span>
+              </div>
+              <Sparkline values={term.map((r) => r.atmIV)} />
+              <div className="mt-0.5 flex justify-between">
+                <span className="label-micro text-text-faint">
+                  {fmtDuration(term[0].expiry - now)}
+                </span>
+                <span className="label-micro text-text-faint">
+                  {fmtDuration(term.at(-1)!.expiry - now)}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
           <div className="grid grid-cols-2 gap-x-5 border-t border-hairline pt-2">
             <Stat label="a" value={p ? p.a.toExponential(3) : "—"} />
             <Stat label="b" value={p ? p.b.toExponential(3) : "—"} />
@@ -144,6 +180,35 @@ export function OraclePanel() {
         </div>
       )}
     </Panel>
+  );
+}
+
+function VolMatrix({ p, T }: { p: SviParams; T: number }) {
+  return (
+    <div className="border-t border-hairline pt-2">
+      <span className="label-micro">vol by strike · IV</span>
+      <div className="mt-1.5 grid grid-cols-5 gap-1 text-center">
+        {MATRIX_K.map((k) => {
+          const iv = impliedVol(k, p, T) * 100;
+          const atm = k === 0;
+          return (
+            <div key={k}>
+              <div className="label-micro text-text-faint">
+                {atm ? "ATM" : `${k > 0 ? "+" : ""}${(k * 100).toFixed(0)}`}
+              </div>
+              <div
+                className={cn(
+                  "font-mono text-[13px] tabular",
+                  atm ? "text-accent-brand" : "text-text-sec",
+                )}
+              >
+                {iv.toFixed(0)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

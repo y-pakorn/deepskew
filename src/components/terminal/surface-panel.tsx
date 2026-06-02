@@ -1,85 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
-import { useSurfaceSvis } from "@/lib/indexer/hooks";
-import type { OracleInfo } from "@/lib/indexer/types";
+import { useTermStructure } from "@/lib/indexer/hooks";
 import { fmtDuration } from "@/lib/format";
-import type { SurfaceRow } from "@/lib/surface";
-import {
-  checkButterfly,
-  checkCalendar,
-  decodeSvi,
-  yearsToExpiry,
-} from "@/lib/svi";
+import { checkButterfly, checkCalendar } from "@/lib/svi";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
-import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { SurfaceScene } from "./surface/scene";
 
-// Sample a real term structure (log-spaced ~30m → ~2w), not just the nearest
-// expiries — otherwise the surface is nine exploding intraday smiles in a row.
-const TENOR_TARGETS_MIN = [30, 60, 120, 240, 480, 1440, 2880, 10080, 20160];
-
-function selectTermStructure(
-  oracles: OracleInfo[],
-  nowMs: number,
-): OracleInfo[] {
-  if (!oracles.length) return [];
-  const picked = new Map<string, OracleInfo>();
-  for (const min of TENOR_TARGETS_MIN) {
-    const want = nowMs + min * 60_000;
-    let best: OracleInfo | null = null;
-    let bestD = Infinity;
-    for (const o of oracles) {
-      const d = Math.abs(o.expiry - want);
-      if (d < bestD) {
-        bestD = d;
-        best = o;
-      }
-    }
-    if (best) picked.set(best.oracle_id, best);
-  }
-  return [...picked.values()].sort((a, b) => a.expiry - b.expiry);
-}
-
-interface Row extends SurfaceRow {
-  oracleId: string;
-  expiry: number;
-}
-
 /** The visual hero — a live glowing 3-D IV surface across the term structure. */
 export function SurfacePanel({ className }: { className?: string }) {
-  const { activeOracles } = useMarket();
+  const { rows, version } = useTermStructure();
   const now = useNow();
-
-  // Re-pick the tenor set at most once a minute (keeps the SVI fetch set stable).
-  const refNow = Math.floor(now / 60_000) * 60_000;
-  const tenors = useMemo(
-    () => selectTermStructure(activeOracles, refNow),
-    [activeOracles, refNow],
-  );
-  const svis = useSurfaceSvis(tenors);
-
-  // Cheap per render; the heavy geometry build (VolSurface) is keyed on
-  // `version` (the SVI checksum) so it only rebuilds when the data ticks.
-  const rows: Row[] = [];
-  let version = 0;
-  svis.forEach((q, i) => {
-    const o = tenors[i];
-    const svi = q.data;
-    if (!o || !svi) return;
-    const T = yearsToExpiry(o.expiry, svi.checkpoint_timestamp_ms);
-    if (T <= 0) return;
-    rows.push({
-      T,
-      params: decodeSvi(svi),
-      oracleId: o.oracle_id,
-      expiry: o.expiry,
-    });
-    version += svi.checkpoint;
-  });
-  rows.sort((a, b) => a.T - b.T);
 
   const ready = rows.length >= 2;
   const arb = ready
@@ -90,6 +22,8 @@ export function SurfacePanel({ className }: { className?: string }) {
       }
     : null;
   const arbOk = arb ? arb.calendarFree && arb.butterflyFree : false;
+  const frontIV = ready ? rows[0].atmIV * 100 : null;
+  const backIV = ready ? rows[rows.length - 1].atmIV * 100 : null;
 
   return (
     <Panel
@@ -122,7 +56,7 @@ export function SurfacePanel({ className }: { className?: string }) {
         ) : (
           <div className="flex h-full items-center justify-center">
             <span className="label-micro animate-pulse text-text-dim">
-              {activeOracles.length ? "resolving surface…" : "no active market"}
+              resolving surface…
             </span>
           </div>
         )}
@@ -137,6 +71,12 @@ export function SurfacePanel({ className }: { className?: string }) {
             }}
           />
         </div>
+        {frontIV != null && backIV != null ? (
+          <div className="pointer-events-none absolute left-3 top-8 font-mono text-[11px] tabular text-text-dim">
+            ATM <span className="text-accent-brand">{frontIV.toFixed(0)}%</span> →{" "}
+            {backIV.toFixed(0)}%
+          </div>
+        ) : null}
         <span className="pointer-events-none absolute right-3 top-2 label-micro text-text-faint">
           strike →
         </span>

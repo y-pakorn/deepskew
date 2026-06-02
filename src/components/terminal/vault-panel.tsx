@@ -144,6 +144,26 @@ export function VaultPanel({ className }: { className?: string }) {
                 )}
                 tone="warn"
               />
+              <Stat
+                label="net deposits"
+                value={fmtUsdCompact(
+                  fromUnits(data.net_deposits, DUSDC_DECIMALS),
+                )}
+              />
+              <Stat
+                label="supplied"
+                value={fmtUsdCompact(
+                  fromUnits(data.total_supplied, DUSDC_DECIMALS),
+                )}
+                tone="safe"
+              />
+              <Stat
+                label="withdrawn"
+                value={fmtUsdCompact(
+                  fromUnits(data.total_withdrawn, DUSDC_DECIMALS),
+                )}
+                tone="dim"
+              />
             </div>
           </div>
         </div>

@@ -1,6 +1,9 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { PREDICT_ID } from "@/lib/sui/constants";
+import { decodeSvi, impliedVol, yearsToExpiry } from "@/lib/svi";
+import { selectTermStructure, type TermRow } from "@/lib/term-structure";
+import { useNow } from "@/lib/use-now";
 import { indexer } from "./client";
 import type { OracleInfo } from "./types";
 
@@ -144,6 +147,44 @@ export function useSurfaceSvis(oracles: OracleInfo[]) {
       staleTime: 4_000,
     })),
   });
+}
+
+/**
+ * The vol term structure: active oracles → a log-spaced tenor set → decoded SVI
+ * + ATM IV per tenor. Feeds both the 3-D surface and the term-structure readouts.
+ * T uses each SVI's own timestamp so geometry only rebuilds on new data.
+ */
+export function useTermStructure(): { rows: TermRow[]; version: number } {
+  const { data: oracles = [] } = useActiveOracles();
+  const now = useNow();
+  const refNow = Math.floor(now / 60_000) * 60_000; // re-pick at most each minute
+  const tenors = useMemo(
+    () => selectTermStructure(oracles, refNow),
+    [oracles, refNow],
+  );
+  const svis = useSurfaceSvis(tenors);
+  return useMemo(() => {
+    const rows: TermRow[] = [];
+    let version = 0;
+    svis.forEach((q, i) => {
+      const o = tenors[i];
+      const svi = q.data;
+      if (!o || !svi) return;
+      const T = yearsToExpiry(o.expiry, svi.checkpoint_timestamp_ms);
+      if (T <= 0) return;
+      const params = decodeSvi(svi);
+      rows.push({
+        oracleId: o.oracle_id,
+        expiry: o.expiry,
+        T,
+        params,
+        atmIV: impliedVol(0, params, T),
+      });
+      version += svi.checkpoint;
+    });
+    rows.sort((a, b) => a.T - b.T);
+    return { rows, version };
+  }, [svis, tenors]);
 }
 
 /** PLP vault summary — the risk numbers. */

@@ -5,13 +5,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { type FlowItem, useRecentFlow } from "@/lib/indexer/hooks";
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
-import { fmtPrice, fromUnits, utcClock } from "@/lib/format";
+import { fmtPrice, fmtUsdCompact, fromUnits, utcClock } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
 
 export function DeskPanel({ className }: { className?: string }) {
   const account = useCurrentAccount();
   const { items, isLoading, isError } = useRecentFlow(80);
+
+  const mints = items.filter((i) => i.kind === "mint");
+  const upCount = mints.filter((m) => m.isUp).length;
+  const upPct = mints.length ? (upCount / mints.length) * 100 : 50;
+  const volume = mints.reduce((s, m) => s + m.amount, 0);
 
   return (
     <Panel
@@ -25,6 +30,24 @@ export function DeskPanel({ className }: { className?: string }) {
       }
       bodyClassName="flex flex-col overflow-hidden p-0"
     >
+      {items.length ? (
+        <div className="border-b border-hairline px-3 py-2">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="label-micro">positioning · last {mints.length}</span>
+            <span className="font-mono text-[11px] tabular text-text-dim">
+              vol {fmtUsdCompact(fromUnits(volume, DUSDC_DECIMALS))}
+            </span>
+          </div>
+          <div className="flex h-1.5 overflow-hidden rounded-full bg-breach/30">
+            <div className="h-full bg-safe" style={{ width: `${upPct}%` }} />
+          </div>
+          <div className="mt-1 flex justify-between font-mono text-[10px] tabular">
+            <span className="text-safe">{upPct.toFixed(0)}% UP</span>
+            <span className="text-breach">{(100 - upPct).toFixed(0)}% DN</span>
+          </div>
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-[3.6rem_2rem_1fr_auto] items-center gap-x-2 border-b border-hairline px-3 py-1.5">
         <span className="label-micro">time</span>
         <span className="label-micro">side</span>
