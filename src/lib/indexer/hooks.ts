@@ -83,3 +83,12 @@ export function useVaultSummary(predictId: string = PREDICT_ID) {
     refetchInterval: 15_000,
   });
 }
+
+/** PLP share-price / vault-value time series — the performance chart. */
+export function useVaultPerformance(predictId: string = PREDICT_ID, range = "ALL") {
+  return useQuery({
+    queryKey: ["predict", predictId, "vault", "performance", range],
+    queryFn: () => indexer.vaultPerformance(predictId, range),
+    refetchInterval: 30_000,
+  });
+}
