@@ -1,18 +1,27 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOracleState } from "@/lib/indexer/hooks";
-import { fmtDuration, fmtPrice, truncateAddr } from "@/lib/format";
-import { decodeSvi } from "@/lib/svi";
+import { useOracleState, useSpotHistory } from "@/lib/indexer/hooks";
+import {
+  fmtDuration,
+  fmtPctValue,
+  fmtPrice,
+  fmtSigned,
+  truncateAddr,
+} from "@/lib/format";
+import { decodeSvi, impliedVol, totalVariance, yearsToExpiry } from "@/lib/svi";
 import { useNow } from "@/lib/use-now";
+import { cn } from "@/lib/utils";
 import { FlashValue } from "./flash-value";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
+import { Sparkline } from "./sparkline";
 import { Stat } from "./stat";
 
 export function OraclePanel() {
   const { selectedOracleId } = useMarket();
   const { data, isLoading, isError } = useOracleState(selectedOracleId);
+  const { data: spotHist = [] } = useSpotHistory(selectedOracleId);
   const now = useNow();
 
   const oracle = data?.oracle;
@@ -24,6 +33,15 @@ export function OraclePanel() {
       ? Math.max(0, Math.round((now - price.checkpoint_timestamp_ms) / 1000))
       : null;
   const toExp = oracle ? oracle.expiry - now : 0;
+
+  const spots = spotHist.map((s) => s.spot);
+  const spotChange =
+    spots.length >= 2 ? ((spots.at(-1)! - spots[0]) / spots[0]) * 100 : null;
+
+  const T =
+    oracle && svi ? yearsToExpiry(oracle.expiry, svi.checkpoint_timestamp_ms) : 0;
+  const atmIV = p && T > 0 ? impliedVol(0, p, T) * 100 : null;
+  const atmVar = p ? totalVariance(0, p) : null;
 
   return (
     <Panel
@@ -37,54 +55,84 @@ export function OraclePanel() {
         <p className="label-micro text-breach">oracle feed unreachable</p>
       ) : isLoading || !data || !oracle ? (
         <div className="space-y-2">
-          {Array.from({ length: 7 }).map((_, i) => (
+          <Skeleton className="h-8 w-1/2 bg-panel-elev" />
+          <Skeleton className="h-7 w-full bg-panel-elev" />
+          {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-4 w-full bg-panel-elev" />
           ))}
         </div>
       ) : (
-        <div className="flex h-full flex-col">
-          <div className="mb-2 flex items-baseline justify-between">
-            {price ? (
-              <FlashValue
-                value={price.spot}
-                className="font-mono text-lg tabular text-foreground"
-              >
-                {fmtPrice(price.spot)}
-              </FlashValue>
-            ) : (
-              <span className="font-mono text-lg tabular text-foreground">
-                —
-              </span>
-            )}
-            <span className="label-micro">spot</span>
+        <div className="flex h-full flex-col gap-3">
+          <div>
+            <div className="flex items-baseline justify-between">
+              {price ? (
+                <FlashValue
+                  value={price.spot}
+                  className="font-mono text-2xl tabular text-foreground"
+                >
+                  {fmtPrice(price.spot)}
+                </FlashValue>
+              ) : (
+                <span className="font-mono text-2xl tabular text-foreground">
+                  —
+                </span>
+              )}
+              <span className="label-micro">spot</span>
+            </div>
+            {spots.length >= 2 ? (
+              <div className="mt-1.5 flex items-center gap-3">
+                <Sparkline values={spots} />
+                <span
+                  className={cn(
+                    "shrink-0 font-mono text-[11px] tabular",
+                    (spotChange ?? 0) >= 0 ? "text-safe" : "text-breach",
+                  )}
+                >
+                  {spotChange != null ? `${fmtSigned(spotChange, 2)}%` : ""}
+                </span>
+              </div>
+            ) : null}
           </div>
-          <Stat label="forward" value={price ? fmtPrice(price.forward) : "—"} />
-          <Stat
-            label="expiry"
-            value={oracle.status === "settled" ? "settled" : fmtDuration(toExp)}
-            tone={oracle.status === "settled" ? "warn" : "default"}
-          />
-          <div className="my-2 border-t border-hairline pt-2">
-            {p ? (
-              <>
-                <Stat label="a" value={p.a.toExponential(3)} />
-                <Stat label="b" value={p.b.toExponential(3)} />
-                <Stat
-                  label="ρ rho"
-                  value={p.rho.toFixed(4)}
-                  tone={p.rho < 0 ? "warn" : "default"}
-                />
-                <Stat label="m" value={p.m.toFixed(5)} />
-                <Stat label="σ sigma" value={p.sigma.toFixed(5)} />
-              </>
-            ) : (
-              <p className="label-micro text-text-dim">no SVI yet</p>
-            )}
+
+          <div className="grid grid-cols-2 gap-x-5 border-t border-hairline pt-2">
+            <Stat label="forward" value={price ? fmtPrice(price.forward) : "—"} />
+            <Stat
+              label="expiry"
+              value={oracle.status === "settled" ? "settled" : fmtDuration(toExp)}
+              tone={oracle.status === "settled" ? "warn" : "default"}
+            />
+            <Stat
+              label="ATM IV"
+              value={atmIV != null ? fmtPctValue(atmIV) : "—"}
+              tone="accent"
+            />
+            <Stat
+              label="ATM var"
+              value={atmVar != null ? atmVar.toExponential(2) : "—"}
+            />
           </div>
-          <div className="mt-auto border-t border-hairline pt-2">
+
+          <div className="grid grid-cols-2 gap-x-5 border-t border-hairline pt-2">
+            <Stat label="a" value={p ? p.a.toExponential(3) : "—"} />
+            <Stat label="b" value={p ? p.b.toExponential(3) : "—"} />
+            <Stat
+              label="ρ rho"
+              value={p ? p.rho.toFixed(4) : "—"}
+              tone={p && p.rho < 0 ? "warn" : "default"}
+            />
+            <Stat label="m" value={p ? p.m.toFixed(5) : "—"} />
+            <Stat label="σ sigma" value={p ? p.sigma.toFixed(5) : "—"} />
+            <Stat
+              label="checkpoint"
+              value={price ? price.checkpoint.toLocaleString() : "—"}
+              tone="dim"
+            />
+          </div>
+
+          <div className="mt-auto grid grid-cols-2 gap-x-5 border-t border-hairline pt-2">
             <Stat
               label="oracle"
-              value={truncateAddr(oracle.oracle_id, 8, 6)}
+              value={truncateAddr(oracle.oracle_id, 6, 4)}
               tone="dim"
             />
             <Stat

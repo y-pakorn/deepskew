@@ -127,9 +127,16 @@ export function SurfacePanel({ className }: { className?: string }) {
           </div>
         )}
 
-        <span className="pointer-events-none absolute left-3 top-2 label-micro text-text-faint">
-          IV ↑
-        </span>
+        <div className="pointer-events-none absolute left-3 top-2 flex items-center gap-1.5">
+          <span className="label-micro text-text-faint">IV</span>
+          <div
+            className="h-1.5 w-14 rounded-full"
+            style={{
+              background:
+                "linear-gradient(90deg, rgb(26,51,122), rgb(13,140,217), rgb(33,212,236), rgb(184,247,255))",
+            }}
+          />
+        </div>
         <span className="pointer-events-none absolute right-3 top-2 label-micro text-text-faint">
           strike →
         </span>

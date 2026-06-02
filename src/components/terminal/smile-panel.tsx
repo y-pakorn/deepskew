@@ -53,6 +53,7 @@ export function SmilePanel() {
       put,
       call,
       skew: put - call,
+      fly: (put + call) / 2 - atm,
       bf,
       ts,
     };
@@ -99,10 +100,11 @@ export function SmilePanel() {
             <Stat label="put −10%" value={fmtPctValue(model.put)} />
             <Stat label="call +10%" value={fmtPctValue(model.call)} />
             <Stat
-              label="skew"
+              label="skew (RR)"
               value={fmtSigned(model.skew, 1)}
               tone={model.skew >= 0 ? "default" : "warn"}
             />
+            <Stat label="fly" value={fmtSigned(model.fly, 1)} />
           </div>
           {n > 1 ? (
             <div>
@@ -130,7 +132,7 @@ export function SmilePanel() {
               />
             </div>
           ) : null}
-          <div className="mt-auto pt-1">
+          <div className="pt-1">
             <ArbVerdict bf={model.bf} />
           </div>
         </div>

@@ -23,7 +23,7 @@ export function SmileChart({ pts }: { pts: { k: number; iv: number }[] }) {
   const atmX = ((0 - k0) / (k1 - k0)) * VB;
 
   return (
-    <div className="relative h-36 w-full shrink-0">
+    <div className="relative min-h-[140px] w-full flex-1">
       <svg
         viewBox={`0 0 ${VB} ${VB}`}
         preserveAspectRatio="none"

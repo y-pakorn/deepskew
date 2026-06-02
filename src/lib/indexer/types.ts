@@ -120,3 +120,31 @@ export interface ManagerPnl {
   series_type: string;
   points: PnlPoint[];
 }
+
+/** GET /positions/minted — a binary position was opened. Amounts 1e6, strike 1e9. */
+export interface PositionMinted {
+  checkpoint_timestamp_ms: number;
+  digest: string;
+  trader: string;
+  oracle_id: string;
+  expiry: number;
+  strike: number;
+  is_up: boolean;
+  quantity: number;
+  cost: number;
+  ask_price: number;
+}
+
+/** GET /positions/redeemed — a binary position was settled/redeemed. */
+export interface PositionRedeemed {
+  checkpoint_timestamp_ms: number;
+  digest: string;
+  owner: string;
+  oracle_id: string;
+  expiry: number;
+  strike: number;
+  is_up: boolean;
+  quantity: number;
+  payout: number;
+  is_settled: boolean;
+}

@@ -19,7 +19,7 @@ export function SurfaceScene({
       className="!absolute inset-0"
       dpr={[1, 2]}
       gl={{ antialias: true }}
-      camera={{ position: [3.6, 3.2, 4.4], fov: 32 }}
+      camera={{ position: [3.1, 2.7, 3.7], fov: 35 }}
     >
       <color attach="background" args={["#0a0b0e"]} />
       <fogExp2 attach="fog" args={["#0a0b0e", 0.05]} />

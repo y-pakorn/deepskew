@@ -5,6 +5,8 @@ import type {
   OracleInfo,
   OraclePrice,
   OracleStateResponse,
+  PositionMinted,
+  PositionRedeemed,
   SviLatest,
   VaultPerformance,
   VaultSummary,
@@ -73,8 +75,8 @@ export const indexer = {
     get<ManagerPnl>(`/managers/${managerId}/pnl?range=${range}`),
   managerPositions: (managerId: string) =>
     get<unknown[]>(`/managers/${managerId}/positions`),
-  positionsMinted: () => get<unknown[]>("/positions/minted"),
-  positionsRedeemed: () => get<unknown[]>("/positions/redeemed"),
+  positionsMinted: () => get<PositionMinted[]>("/positions/minted"),
+  positionsRedeemed: () => get<PositionRedeemed[]>("/positions/redeemed"),
 };
 
 export type Indexer = typeof indexer;
