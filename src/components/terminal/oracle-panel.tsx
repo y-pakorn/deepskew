@@ -5,6 +5,7 @@ import { useOracleState } from "@/lib/indexer/hooks";
 import { fmtDuration, fmtPrice, truncateAddr } from "@/lib/format";
 import { decodeSvi } from "@/lib/svi";
 import { useNow } from "@/lib/use-now";
+import { FlashValue } from "./flash-value";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { Stat } from "./stat";
@@ -43,9 +44,18 @@ export function OraclePanel() {
       ) : (
         <div className="flex h-full flex-col">
           <div className="mb-2 flex items-baseline justify-between">
-            <span className="font-mono text-lg tabular text-foreground">
-              {price ? fmtPrice(price.spot) : "—"}
-            </span>
+            {price ? (
+              <FlashValue
+                value={price.spot}
+                className="font-mono text-lg tabular text-foreground"
+              >
+                {fmtPrice(price.spot)}
+              </FlashValue>
+            ) : (
+              <span className="font-mono text-lg tabular text-foreground">
+                —
+              </span>
+            )}
             <span className="label-micro">spot</span>
           </div>
           <Stat label="forward" value={price ? fmtPrice(price.forward) : "—"} />

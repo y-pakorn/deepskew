@@ -9,6 +9,7 @@ import {
 import { fmtPct, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { decodeSvi, impliedVol, yearsToExpiry } from "@/lib/svi";
+import { FlashValue } from "./flash-value";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { Meter, Stat } from "./stat";
@@ -64,9 +65,12 @@ export function VaultPanel({ className }: { className?: string }) {
       className={className}
       right={
         data ? (
-          <span className="font-mono text-[11px] tabular text-text-dim">
+          <FlashValue
+            value={data.plp_share_price}
+            className="font-mono text-[11px] tabular text-text-dim"
+          >
             PLP ${data.plp_share_price.toFixed(4)}
-          </span>
+          </FlashValue>
         ) : null
       }
     >

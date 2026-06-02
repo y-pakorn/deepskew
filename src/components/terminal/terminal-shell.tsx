@@ -1,6 +1,7 @@
 "use client";
 
 import { DAppKitClientProvider } from "@/components/sui/dapp-kit-provider";
+import { CommandPalette } from "./command-palette";
 import { CommandStrip } from "./command-strip";
 import { DeskPanel } from "./desk-panel";
 import { MarketProvider } from "./market-context";
@@ -27,6 +28,7 @@ export function TerminalShell() {
             <DeskPanel />
           </div>
         </div>
+        <CommandPalette />
       </MarketProvider>
     </DAppKitClientProvider>
   );

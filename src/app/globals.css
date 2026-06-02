@@ -172,4 +172,22 @@
     background-color: var(--hairline);
     gap: 1px;
   }
+  /* number flash on update — settles back to the element's own color */
+  .flash-up {
+    animation: flash-up 600ms ease-out;
+  }
+  .flash-down {
+    animation: flash-down 600ms ease-out;
+  }
+}
+
+@keyframes flash-up {
+  from {
+    color: var(--safe);
+  }
+}
+@keyframes flash-down {
+  from {
+    color: var(--breach);
+  }
 }

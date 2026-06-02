@@ -21,7 +21,12 @@ export function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("flex min-h-0 flex-col bg-panel", className)}>
+    <section
+      className={cn(
+        "flex min-h-0 flex-col bg-panel duration-500 animate-in fade-in-0",
+        className,
+      )}
+    >
       <header className="flex h-8 shrink-0 items-center justify-between gap-2 border-b border-hairline px-3">
         <div className="flex items-baseline gap-2 truncate">
           <span className="label-micro text-text-sec">{title}</span>

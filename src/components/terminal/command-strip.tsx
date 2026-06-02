@@ -28,9 +28,14 @@ export function CommandStrip() {
           orientation="vertical"
           className="hidden h-4 bg-hairline sm:block"
         />
-        <kbd className="hidden rounded border border-hairline bg-panel px-1.5 py-0.5 font-mono text-[11px] text-text-dim sm:inline">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("deepskew:cmdk"))}
+          className="hidden rounded border border-hairline bg-panel px-1.5 py-0.5 font-mono text-[11px] text-text-dim transition-colors hover:border-divider hover:text-foreground sm:inline"
+          title="Command palette"
+        >
           ⌘K
-        </kbd>
+        </button>
         <ConnectWallet />
       </div>
     </header>
