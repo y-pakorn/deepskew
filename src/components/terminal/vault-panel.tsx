@@ -129,7 +129,7 @@ export function VaultPanel({ className }: { className?: string }) {
             ) : null}
           </div>
 
-          <div className="flex flex-col justify-center gap-2.5">
+          <div className="flex flex-col gap-2.5">
             <div>
               <Stat label="utilization" value={fmtPct(data.utilization)} />
               <Meter value={data.utilization} tone="accent" />
@@ -176,6 +176,17 @@ export function VaultPanel({ className }: { className?: string }) {
                 label="withdrawn"
                 value={fmtUsdCompact(
                   fromUnits(data.total_withdrawn, DUSDC_DECIMALS),
+                )}
+                tone="dim"
+              />
+              <Stat
+                label="total MtM"
+                value={fmtUsdCompact(fromUnits(data.total_mtm, DUSDC_DECIMALS))}
+              />
+              <Stat
+                label="PLP supply"
+                value={fmtUsdCompact(
+                  fromUnits(data.plp_total_supply, DUSDC_DECIMALS),
                 )}
                 tone="dim"
               />
