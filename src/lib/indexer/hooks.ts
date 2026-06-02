@@ -111,6 +111,127 @@ export function useRecentFlow(limit = 60) {
   };
 }
 
+export interface SettlementStats {
+  total: number;
+  wins: number;
+  winRate: number;
+  upWinRate: number;
+  dnWinRate: number;
+  payouts: number; // 1e6
+}
+
+/** Taker settlement stats from /positions/redeemed — win rate (takers vs vault). */
+export function useSettlementStats(): SettlementStats {
+  const { data = [] } = useQuery({
+    queryKey: ["positions", "redeemed"],
+    queryFn: () => indexer.positionsRedeemed(),
+    refetchInterval: 10_000,
+  });
+  return useMemo(() => {
+    const settled = data.filter((r) => r.is_settled);
+    const total = settled.length;
+    const wins = settled.filter((r) => r.payout > 0);
+    const rate = (arr: typeof settled) =>
+      arr.length
+        ? (arr.filter((r) => r.payout > 0).length / arr.length) * 100
+        : 0;
+    return {
+      total,
+      wins: wins.length,
+      winRate: total ? (wins.length / total) * 100 : 0,
+      upWinRate: rate(settled.filter((r) => r.is_up)),
+      dnWinRate: rate(settled.filter((r) => !r.is_up)),
+      payouts: wins.reduce((s, r) => s + r.payout, 0),
+    };
+  }, [data]);
+}
+
+export interface StrikeBucket {
+  mid: number; // log-ish moneyness (strike/spot − 1)
+  up: number;
+  dn: number;
+}
+
+/** Open-interest strike distribution from /positions/minted, bucketed by
+ *  moneyness relative to `spot` (1e9-scaled, same as strike). */
+export function useStrikeDistribution(spot: number | null): StrikeBucket[] {
+  const { data = [] } = useQuery({
+    queryKey: ["positions", "minted"],
+    queryFn: () => indexer.positionsMinted(),
+    refetchInterval: 6_000,
+  });
+  return useMemo(() => {
+    if (!spot || spot <= 0) return [];
+    const N = 13;
+    const MIN = -0.3;
+    const MAX = 0.3;
+    const arr: StrikeBucket[] = Array.from({ length: N }, (_, i) => ({
+      mid: MIN + ((MAX - MIN) * i) / (N - 1),
+      up: 0,
+      dn: 0,
+    }));
+    for (const m of data) {
+      const mny = m.strike / spot - 1;
+      if (mny < MIN || mny > MAX) continue;
+      const idx = Math.round(((mny - MIN) / (MAX - MIN)) * (N - 1));
+      if (m.is_up) arr[idx].up++;
+      else arr[idx].dn++;
+    }
+    return arr;
+  }, [data, spot]);
+}
+
+export interface LpFlow {
+  series: number[]; // cumulative net (1e6)
+  supplyCount: number;
+  withdrawCount: number;
+  supplied: number;
+  withdrawn: number;
+  net: number;
+}
+
+/** Cumulative LP net flow over time from /lp/supplies + /lp/withdrawals. */
+export function useLpFlow(): LpFlow {
+  const sup = useQuery({
+    queryKey: ["lp", "supplies"],
+    queryFn: () => indexer.lpSupplies(),
+    refetchInterval: 20_000,
+  });
+  const wd = useQuery({
+    queryKey: ["lp", "withdrawals"],
+    queryFn: () => indexer.lpWithdrawals(),
+    refetchInterval: 20_000,
+  });
+  return useMemo(() => {
+    const ev = [
+      ...(sup.data ?? []).map((s) => ({
+        ts: s.checkpoint_timestamp_ms,
+        delta: s.amount,
+      })),
+      ...(wd.data ?? []).map((w) => ({
+        ts: w.checkpoint_timestamp_ms,
+        delta: -w.amount,
+      })),
+    ].sort((a, b) => a.ts - b.ts);
+    const series: number[] = [];
+    let running = 0;
+    for (const e of ev) {
+      running += e.delta;
+      series.push(running);
+    }
+    const supplied = (sup.data ?? []).reduce((s, x) => s + x.amount, 0);
+    const withdrawn = (wd.data ?? []).reduce((s, x) => s + x.amount, 0);
+    return {
+      series,
+      supplyCount: sup.data?.length ?? 0,
+      withdrawCount: wd.data?.length ?? 0,
+      supplied,
+      withdrawn,
+      net: supplied - withdrawn,
+    };
+  }, [sup.data, wd.data]);
+}
+
 /** Latest SVI for an oracle (used by the surface across expiries). */
 export function useSviLatest(oracleId: string | null) {
   return useQuery({

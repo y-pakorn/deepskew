@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Slider } from "@/components/ui/slider";
-import { useOracleState, useSviHistory } from "@/lib/indexer/hooks";
+import {
+  useOracleState,
+  useStrikeDistribution,
+  useSviHistory,
+} from "@/lib/indexer/hooks";
 import { fmtPctValue, fmtSigned, utcClock } from "@/lib/format";
 import {
   checkButterfly,
@@ -16,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { SmileChart } from "./smile-chart";
+import { StrikeHistogram } from "./strike-histogram";
 import { Stat, Verdict } from "./stat";
 
 const WING = 0.1; // ±10% log-moneyness readouts
@@ -25,6 +30,7 @@ export function SmilePanel() {
   const { selectedOracleId } = useMarket();
   const { data: state, isLoading, isError } = useOracleState(selectedOracleId);
   const { data: history = [] } = useSviHistory(selectedOracleId);
+  const strikes = useStrikeDistribution(state?.latest_price?.spot ?? null);
 
   const [scrub, setScrub] = useState<number | null>(null); // null = live
   const n = history.length;
@@ -95,6 +101,18 @@ export function SmilePanel() {
       ) : (
         <div className="flex h-full flex-col gap-3">
           <SmileChart pts={model.pts} />
+          {strikes.length ? (
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="label-micro">OI by strike</span>
+                <span className="label-micro text-text-faint">
+                  <span className="text-safe">up</span> ·{" "}
+                  <span className="text-breach">dn</span>
+                </span>
+              </div>
+              <StrikeHistogram buckets={strikes} />
+            </div>
+          ) : null}
           <div>
             <Stat label="ATM" value={fmtPctValue(model.atm)} tone="accent" />
             <Stat label="put −10%" value={fmtPctValue(model.put)} />

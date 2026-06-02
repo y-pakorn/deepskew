@@ -2,6 +2,8 @@ import { INDEXER_BASE_URL } from "@/lib/sui/constants";
 import type {
   IndexerStatus,
   ManagerPnl,
+  LpSupply,
+  LpWithdrawal,
   OracleInfo,
   OraclePrice,
   OracleStateResponse,
@@ -77,6 +79,8 @@ export const indexer = {
     get<unknown[]>(`/managers/${managerId}/positions`),
   positionsMinted: () => get<PositionMinted[]>("/positions/minted"),
   positionsRedeemed: () => get<PositionRedeemed[]>("/positions/redeemed"),
+  lpSupplies: () => get<LpSupply[]>("/lp/supplies"),
+  lpWithdrawals: () => get<LpWithdrawal[]>("/lp/withdrawals"),
 };
 
 export type Indexer = typeof indexer;

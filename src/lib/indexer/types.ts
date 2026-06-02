@@ -148,3 +148,19 @@ export interface PositionRedeemed {
   payout: number;
   is_settled: boolean;
 }
+
+/** GET /lp/supplies — an LP supplied quote into the PLP vault. Amount 1e6. */
+export interface LpSupply {
+  checkpoint_timestamp_ms: number;
+  supplier: string;
+  amount: number;
+  shares_minted: number;
+}
+
+/** GET /lp/withdrawals — an LP withdrew from the PLP vault. Amount 1e6. */
+export interface LpWithdrawal {
+  checkpoint_timestamp_ms: number;
+  withdrawer: string;
+  amount: number;
+  shares_burned: number;
+}

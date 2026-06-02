@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  useLpFlow,
   useOracleState,
   useVaultPerformance,
   useVaultSummary,
@@ -12,6 +13,7 @@ import { decodeSvi, impliedVol, yearsToExpiry } from "@/lib/svi";
 import { FlashValue } from "./flash-value";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
+import { Sparkline } from "./sparkline";
 import { Meter, Stat } from "./stat";
 import { PerfChart } from "./vault/perf-chart";
 import { VaultStress } from "./vault/vault-stress";
@@ -23,6 +25,7 @@ export function VaultPanel({ className }: { className?: string }) {
   const { data: perf } = useVaultPerformance();
   const { selectedOracleId } = useMarket();
   const { data: oracleState } = useOracleState(selectedOracleId);
+  const lp = useLpFlow();
 
   // ATM IV (annualized) + spot from the selected oracle — for the σ-shock.
   const svi = oracleState?.latest_svi;
@@ -112,6 +115,18 @@ export function VaultPanel({ className }: { className?: string }) {
                 </div>
               )}
             </div>
+            {lp.series.length >= 2 ? (
+              <div className="mt-2">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="label-micro">LP net flow</span>
+                  <span className="font-mono text-[11px] tabular text-text-dim">
+                    {lp.supplyCount}↑ {lp.withdrawCount}↓ · net{" "}
+                    {fmtUsdCompact(fromUnits(lp.net, DUSDC_DECIMALS))}
+                  </span>
+                </div>
+                <Sparkline values={lp.series} />
+              </div>
+            ) : null}
           </div>
 
           <div className="flex flex-col justify-center gap-2.5">

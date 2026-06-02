@@ -3,7 +3,11 @@
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { type FlowItem, useRecentFlow } from "@/lib/indexer/hooks";
+import {
+  type FlowItem,
+  useRecentFlow,
+  useSettlementStats,
+} from "@/lib/indexer/hooks";
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { fmtPrice, fmtUsdCompact, fromUnits, utcClock } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -17,6 +21,7 @@ export function DeskPanel({ className }: { className?: string }) {
   const upCount = mints.filter((m) => m.isUp).length;
   const upPct = mints.length ? (upCount / mints.length) * 100 : 50;
   const volume = mints.reduce((s, m) => s + m.amount, 0);
+  const stats = useSettlementStats();
 
   return (
     <Panel
@@ -44,6 +49,31 @@ export function DeskPanel({ className }: { className?: string }) {
           <div className="mt-1 flex justify-between font-mono text-[10px] tabular">
             <span className="text-safe">{upPct.toFixed(0)}% UP</span>
             <span className="text-breach">{(100 - upPct).toFixed(0)}% DN</span>
+          </div>
+        </div>
+      ) : null}
+
+      {stats.total ? (
+        <div className="border-b border-hairline px-3 py-2">
+          <div className="flex items-center justify-between">
+            <span className="label-micro">settlement · {stats.total}</span>
+            <span className="font-mono text-[11px] tabular text-text-dim">
+              payouts {fmtUsdCompact(fromUnits(stats.payouts, DUSDC_DECIMALS))}
+            </span>
+          </div>
+          <div className="mt-1 flex items-center justify-between font-mono text-[11px] tabular">
+            <span className="text-text-sec">
+              taker win{" "}
+              <span
+                className={stats.winRate < 50 ? "text-safe" : "text-warn"}
+                title="< 50% means the PLP vault has an edge"
+              >
+                {stats.winRate.toFixed(0)}%
+              </span>
+            </span>
+            <span className="text-text-faint">
+              UP {stats.upWinRate.toFixed(0)}% · DN {stats.dnWinRate.toFixed(0)}%
+            </span>
           </div>
         </div>
       ) : null}
