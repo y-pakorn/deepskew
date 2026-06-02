@@ -43,7 +43,13 @@ export function SurfacePanel({ className }: { className?: string }) {
             </Pill>
           ) : null}
           <span className="label-micro text-text-faint">
-            {ready ? `${rows.length} tenors` : "hero"}
+            {ready ? (
+              <>
+                <span className="tabular">{rows.length}</span> tenors
+              </>
+            ) : (
+              "Resolving"
+            )}
           </span>
         </span>
       }

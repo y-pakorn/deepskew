@@ -27,7 +27,7 @@ export function ConnectWallet() {
         title="Disconnect"
       >
         <span className="size-1.5 rounded-full bg-safe" />
-        {truncateAddr(account.address)}
+        <span className="tabular">{truncateAddr(account.address)}</span>
       </Button>
     );
   }

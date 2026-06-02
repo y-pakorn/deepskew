@@ -36,7 +36,7 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
       layout: {
         background: { type: ColorType.Solid, color: "rgba(0,0,0,0)" },
         textColor: "#8a8a8a",
-        fontFamily: "var(--font-inter), sans-serif",
+        fontFamily: "var(--font-geist-mono), monospace",
         fontSize: 12,
         attributionLogo: false,
       },

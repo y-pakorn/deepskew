@@ -30,7 +30,13 @@ export function DeskPanel({ className }: { className?: string }) {
       className={className}
       right={
         <span className="label-micro text-text-faint">
-          {items.length ? `${items.length} events` : "live"}
+          {items.length ? (
+            <>
+              <span className="tabular">{items.length}</span> events
+            </>
+          ) : (
+            "Live"
+          )}
         </span>
       }
       bodyClassName="flex flex-col overflow-hidden p-0"
@@ -38,9 +44,12 @@ export function DeskPanel({ className }: { className?: string }) {
       {items.length ? (
         <div className="border-b border-hairline px-3 py-2">
           <div className="mb-1 flex items-center justify-between">
-            <span className="label-micro">Positioning · last {mints.length}</span>
+            <span className="label-micro">
+              Positioning · last{" "}
+              <span className="tabular">{mints.length}</span>
+            </span>
             <span className="text-data tabular text-text-dim">
-              vol {fmtUsdCompact(fromUnits(volume, DUSDC_DECIMALS))}
+              Vol {fmtUsdCompact(fromUnits(volume, DUSDC_DECIMALS))}
             </span>
           </div>
           <div className="flex h-1.5 overflow-hidden rounded-full bg-breach/30">
@@ -56,14 +65,16 @@ export function DeskPanel({ className }: { className?: string }) {
       {stats.total ? (
         <div className="border-b border-hairline px-3 py-2">
           <div className="flex items-center justify-between">
-            <span className="label-micro">Settlement · {stats.total}</span>
+            <span className="label-micro">
+              Settlement · <span className="tabular">{stats.total}</span>
+            </span>
             <span className="text-data tabular text-text-dim">
-              payouts {fmtUsdCompact(fromUnits(stats.payouts, DUSDC_DECIMALS))}
+              Payouts {fmtUsdCompact(fromUnits(stats.payouts, DUSDC_DECIMALS))}
             </span>
           </div>
           <div className="mt-1 flex items-center justify-between text-data tabular">
             <span className="text-text-sec">
-              taker win{" "}
+              Taker win{" "}
               <span
                 className={stats.winRate < 50 ? "text-safe" : "text-warn"}
                 title="< 50% means the PLP vault has an edge"

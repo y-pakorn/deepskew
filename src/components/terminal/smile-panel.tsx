@@ -168,7 +168,15 @@ function ArbVerdict({ bf }: { bf: ButterflyCheck }) {
       Arb-free ✓
     </Verdict>
   ) : (
-    <Verdict tone="breach" sub={`${bf.violations.length} butterfly violations`}>
+    <Verdict
+      tone="breach"
+      sub={
+        <>
+          <span className="tabular">{bf.violations.length}</span> butterfly
+          violations
+        </>
+      }
+    >
       Butterfly ✕
     </Verdict>
   );

@@ -17,7 +17,7 @@ type, restraint); the others contribute density and layout patterns:
 
 | Reference | What we take |
 |---|---|
-| **Tatem** ("Midnight Terminal") — *primary* | `#000` canvas, `#161616` panel, **cerulean `#007eed` for data + interaction**, status colors carry risk. Inter, sentence case, **value-contrast hierarchy** (the answer is the brightest/biggest, not the most colorful). Restraint. |
+| **Tatem** ("Midnight Terminal") — *primary* | `#000` canvas, `#161616` panel, **cerulean `#007eed` for data + interaction**, status colors carry risk. Geist + Geist Mono, sentence case, **value-contrast hierarchy** (the answer is the brightest/biggest, not the most colorful). Restraint. |
 | **Kraken Pro** | Zero dead space: tight ~20px label→value rows, dense tables, tabbed panels, footer status bar. |
 | **Mercury** | Reading order: headline metric → supporting charts → dense table; filter-chip toolbars; prominent ⌘K. |
 | **OpenSea / Axiom** | Subtle inset hairline borders; tonal-separation depth (no heavy shadows); rigid precise cards, generous internal padding; monochrome line icons. |
@@ -95,7 +95,7 @@ Confined to the surface mesh + its legend only.
 
 ## 4. Typography
 
-- **Font:** **Inter** for UI + labels; **JetBrains Mono (tabular)** for every number, value,
+- **Font:** **Geist** for UI + labels; **Geist Mono (tabular)** for every number, value,
   price, address, and SVI param. The `.tabular` class sets the mono family + `tabular-nums` — the
   mono texture is the "machine data" signal that makes a readout read as data, not prose.
 - **De-emphasized affix** (`MonoValue` / `.affix`): a value's leading currency symbol and trailing
@@ -113,9 +113,9 @@ One size per role. **Never** mix ad-hoc Tailwind sizes (`text-sm`, `text-[14px]`
 | `text-micro` | 12 / 1.4 | footer status bar, axis ticks (the floor — nothing smaller) |
 | `text-label` (`.label-micro`) | 12 / 1.4 · w500 | labels, section labels (`--text-dim` #a8a8a8) |
 | `text-data` | 12 / 1.35 | pills/badges, dense table cells, inline annotations |
-| `text-val` | 15 / 1.35 | standard ledger values |
-| `text-md` | 18 / 1.25 | tile values |
-| `text-lead` | 24 / 1.15 | sub-hero |
+| `text-val` | 14 / 1.35 | standard ledger values |
+| `text-md` | 16 / 1.25 | tile values |
+| `text-lead` | 20 / 1.15 | sub-hero |
 | `text-hero` | 32 / 1.05 | the one hero number (spot) |
 | `.panel-title` | 13 · w500 | panel header |
 
@@ -176,7 +176,7 @@ All terminal components compose from these primitives. Keep them consistent.
 - **Panel** — `--panel` surface, 1px hairline border, radius 8. Header (h-8): `panel-title`
   (sentence case, `--text-sec`, weight 500) + optional `code` (faint) + right slot for status pills.
   Body padding 12.
-- **MonoValue** — the numeric renderer: JetBrains Mono tabular, splitting off the leading currency
+- **MonoValue** — the numeric renderer: Geist Mono tabular, splitting off the leading currency
   + trailing unit/exponent into a dim `.affix` so the magnitude leads. Only splits when the core is a
   real number (addresses/durations render whole + bright). Every value flows through it (via Stat/StatTile).
 - **Stat row** (label-led) — `label` (`.label-micro`, `--text-dim`) ↔ mono `value` (`text-val`,
@@ -186,7 +186,7 @@ All terminal components compose from these primitives. Keep them consistent.
   on top, mono value (`text-md`, 18) directly below, left-aligned; tiles sit in a hairline-divided
   `TileGrid` (1px gaps as dividers). No horizontal label↔value pairing, so no center void.
 - **Verdict** — status dot (tone) + tone statement (`text-val`, 15, weight 500) + sub label. Plain hairline border, `--panel-elev` tint.
-- **Pill / badge** — compact capsule tag, **Inter** (not mono — these are status *words*), 12px, weight 500,
+- **Pill / badge** — compact capsule tag, **Geist** (not mono — these are status *words*), 12px, weight 500,
   px 8, 999 radius, Sentence case. Variants: `neutral` (elevated bg, dim text), `up` (emerald),
   `down` (red), `warn` (amber), `accent`/`key` (cerulean). Statuses: Live, Up/Dn, Arb-free, Active, Settled.
 - **Meter** — ~1px bar, track `--panel-elev`, fill tone (cerulean for neutral gauges). Utilization/risk gauges.
@@ -241,11 +241,11 @@ labels; never decorative-only.
 
 ## 11. Do / Don't
 
-**Do:** layer surfaces for depth · reserve color roles · JetBrains Mono tabular for every number ·
-Inter for labels/pills · de-emphasize units/affixes · one verdict per panel · pack rows tightly ·
+**Do:** layer surfaces for depth · reserve color roles · Geist Mono tabular for every number ·
+Geist for labels/pills · de-emphasize units/affixes · one verdict per panel · pack rows tightly ·
 pills for status · weight scale 400/500/600 · Sentence case · key value = brightest white, not a hue.
 
-**Don't:** drop shadows · forced lowercase OR all-caps labels · Inter for numbers / mono for word-pills ·
+**Don't:** drop shadows · forced lowercase OR all-caps labels · sans for numbers / mono for word-pills ·
 text below 12px or grays below `#8a8a8a` for readable text · decorative color · color a "key" value
 (it leads by size + weight + white) · ad-hoc font sizes/weights/spacing · mid-panel voids · averaging references into a safe middle.
 

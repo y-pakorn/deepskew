@@ -14,7 +14,7 @@ export function StrikeHistogram({ buckets }: { buckets: StrikeBucket[] }) {
           <div
             key={i}
             className="flex flex-1 flex-col justify-end"
-            title={`${(b.mid * 100).toFixed(0)}% · ${b.up} up / ${b.dn} dn`}
+            title={`${(b.mid * 100).toFixed(0)}% · ${b.up} Up / ${b.dn} Dn`}
           >
             <div className="w-full" style={{ height: `${hPct}%` }}>
               <div

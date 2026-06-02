@@ -11,7 +11,7 @@ export function LivePill() {
   const lag = data?.max_time_lag_seconds;
 
   const dot = offline ? "bg-breach" : ok ? "bg-safe" : "bg-warn";
-  const text = offline ? "offline" : isLoading && !data ? "sync" : "live";
+  const text = offline ? "Offline" : isLoading && !data ? "Sync" : "Live";
 
   return (
     <span className="inline-flex items-center gap-2">
@@ -24,7 +24,7 @@ export function LivePill() {
       <span className="label-micro text-text-sec">{text}</span>
       {lag != null ? (
         <span className="text-data tabular text-text-dim">
-          · lag {lag}s
+          · Lag {lag}s
         </span>
       ) : null}
     </span>

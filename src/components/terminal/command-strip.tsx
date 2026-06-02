@@ -5,6 +5,7 @@ import { ConnectWallet } from "@/components/sui/connect-wallet";
 import { Separator } from "@/components/ui/separator";
 import { Clock } from "./clock";
 import { LivePill } from "./live-pill";
+import { DeepSkewMark } from "./logo";
 import { MarketSelector } from "./market-selector";
 
 /** Top command strip — the authority signal of the desk. */
@@ -13,9 +14,10 @@ export function CommandStrip() {
     <header className="flex h-11 shrink-0 items-center gap-3 border-b border-hairline bg-canvas px-3">
       <Link
         href="/"
-        className="text-val font-semibold tracking-tight text-foreground transition-opacity hover:opacity-80"
+        className="flex items-center gap-2 text-md font-semibold tracking-tight text-foreground transition-opacity hover:opacity-80"
       >
-        DEEPSKEW
+        <DeepSkewMark className="size-5 text-accent-brand" />
+        deepskew
       </Link>
       <span className="text-text-faint">·</span>
       <MarketSelector />

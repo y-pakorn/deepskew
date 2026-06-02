@@ -18,15 +18,15 @@ export function StatusBar() {
             isError ? "bg-breach" : ok ? "bg-safe" : "bg-warn",
           )}
         />
-        indexer {isError ? "offline" : ok ? "ok" : "sync"}
+        Indexer {isError ? "Offline" : ok ? "OK" : "Sync"}
       </span>
-      {data ? <span className="tabular">lag {data.max_time_lag_seconds}s</span> : null}
+      {data ? <span className="tabular">Lag {data.max_time_lag_seconds}s</span> : null}
       {data ? (
         <span className="tabular">
-          ckpt {data.latest_onchain_checkpoint.toLocaleString()}
+          Ckpt {data.latest_onchain_checkpoint.toLocaleString()}
         </span>
       ) : null}
-      <span>sui · {SUI_NETWORK}</span>
+      <span>Sui · {SUI_NETWORK}</span>
       <span className="ml-auto flex items-center gap-4">
         <a
           href="https://docs.sui.io/onchain-finance/deepbook-predict/"
@@ -34,7 +34,7 @@ export function StatusBar() {
           rel="noreferrer"
           className="transition-colors hover:text-text-dim"
         >
-          docs
+          Docs
         </a>
         <a
           href="https://x.com/DeepBookonSui"
@@ -42,9 +42,9 @@ export function StatusBar() {
           rel="noreferrer"
           className="transition-colors hover:text-text-dim"
         >
-          deepbook
+          DeepBook
         </a>
-        <span>redeploys mainnet day one</span>
+        <span>Redeploys mainnet day one</span>
       </span>
     </footer>
   );

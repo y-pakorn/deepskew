@@ -59,7 +59,7 @@ export function MarketSelector() {
             <DropdownMenuItem
               key={o.oracle_id}
               onSelect={() => setSelectedOracleId(o.oracle_id)}
-              className="gap-3 text-data"
+              className="cursor-pointer gap-3 text-data transition-colors focus:bg-accent-brand/15 focus:text-foreground data-[highlighted]:bg-accent-brand/15 data-[highlighted]:text-foreground"
             >
               <span className={cn(selected ? "text-accent-brand" : "")}>
                 BTC

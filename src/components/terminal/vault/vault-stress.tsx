@@ -47,10 +47,30 @@ export function VaultStress({
 
   return (
     <div className="flex flex-col gap-3">
-      <Verdict tone={tone} sub={`±${sigmaLabel}σ · 1-day shock · payouts capped`}>
-        {buffer >= 1
-          ? `Survives ${sigmaLabel}σ · ${Number.isFinite(buffer) ? fmtNum(buffer, buffer >= 100 ? 0 : 1) : "∞"}× buffer`
-          : `Breach at ${sigmaLabel}σ`}
+      <Verdict
+        tone={tone}
+        sub={
+          <>
+            ±<span className="tabular">{sigmaLabel}</span>σ · 1-day shock ·
+            payouts capped
+          </>
+        }
+      >
+        {buffer >= 1 ? (
+          <>
+            Survives <span className="tabular">{sigmaLabel}</span>σ ·{" "}
+            <span className="tabular">
+              {Number.isFinite(buffer)
+                ? fmtNum(buffer, buffer >= 100 ? 0 : 1)
+                : "∞"}
+            </span>
+            × buffer
+          </>
+        ) : (
+          <>
+            Breach at <span className="tabular">{sigmaLabel}</span>σ
+          </>
+        )}
       </Verdict>
       <div>
         <div className="mb-2 flex items-center justify-between">
