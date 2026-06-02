@@ -2,7 +2,9 @@ import { INDEXER_BASE_URL } from "@/lib/sui/constants";
 import type {
   IndexerStatus,
   ManagerPnl,
-  OracleRef,
+  OracleInfo,
+  OraclePrice,
+  OracleStateResponse,
   SviLatest,
   VaultPerformance,
   VaultSummary,
@@ -37,23 +39,28 @@ async function get<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+const limitQuery = (limit?: number) => (limit ? `?limit=${limit}` : "");
+
 /**
  * Typed client for the Predict indexer (Tier 1 — history & aggregates).
- * Routes reverse-engineered from crates/predict-server/src/server.rs.
+ * Routes from crates/predict-server/src/server.rs (predict-testnet-4-16).
  */
 export const indexer = {
   status: () => get<IndexerStatus>("/status"),
   config: () => get<Record<string, unknown>>("/config"),
-  oracles: () => get<OracleRef[]>("/oracles"),
+  /** All oracles (no server-side filter — ~3k entries; filter client-side). */
+  oracles: () => get<OracleInfo[]>("/oracles"),
   spotLatest: (oracleId: string) =>
-    get<unknown>(`/oracles/${oracleId}/prices/latest`),
-  spotHistory: (oracleId: string) =>
-    get<unknown[]>(`/oracles/${oracleId}/prices`),
+    get<OraclePrice>(`/oracles/${oracleId}/prices/latest`),
+  spotHistory: (oracleId: string, limit?: number) =>
+    get<OraclePrice[]>(`/oracles/${oracleId}/prices${limitQuery(limit)}`),
   sviLatest: (oracleId: string) =>
     get<SviLatest>(`/oracles/${oracleId}/svi/latest`),
-  sviHistory: (oracleId: string) => get<SviLatest[]>(`/oracles/${oracleId}/svi`),
+  sviHistory: (oracleId: string, limit?: number) =>
+    get<SviLatest[]>(`/oracles/${oracleId}/svi${limitQuery(limit)}`),
+  /** One-shot: oracle meta + latest price + latest SVI. */
   oracleState: (oracleId: string) =>
-    get<unknown>(`/oracles/${oracleId}/state`),
+    get<OracleStateResponse>(`/oracles/${oracleId}/state`),
   askBounds: (oracleId: string) =>
     get<unknown>(`/oracles/${oracleId}/ask-bounds`),
   vaultSummary: (predictId: string) =>
@@ -62,10 +69,8 @@ export const indexer = {
     get<VaultPerformance>(
       `/predicts/${predictId}/vault/performance?range=${range}`,
     ),
-  managerPnl: (managerId: string, seriesType = "realized_pnl", range = "ALL") =>
-    get<ManagerPnl>(
-      `/managers/${managerId}/pnl?series_type=${seriesType}&range=${range}`,
-    ),
+  managerPnl: (managerId: string, range = "ALL") =>
+    get<ManagerPnl>(`/managers/${managerId}/pnl?range=${range}`),
   managerPositions: (managerId: string) =>
     get<unknown[]>(`/managers/${managerId}/positions`),
   positionsMinted: () => get<unknown[]>("/positions/minted"),

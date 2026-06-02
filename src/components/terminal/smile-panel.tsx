@@ -2,32 +2,49 @@
 
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSviLatest } from "@/lib/indexer/hooks";
+import { useOracleState } from "@/lib/indexer/hooks";
 import { fmtPctValue, fmtSigned } from "@/lib/format";
-import { checkButterfly, decodeSvi, impliedVol, smile } from "@/lib/svi";
+import {
+  checkButterfly,
+  decodeSvi,
+  impliedVol,
+  smile,
+  yearsToExpiry,
+  type ButterflyCheck,
+} from "@/lib/svi";
+import { useNow } from "@/lib/use-now";
+import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { Stat, Verdict } from "./stat";
 
-// Provisional time-to-expiry for display-only IV (real T comes from the oracle
-// state in the Surface room). The arb-free check below is T-independent.
-const PROVISIONAL_T = 1 / (365.25 * 24); // ~1h in years
+// Readouts at ±10% log-moneyness (the wings blow up past that near expiry).
+const WING = 0.1;
 
 export function SmilePanel() {
-  const { data, isLoading, isError } = useSviLatest();
+  const { selectedOracleId } = useMarket();
+  const { data, isLoading, isError } = useOracleState(selectedOracleId);
+  const now = useNow();
 
   const model = useMemo(() => {
-    if (!data) return null;
-    const p = decodeSvi(data);
-    const pts = smile(p, PROVISIONAL_T, { kMin: -0.6, kMax: 0.6, steps: 64 });
-    const atm = impliedVol(0, p, PROVISIONAL_T) * 100;
-    const put25 = impliedVol(-0.25, p, PROVISIONAL_T) * 100;
-    const call25 = impliedVol(0.25, p, PROVISIONAL_T) * 100;
-    return { pts, atm, put25, call25, skew: put25 - call25, bf: checkButterfly(p) };
-  }, [data]);
+    if (!data?.latest_svi || !data.oracle) return null;
+    const p = decodeSvi(data.latest_svi);
+    const bf = checkButterfly(p);
+    const T = yearsToExpiry(data.oracle.expiry, now);
+    if (T <= 0 || data.oracle.status === "settled") {
+      return { settled: true as const, bf };
+    }
+    const pts = smile(p, T, { kMin: -0.35, kMax: 0.35, steps: 64 });
+    const atm = impliedVol(0, p, T) * 100;
+    const put = impliedVol(-WING, p, T) * 100;
+    const call = impliedVol(WING, p, T) * 100;
+    return { settled: false as const, pts, atm, put, call, skew: put - call, bf };
+  }, [data, now]);
 
   return (
-    <Panel title="SMILE / SKEW" code="25Δ">
-      {isError ? (
+    <Panel title="SMILE / SKEW" code="±10% k">
+      {!selectedOracleId ? (
+        <p className="label-micro text-text-dim">no active market</p>
+      ) : isError ? (
         <p className="label-micro text-breach">smile feed unreachable</p>
       ) : isLoading || !model ? (
         <div className="space-y-2">
@@ -35,13 +52,20 @@ export function SmilePanel() {
           <Skeleton className="h-4 w-2/3 bg-panel-elev" />
           <Skeleton className="h-4 w-1/2 bg-panel-elev" />
         </div>
+      ) : model.settled ? (
+        <div className="flex h-full flex-col justify-between gap-2">
+          <p className="label-micro text-text-dim">
+            expiry settled — no live smile
+          </p>
+          <ArbVerdict bf={model.bf} />
+        </div>
       ) : (
         <div className="flex h-full flex-col gap-2">
           <SmileSpark pts={model.pts} />
           <div className="mt-1">
             <Stat label="ATM" value={fmtPctValue(model.atm)} tone="accent" />
-            <Stat label="25Δ put" value={fmtPctValue(model.put25)} />
-            <Stat label="25Δ call" value={fmtPctValue(model.call25)} />
+            <Stat label="put −10%" value={fmtPctValue(model.put)} />
+            <Stat label="call +10%" value={fmtPctValue(model.call)} />
             <Stat
               label="skew"
               value={fmtSigned(model.skew, 1)}
@@ -49,22 +73,23 @@ export function SmilePanel() {
             />
           </div>
           <div className="mt-auto pt-1">
-            {model.bf.butterflyFree ? (
-              <Verdict tone="safe" sub="butterfly · Durrleman g(k) ≥ 0">
-                ARB-FREE ✓
-              </Verdict>
-            ) : (
-              <Verdict
-                tone="breach"
-                sub={`${model.bf.violations.length} butterfly violations`}
-              >
-                BUTTERFLY ✕
-              </Verdict>
-            )}
+            <ArbVerdict bf={model.bf} />
           </div>
         </div>
       )}
     </Panel>
+  );
+}
+
+function ArbVerdict({ bf }: { bf: ButterflyCheck }) {
+  return bf.butterflyFree ? (
+    <Verdict tone="safe" sub="butterfly · Durrleman g(k) ≥ 0">
+      ARB-FREE ✓
+    </Verdict>
+  ) : (
+    <Verdict tone="breach" sub={`${bf.violations.length} butterfly violations`}>
+      BUTTERFLY ✕
+    </Verdict>
   );
 }
 

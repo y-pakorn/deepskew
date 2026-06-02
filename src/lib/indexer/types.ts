@@ -1,4 +1,4 @@
-/** Validated response shapes for the Predict indexer (captured live, 2026). */
+/** Validated response shapes for the Predict indexer (server.rs, predict-testnet-4-16). */
 
 export interface IndexerStatus {
   status: string;
@@ -11,7 +11,27 @@ export interface IndexerStatus {
   pipelines: unknown[];
 }
 
-/** GET /oracles/:id/svi/latest — raw fixed-point SVI params. */
+export type OracleStatus = "created" | "active" | "settled";
+
+/** GET /oracles entry + OracleStateResponse.oracle (server.rs `OracleInfo`).
+ *  Prices/strikes are 1e9-scaled. `status` is derived: settled_at → settled,
+ *  else activated_at → active, else created. */
+export interface OracleInfo {
+  predict_id: string;
+  oracle_id: string;
+  oracle_cap_id: string;
+  underlying_asset: string;
+  expiry: number; // ms
+  min_strike: number; // 1e9-scaled
+  tick_size: number; // 1e9-scaled
+  status: OracleStatus;
+  activated_at: number | null;
+  settlement_price: number | null; // 1e9-scaled
+  settled_at: number | null;
+  created_checkpoint: number;
+}
+
+/** GET /oracles/:id/svi/latest (and state.latest_svi). Raw fixed-point SVI. */
 export interface SviLatest {
   event_digest: string;
   digest: string;
@@ -32,11 +52,28 @@ export interface SviLatest {
   onchain_timestamp: number;
 }
 
-/** One oracle row from GET /oracles (shape is loosely documented). */
-export interface OracleRef {
-  predict_id: string;
+/** GET /oracles/:id/prices/latest (and state.latest_price). Prices are 1e9-scaled. */
+export interface OraclePrice {
+  event_digest: string;
+  digest: string;
+  sender: string;
+  checkpoint: number;
+  checkpoint_timestamp_ms: number;
+  tx_index: number;
+  event_index: number;
+  package: string;
   oracle_id: string;
-  [key: string]: unknown;
+  spot: number; // 1e9-scaled
+  forward: number; // 1e9-scaled
+  onchain_timestamp: number;
+}
+
+/** GET /oracles/:id/state — one-shot: oracle meta + latest price + latest SVI. */
+export interface OracleStateResponse {
+  oracle: OracleInfo;
+  latest_price: OraclePrice | null;
+  latest_svi: SviLatest | null;
+  ask_bounds: unknown | null;
 }
 
 /** GET /predicts/:id/vault/summary — PLP vault state. */

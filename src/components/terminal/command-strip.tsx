@@ -5,6 +5,7 @@ import { ConnectWallet } from "@/components/sui/connect-wallet";
 import { Separator } from "@/components/ui/separator";
 import { Clock } from "./clock";
 import { LivePill } from "./live-pill";
+import { MarketSelector } from "./market-selector";
 
 /** Top command strip — the authority signal of the desk. */
 export function CommandStrip() {
@@ -17,14 +18,7 @@ export function CommandStrip() {
         DEEPSKEW
       </Link>
       <span className="text-text-faint">·</span>
-      <button
-        type="button"
-        className="inline-flex items-center gap-1 rounded border border-hairline bg-panel px-2 py-1 font-mono text-[12px] text-text-sec transition-colors hover:border-divider hover:text-foreground"
-        title="Market — more markets coming"
-      >
-        BTC-1H
-        <span className="text-text-faint">▾</span>
-      </button>
+      <MarketSelector />
 
       <div className="ml-auto flex items-center gap-3">
         <LivePill />

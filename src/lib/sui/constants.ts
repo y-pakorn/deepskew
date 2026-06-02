@@ -41,6 +41,9 @@ export const SUI_GRAPHQL_URL = "https://sui-testnet.mystenlabs.com/graphql";
  */
 export const SVI_FIXED_POINT = 1e9;
 
+/** Spot / forward / strike prices from the indexer are 1e9-scaled (verified live). */
+export const PRICE_FIXED_POINT = 1e9;
+
 /** Oracle event Move types for Tier-2 freshness. */
 export const ORACLE_EVENT = {
   pricesUpdated: "OraclePricesUpdated",
