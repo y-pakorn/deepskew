@@ -118,7 +118,7 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
       <div ref={containerRef} className="absolute inset-0" />
       {tip ? (
         <div
-          className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded border border-hairline bg-panel-elev px-1.5 py-0.5 text-[11px] whitespace-nowrap tabular"
+          className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded border border-hairline bg-panel-elev px-1.5 py-0.5 text-val whitespace-nowrap tabular"
           style={{ left: tip.left }}
         >
           <span className="text-accent-brand">{tip.value.toFixed(4)}</span>{" "}

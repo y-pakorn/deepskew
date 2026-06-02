@@ -39,14 +39,14 @@ export function DeskPanel({ className }: { className?: string }) {
         <div className="border-b border-hairline px-3 py-2">
           <div className="mb-1 flex items-center justify-between">
             <span className="label-micro">positioning · last {mints.length}</span>
-            <span className="font-mono text-[11px] tabular text-text-dim">
+            <span className="text-val tabular text-text-dim">
               vol {fmtUsdCompact(fromUnits(volume, DUSDC_DECIMALS))}
             </span>
           </div>
           <div className="flex h-1.5 overflow-hidden rounded-full bg-breach/30">
             <div className="h-full bg-safe" style={{ width: `${upPct}%` }} />
           </div>
-          <div className="mt-1 flex justify-between font-mono text-[10px] tabular">
+          <div className="mt-1 flex justify-between text-val tabular">
             <span className="text-safe">{upPct.toFixed(0)}% UP</span>
             <span className="text-breach">{(100 - upPct).toFixed(0)}% DN</span>
           </div>
@@ -57,11 +57,11 @@ export function DeskPanel({ className }: { className?: string }) {
         <div className="border-b border-hairline px-3 py-2">
           <div className="flex items-center justify-between">
             <span className="label-micro">settlement · {stats.total}</span>
-            <span className="font-mono text-[11px] tabular text-text-dim">
+            <span className="text-val tabular text-text-dim">
               payouts {fmtUsdCompact(fromUnits(stats.payouts, DUSDC_DECIMALS))}
             </span>
           </div>
-          <div className="mt-1 flex items-center justify-between font-mono text-[11px] tabular">
+          <div className="mt-1 flex items-center justify-between text-val tabular">
             <span className="text-text-sec">
               taker win{" "}
               <span
@@ -116,7 +116,7 @@ function FlowRow({ it, mine }: { it: FlowItem; mine: boolean }) {
   return (
     <div
       className={cn(
-        "grid grid-cols-[3.6rem_2rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 font-mono text-[11px] tabular",
+        "grid grid-cols-[3.6rem_2rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-val tabular",
         mine && "bg-accent-brand/10",
       )}
     >

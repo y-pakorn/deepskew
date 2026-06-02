@@ -6,6 +6,7 @@ import { checkButterfly, checkCalendar } from "@/lib/svi";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
+import { Pill } from "./pill";
 import { SurfaceScene } from "./surface/scene";
 
 /** The visual hero — a live glowing 3-D IV surface across the term structure. */
@@ -33,15 +34,13 @@ export function SurfacePanel({ className }: { className?: string }) {
       right={
         <span className="flex items-center gap-2">
           {arb ? (
-            <span
-              className={cn("label-micro", arbOk ? "text-safe" : "text-breach")}
-            >
+            <Pill tone={arbOk ? "up" : "down"}>
               {arbOk
                 ? "arb-free ✓"
                 : !arb.calendarFree
                   ? "calendar ✕"
                   : "butterfly ✕"}
-            </span>
+            </Pill>
           ) : null}
           <span className="label-micro text-text-faint">
             {ready ? `${rows.length} tenors` : "hero"}
@@ -72,8 +71,8 @@ export function SurfacePanel({ className }: { className?: string }) {
           />
         </div>
         {frontIV != null && backIV != null ? (
-          <div className="pointer-events-none absolute left-3 top-8 font-mono text-[11px] tabular text-text-dim">
-            ATM <span className="text-accent-brand">{frontIV.toFixed(0)}%</span> →{" "}
+          <div className="pointer-events-none absolute left-3 top-8 text-val tabular text-text-dim">
+            ATM <span className="text-foreground">{frontIV.toFixed(0)}%</span> →{" "}
             {backIV.toFixed(0)}%
           </div>
         ) : null}
@@ -87,7 +86,7 @@ export function SurfacePanel({ className }: { className?: string }) {
             <span
               key={r.oracleId}
               className={cn(
-                "font-mono text-[11px] tabular",
+                "text-val tabular",
                 i === 0 ? "text-accent-brand" : "text-text-dim",
               )}
             >

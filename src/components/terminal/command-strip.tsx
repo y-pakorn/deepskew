@@ -13,7 +13,7 @@ export function CommandStrip() {
     <header className="flex h-11 shrink-0 items-center gap-3 border-b border-hairline bg-canvas px-3">
       <Link
         href="/"
-        className="font-mono text-[13px] font-medium tracking-tight text-foreground transition-opacity hover:opacity-80"
+        className="text-val font-semibold tracking-tight text-foreground transition-opacity hover:opacity-80"
       >
         DEEPSKEW
       </Link>
@@ -31,7 +31,7 @@ export function CommandStrip() {
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event("deepskew:cmdk"))}
-          className="hidden rounded border border-hairline bg-panel px-1.5 py-0.5 font-mono text-[11px] text-text-dim transition-colors hover:border-divider hover:text-foreground sm:inline"
+          className="hidden rounded border border-hairline bg-panel px-1.5 py-0.5 text-val text-text-dim transition-colors hover:border-divider hover:text-foreground sm:inline"
           title="Command palette"
         >
           ⌘K

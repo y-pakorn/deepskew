@@ -71,7 +71,7 @@ export function CommandPalette() {
               >
                 BTC
               </span>
-              <span className="ml-auto font-mono tabular text-text-dim">
+              <span className="ml-auto tabular text-text-dim">
                 {fmtDuration(o.expiry - now)}
               </span>
             </CommandItem>

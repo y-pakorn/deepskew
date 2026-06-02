@@ -22,7 +22,7 @@ export function ConnectWallet() {
       <Button
         variant="outline"
         size="sm"
-        className="h-7 gap-1.5 font-mono text-xs"
+        className="h-7 gap-1.5 text-val"
         onClick={() => dAppKit.disconnectWallet()}
         title="Disconnect"
       >
@@ -36,7 +36,7 @@ export function ConnectWallet() {
   return (
     <Button
       size="sm"
-      className="h-7 text-xs"
+      className="h-7 text-val"
       disabled={!first}
       onClick={() => first && dAppKit.connectWallet({ wallet: first })}
     >

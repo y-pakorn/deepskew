@@ -110,7 +110,7 @@ export function SmileChart({ pts }: { pts: { k: number; iv: number }[] }) {
       </span>
       {hover ? (
         <div
-          className="pointer-events-none absolute top-0.5 z-10 -translate-x-1/2 rounded border border-hairline bg-panel-elev px-1.5 py-0.5 text-[11px] whitespace-nowrap tabular"
+          className="pointer-events-none absolute top-0.5 z-10 -translate-x-1/2 rounded border border-hairline bg-panel-elev px-1.5 py-0.5 text-val whitespace-nowrap tabular"
           style={{ left: `${Math.max(14, Math.min(hover.frac * 100, 86))}%` }}
         >
           <span className="text-accent-brand">{(hover.iv * 100).toFixed(1)}%</span>{" "}

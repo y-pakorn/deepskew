@@ -70,7 +70,7 @@ export function VaultPanel({ className }: { className?: string }) {
         data ? (
           <FlashValue
             value={data.plp_share_price}
-            className="font-mono text-[11px] tabular text-text-dim"
+            className="text-val tabular text-text-dim"
           >
             PLP ${data.plp_share_price.toFixed(4)}
           </FlashValue>
@@ -99,7 +99,7 @@ export function VaultPanel({ className }: { className?: string }) {
             <div className="mb-1 flex items-baseline justify-between">
               <span className="label-micro">PLP share price</span>
               {apy != null ? (
-                <span className="font-mono text-[11px] tabular text-safe">
+                <span className="text-val tabular text-safe">
                   APY {apy.toFixed(1)}%
                 </span>
               ) : null}
@@ -119,7 +119,7 @@ export function VaultPanel({ className }: { className?: string }) {
               <div className="mt-2">
                 <div className="mb-1 flex items-center justify-between">
                   <span className="label-micro">LP net flow</span>
-                  <span className="font-mono text-[11px] tabular text-text-dim">
+                  <span className="text-val tabular text-text-dim">
                     {lp.supplyCount}↑ {lp.withdrawCount}↓ · net{" "}
                     {fmtUsdCompact(fromUnits(lp.net, DUSDC_DECIMALS))}
                   </span>

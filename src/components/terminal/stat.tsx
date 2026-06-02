@@ -1,6 +1,13 @@
 import { cn } from "@/lib/utils";
 
-export type Tone = "default" | "safe" | "warn" | "breach" | "accent" | "dim";
+export type Tone =
+  | "default"
+  | "safe"
+  | "warn"
+  | "breach"
+  | "accent"
+  | "key"
+  | "dim";
 
 export function toneClass(tone: Tone = "default"): string {
   return {
@@ -9,6 +16,7 @@ export function toneClass(tone: Tone = "default"): string {
     warn: "text-warn",
     breach: "text-breach",
     accent: "text-accent-brand",
+    key: "text-foreground",
     dim: "text-text-dim",
   }[tone];
 }
@@ -20,11 +28,12 @@ function dotClass(tone: Tone): string {
     warn: "bg-warn",
     breach: "bg-breach",
     accent: "bg-accent-brand",
+    key: "bg-accent-brand",
     dim: "bg-text-faint",
   }[tone];
 }
 
-/** A label → value row. Quiet label, tabular-mono value, right-aligned. */
+/** A label → value row. Quiet label, tabular value, right-aligned. */
 export function Stat({
   label,
   value,
@@ -41,8 +50,9 @@ export function Stat({
       <span className="label-micro shrink-0">{label}</span>
       <span
         className={cn(
-          "truncate text-[13px] leading-none",
-          mono && "font-mono tabular",
+          "truncate text-val leading-none",
+          mono && "tabular",
+          tone === "key" && "font-medium",
           toneClass(tone),
         )}
       >
@@ -52,8 +62,7 @@ export function Stat({
   );
 }
 
-/** The panel's headline answer: a status dot + tone-colored verdict. Emphasis
- *  comes from size + color (no bold), per the Tatem system. */
+/** The panel's headline answer: status dot + tone statement (weight 500). */
 export function Verdict({
   tone = "safe",
   children,
@@ -68,7 +77,7 @@ export function Verdict({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-md border border-hairline bg-panel-elev/40 px-3 py-2",
+        "flex items-center gap-2 rounded-md border border-hairline bg-panel-elev/40 px-3 py-2",
         className,
       )}
     >
@@ -76,7 +85,7 @@ export function Verdict({
       <div className="min-w-0 flex-1">
         <div
           className={cn(
-            "truncate font-mono text-[15px] leading-tight",
+            "truncate text-md font-medium leading-tight",
             toneClass(tone),
           )}
         >
@@ -103,6 +112,7 @@ export function Meter({
     warn: "bg-warn",
     breach: "bg-breach",
     accent: "bg-accent-brand",
+    key: "bg-accent-brand",
     dim: "bg-text-faint",
   }[tone];
   return (

@@ -23,7 +23,7 @@ export function LivePill() {
       </span>
       <span className="label-micro text-text-sec">{text}</span>
       {lag != null ? (
-        <span className="font-mono text-[11px] tabular text-text-dim">
+        <span className="text-val tabular text-text-dim">
           · lag {lag}s
         </span>
       ) : null}

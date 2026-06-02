@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
+import { Pill } from "./pill";
 import { SmileChart } from "./smile-chart";
 import { StrikeHistogram } from "./strike-histogram";
 import { Stat, Verdict } from "./stat";
@@ -71,14 +72,11 @@ export function SmilePanel() {
       code={isLive ? "live" : "replay"}
       right={
         model ? (
-          <span
-            className={cn(
-              "font-mono text-[11px] tabular",
-              isLive ? "text-safe" : "text-warn",
-            )}
-          >
-            {isLive ? "● live" : utcClock(new Date(model.ts))}
-          </span>
+          isLive ? (
+            <Pill tone="up">live</Pill>
+          ) : (
+            <Pill tone="warn">{utcClock(new Date(model.ts))} · replay</Pill>
+          )
         ) : null
       }
     >
@@ -114,7 +112,7 @@ export function SmilePanel() {
             </div>
           ) : null}
           <div>
-            <Stat label="ATM" value={fmtPctValue(model.atm)} tone="accent" />
+            <Stat label="ATM" value={fmtPctValue(model.atm)} tone="key" />
             <Stat label="put −10%" value={fmtPctValue(model.put)} />
             <Stat label="call +10%" value={fmtPctValue(model.call)} />
             <Stat

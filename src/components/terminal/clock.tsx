@@ -8,7 +8,7 @@ export function Clock() {
   const now = useNow();
   return (
     <span
-      className="font-mono text-[12px] tabular text-text-dim"
+      className="text-val tabular text-text-dim"
       suppressHydrationWarning
     >
       {now ? utcClock(new Date(now)) : "--:--:--"}{" "}

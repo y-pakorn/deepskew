@@ -32,7 +32,7 @@ export function MarketSelector() {
         <button
           type="button"
           disabled={!activeOracles.length}
-          className="inline-flex items-center gap-1 rounded border border-hairline bg-panel px-2 py-1 font-mono text-[12px] text-text-sec transition-colors hover:border-divider hover:text-foreground disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded border border-hairline bg-panel px-2 py-1 text-val text-text-sec transition-colors hover:border-divider hover:text-foreground disabled:opacity-50"
           title="Select market / expiry"
         >
           {label}
@@ -53,7 +53,7 @@ export function MarketSelector() {
             <DropdownMenuItem
               key={o.oracle_id}
               onSelect={() => setSelectedOracleId(o.oracle_id)}
-              className="gap-3 font-mono text-xs"
+              className="gap-3 text-val"
             >
               <span className={cn(selected ? "text-accent-brand" : "")}>
                 BTC

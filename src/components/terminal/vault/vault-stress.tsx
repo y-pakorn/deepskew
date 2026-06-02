@@ -55,7 +55,7 @@ export function VaultStress({
       <div>
         <div className="mb-2 flex items-center justify-between">
           <span className="label-micro">stress ±σ</span>
-          <span className="font-mono text-[11px] tabular text-text-sec">
+          <span className="text-val tabular text-text-sec">
             {sigma.toFixed(1)}σ
           </span>
         </div>
@@ -99,7 +99,7 @@ export function VaultStress({
             return (
               <div
                 key={s}
-                className="grid grid-cols-3 font-mono text-[11px] tabular"
+                className="grid grid-cols-3 text-val tabular"
               >
                 <span className="text-text-dim">{s}σ</span>
                 <span className="text-right text-warn">

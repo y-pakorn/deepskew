@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { FlashValue } from "./flash-value";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
+import { Pill, type PillTone } from "./pill";
 import { Sparkline } from "./sparkline";
 import { Stat } from "./stat";
 
@@ -81,12 +82,12 @@ export function OraclePanel() {
               {price ? (
                 <FlashValue
                   value={price.spot}
-                  className="font-mono text-2xl tabular text-foreground"
+                  className="text-hero font-medium tabular text-foreground"
                 >
                   {fmtPrice(price.spot)}
                 </FlashValue>
               ) : (
-                <span className="font-mono text-2xl tabular text-foreground">
+                <span className="text-hero font-medium tabular text-foreground">
                   —
                 </span>
               )}
@@ -97,7 +98,7 @@ export function OraclePanel() {
                 <Sparkline values={spots} />
                 <span
                   className={cn(
-                    "shrink-0 font-mono text-[11px] tabular",
+                    "shrink-0 text-val tabular",
                     (spotChange ?? 0) >= 0 ? "text-safe" : "text-breach",
                   )}
                 >
@@ -117,7 +118,7 @@ export function OraclePanel() {
             <Stat
               label="ATM IV"
               value={atmIV != null ? fmtPctValue(atmIV) : "—"}
-              tone="accent"
+              tone="key"
             />
             <Stat
               label="ATM var"
@@ -131,7 +132,7 @@ export function OraclePanel() {
             <div className="border-t border-hairline pt-2">
               <div className="mb-1 flex items-baseline justify-between">
                 <span className="label-micro">ATM IV term structure</span>
-                <span className="font-mono text-[11px] tabular text-text-dim">
+                <span className="text-val tabular text-text-dim">
                   {(term[0].atmIV * 100).toFixed(0)}% →{" "}
                   {(term.at(-1)!.atmIV * 100).toFixed(0)}%
                 </span>
@@ -198,8 +199,8 @@ function VolMatrix({ p, T }: { p: SviParams; T: number }) {
               </div>
               <div
                 className={cn(
-                  "font-mono text-[13px] tabular",
-                  atm ? "text-accent-brand" : "text-text-sec",
+                  "text-val tabular",
+                  atm ? "text-foreground" : "text-text-sec",
                 )}
               >
                 {iv.toFixed(0)}
@@ -213,11 +214,7 @@ function VolMatrix({ p, T }: { p: SviParams; T: number }) {
 }
 
 function StatusChip({ status }: { status: string }) {
-  const tone =
-    status === "active"
-      ? "text-safe"
-      : status === "settled"
-        ? "text-text-dim"
-        : "text-warn";
-  return <span className={`label-micro ${tone}`}>{status}</span>;
+  const tone: PillTone =
+    status === "active" ? "up" : status === "settled" ? "neutral" : "warn";
+  return <Pill tone={tone}>{status}</Pill>;
 }
