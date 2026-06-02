@@ -5,7 +5,12 @@ import { useSurfaceSvis } from "@/lib/indexer/hooks";
 import type { OracleInfo } from "@/lib/indexer/types";
 import { fmtDuration } from "@/lib/format";
 import type { SurfaceRow } from "@/lib/surface";
-import { decodeSvi, yearsToExpiry } from "@/lib/svi";
+import {
+  checkButterfly,
+  checkCalendar,
+  decodeSvi,
+  yearsToExpiry,
+} from "@/lib/svi";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { useMarket } from "./market-context";
@@ -77,6 +82,14 @@ export function SurfacePanel({ className }: { className?: string }) {
   rows.sort((a, b) => a.T - b.T);
 
   const ready = rows.length >= 2;
+  const arb = ready
+    ? {
+        calendarFree: checkCalendar(rows.map((r) => ({ T: r.T, p: r.params })))
+          .calendarFree,
+        butterflyFree: rows.every((r) => checkButterfly(r.params).butterflyFree),
+      }
+    : null;
+  const arbOk = arb ? arb.calendarFree && arb.butterflyFree : false;
 
   return (
     <Panel
@@ -84,8 +97,21 @@ export function SurfacePanel({ className }: { className?: string }) {
       code="BTC · SVI"
       className={className}
       right={
-        <span className="label-micro text-text-faint">
-          {ready ? `${rows.length} tenors` : "hero"}
+        <span className="flex items-center gap-2">
+          {arb ? (
+            <span
+              className={cn("label-micro", arbOk ? "text-safe" : "text-breach")}
+            >
+              {arbOk
+                ? "ARB-FREE ✓"
+                : !arb.calendarFree
+                  ? "CALENDAR ✕"
+                  : "BUTTERFLY ✕"}
+            </span>
+          ) : null}
+          <span className="label-micro text-text-faint">
+            {ready ? `${rows.length} tenors` : "hero"}
+          </span>
         </span>
       }
       bodyClassName="relative p-0"

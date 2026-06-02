@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useOracleState } from "@/lib/indexer/hooks";
-import { fmtPctValue, fmtSigned } from "@/lib/format";
+import { useMemo, useState } from "react";
+import { Slider } from "@/components/ui/slider";
+import { useOracleState, useSviHistory } from "@/lib/indexer/hooks";
+import { fmtPctValue, fmtSigned, utcClock } from "@/lib/format";
 import {
   checkButterfly,
   decodeSvi,
@@ -12,45 +12,77 @@ import {
   yearsToExpiry,
   type ButterflyCheck,
 } from "@/lib/svi";
-import { useNow } from "@/lib/use-now";
+import { cn } from "@/lib/utils";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
+import { SmileChart } from "./smile-chart";
 import { Stat, Verdict } from "./stat";
 
-// Readouts at ±10% log-moneyness (the wings blow up past that near expiry).
-const WING = 0.1;
+const WING = 0.1; // ±10% log-moneyness readouts
+const SMILE_OPTS = { kMin: -0.3, kMax: 0.3, steps: 80 };
 
 export function SmilePanel() {
   const { selectedOracleId } = useMarket();
-  const { data, isLoading, isError } = useOracleState(selectedOracleId);
-  const now = useNow();
+  const { data: state, isLoading, isError } = useOracleState(selectedOracleId);
+  const { data: history = [] } = useSviHistory(selectedOracleId);
+
+  const [scrub, setScrub] = useState<number | null>(null); // null = live
+  const n = history.length;
+  const liveIdx = Math.max(0, n - 1);
+  const idx = scrub == null ? liveIdx : Math.min(scrub, liveIdx);
+  const isLive = scrub == null || idx >= liveIdx;
+
+  const expiry = state?.oracle.expiry;
+  const settled = state?.oracle.status === "settled";
+  const snap = n > 0 ? history[idx] : (state?.latest_svi ?? null);
 
   const model = useMemo(() => {
-    if (!data?.latest_svi || !data.oracle) return null;
-    const p = decodeSvi(data.latest_svi);
+    if (!snap || expiry == null) return null;
+    const p = decodeSvi(snap);
     const bf = checkButterfly(p);
-    const T = yearsToExpiry(data.oracle.expiry, now);
-    if (T <= 0 || data.oracle.status === "settled") {
-      return { settled: true as const, bf };
-    }
-    const pts = smile(p, T, { kMin: -0.35, kMax: 0.35, steps: 64 });
+    const ts = snap.checkpoint_timestamp_ms;
+    const T = yearsToExpiry(expiry, ts);
+    if (T <= 0 || settled) return { settled: true as const, bf, ts };
     const atm = impliedVol(0, p, T) * 100;
     const put = impliedVol(-WING, p, T) * 100;
     const call = impliedVol(WING, p, T) * 100;
-    return { settled: false as const, pts, atm, put, call, skew: put - call, bf };
-  }, [data, now]);
+    return {
+      settled: false as const,
+      pts: smile(p, T, SMILE_OPTS),
+      atm,
+      put,
+      call,
+      skew: put - call,
+      bf,
+      ts,
+    };
+  }, [snap, expiry, settled]);
 
   return (
-    <Panel title="SMILE / SKEW" code="±10% k">
+    <Panel
+      title="SMILE / SKEW"
+      code={isLive ? "live" : "replay"}
+      right={
+        model ? (
+          <span
+            className={cn(
+              "font-mono text-[11px] tabular",
+              isLive ? "text-safe" : "text-warn",
+            )}
+          >
+            {isLive ? "● LIVE" : utcClock(new Date(model.ts))}
+          </span>
+        ) : null
+      }
+    >
       {!selectedOracleId ? (
         <p className="label-micro text-text-dim">no active market</p>
       ) : isError ? (
         <p className="label-micro text-breach">smile feed unreachable</p>
       ) : isLoading || !model ? (
         <div className="space-y-2">
-          <Skeleton className="h-9 w-full bg-panel-elev" />
-          <Skeleton className="h-4 w-2/3 bg-panel-elev" />
-          <Skeleton className="h-4 w-1/2 bg-panel-elev" />
+          <div className="h-36 w-full animate-pulse rounded bg-panel-elev" />
+          <div className="h-4 w-2/3 animate-pulse rounded bg-panel-elev" />
         </div>
       ) : model.settled ? (
         <div className="flex h-full flex-col justify-between gap-2">
@@ -60,9 +92,9 @@ export function SmilePanel() {
           <ArbVerdict bf={model.bf} />
         </div>
       ) : (
-        <div className="flex h-full flex-col gap-2">
-          <SmileSpark pts={model.pts} />
-          <div className="mt-1">
+        <div className="flex h-full flex-col gap-3">
+          <SmileChart pts={model.pts} />
+          <div>
             <Stat label="ATM" value={fmtPctValue(model.atm)} tone="accent" />
             <Stat label="put −10%" value={fmtPctValue(model.put)} />
             <Stat label="call +10%" value={fmtPctValue(model.call)} />
@@ -72,6 +104,32 @@ export function SmilePanel() {
               tone={model.skew >= 0 ? "default" : "warn"}
             />
           </div>
+          {n > 1 ? (
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="label-micro">time-travel</span>
+                <button
+                  type="button"
+                  onClick={() => setScrub(null)}
+                  className={cn(
+                    "label-micro transition-colors",
+                    isLive
+                      ? "text-text-faint"
+                      : "text-accent-brand hover:opacity-80",
+                  )}
+                >
+                  {isLive ? "live" : "→ jump to live"}
+                </button>
+              </div>
+              <Slider
+                value={[idx]}
+                min={0}
+                max={liveIdx}
+                step={1}
+                onValueChange={([v]) => setScrub(v >= liveIdx ? null : v)}
+              />
+            </div>
+          ) : null}
           <div className="mt-auto pt-1">
             <ArbVerdict bf={model.bf} />
           </div>
@@ -90,37 +148,5 @@ function ArbVerdict({ bf }: { bf: ButterflyCheck }) {
     <Verdict tone="breach" sub={`${bf.violations.length} butterfly violations`}>
       BUTTERFLY ✕
     </Verdict>
-  );
-}
-
-function SmileSpark({ pts }: { pts: { k: number; iv: number }[] }) {
-  const w = 100;
-  const h = 34;
-  const ivs = pts.map((p) => p.iv);
-  const min = Math.min(...ivs);
-  const max = Math.max(...ivs);
-  const span = max - min || 1;
-  const d = pts
-    .map((p, i) => {
-      const x = (i / (pts.length - 1)) * w;
-      const y = h - ((p.iv - min) / span) * (h - 4) - 2;
-      return `${i ? "L" : "M"}${x.toFixed(2)} ${y.toFixed(2)}`;
-    })
-    .join(" ");
-  return (
-    <svg
-      viewBox={`0 0 ${w} ${h}`}
-      className="h-9 w-full"
-      preserveAspectRatio="none"
-      aria-hidden
-    >
-      <path
-        d={d}
-        fill="none"
-        stroke="var(--accent-brand)"
-        strokeWidth={1.4}
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
   );
 }

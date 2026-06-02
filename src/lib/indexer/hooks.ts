@@ -47,6 +47,20 @@ export function useSviLatest(oracleId: string | null) {
   });
 }
 
+/** SVI param history for an oracle (time-travel scrubber), sorted oldest→newest. */
+export function useSviHistory(oracleId: string | null, limit = 150) {
+  return useQuery({
+    queryKey: ["oracle", oracleId, "svi", "history", limit],
+    queryFn: () => indexer.sviHistory(oracleId as string, limit),
+    enabled: !!oracleId,
+    refetchInterval: 15_000,
+    select: (h) =>
+      [...h].sort(
+        (a, b) => a.checkpoint_timestamp_ms - b.checkpoint_timestamp_ms,
+      ),
+  });
+}
+
 /** Latest SVI for many oracles at once — feeds the 3-D surface. Shares query
  *  keys with useSviLatest/useOracleState, so the selected oracle is deduped. */
 export function useSurfaceSvis(oracles: OracleInfo[]) {
