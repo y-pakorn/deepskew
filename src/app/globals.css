@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ───────────────────────────────────────────────────────────────────────────
+   DEEPSKEW — design tokens (Tatem-derived, dark-only)
+   Primitives are the source of truth; shadcn semantic tokens alias onto them.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Primitives — Tatem "Midnight Terminal" */
+  --canvas: #000000; /* Twilight Ink — page background */
+  --panel: #161616; /* card / panel surface (locked) */
+  --panel-elev: #1e1e1e; /* elevated surface / popover / hover */
+  --hairline: #232323; /* 1px dividers / borders (subtle) */
+  --divider: #3b3b3b; /* Tatem Charcoal — stronger divider */
+  --text: #ffffff; /* Polar White */
+  --text-sec: #b5b5b5; /* Silver Tone */
+  --text-dim: #919191; /* Pewter Mist — labels / icon strokes */
+  --text-faint: #606060; /* Obsidian Grey */
+  --accent-brand: #007eed; /* Cerulean — live / interactive / data */
+  --accent-brand-fg: #ffffff;
+
+  /* Semantic — information only, used sparingly */
+  --safe: #34d399; /* arb-free / OK */
+  --warn: #fbbf24; /* elevated risk */
+  --breach: #f43f5e; /* arb violation / breach */
+
+  /* Surface heat ramp — the one place color runs free */
+  --heat-0: #4f46e5; /* indigo */
+  --heat-1: #06b6d4; /* cyan */
+  --heat-2: #34d399; /* green */
+  --heat-3: #fbbf24; /* amber */
+  --sky-from: #5a7694; /* Tatem hero gradient */
+  --sky-to: #abb7b5;
+
+  --radius: 0.375rem; /* 6px — Tatem default */
+
+  /* shadcn semantic tokens → aliased onto primitives */
+  --background: var(--canvas);
+  --foreground: var(--text);
+  --card: var(--panel);
+  --card-foreground: var(--text);
+  --popover: var(--panel-elev);
+  --popover-foreground: var(--text);
+  --primary: var(--accent-brand);
+  --primary-foreground: var(--accent-brand-fg);
+  --secondary: var(--panel-elev);
+  --secondary-foreground: var(--text);
+  --muted: var(--panel);
+  --muted-foreground: var(--text-dim);
+  --accent: var(--panel-elev); /* shadcn hover surface (NOT brand accent) */
+  --accent-foreground: var(--text);
+  --destructive: var(--breach);
+  --destructive-foreground: #ffffff;
+  --border: var(--hairline);
+  --input: var(--hairline);
+  --ring: var(--accent-brand);
+  --chart-1: var(--heat-0);
+  --chart-2: var(--heat-1);
+  --chart-3: var(--heat-2);
+  --chart-4: var(--heat-3);
+  --chart-5: var(--accent-brand);
+  --sidebar: var(--canvas);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--accent-brand);
+  --sidebar-primary-foreground: var(--accent-brand-fg);
+  --sidebar-accent: var(--panel-elev);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--hairline);
+  --sidebar-ring: var(--accent-brand);
+}
+
+@theme inline {
+  /* shadcn semantic colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* DeepSkew custom utilities (bg-canvas, bg-panel, text-text-sec, …) */
+  --color-canvas: var(--canvas);
+  --color-panel: var(--panel);
+  --color-panel-elev: var(--panel-elev);
+  --color-hairline: var(--hairline);
+  --color-divider: var(--divider);
+  --color-text-sec: var(--text-sec);
+  --color-text-dim: var(--text-dim);
+  --color-text-faint: var(--text-faint);
+  --color-accent-brand: var(--accent-brand);
+  --color-safe: var(--safe);
+  --color-warn: var(--warn);
+  --color-breach: var(--breach);
+  --color-heat-0: var(--heat-0);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+
+  /* radius scale (shadcn) — 6px default, 10px large, 16px hero */
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 10px);
+
+  /* fonts */
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  /* tabular, monospaced numerals everywhere numbers live */
+  .font-mono,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+}
+
+@layer components {
+  /* Bloomberg function-code micro-label */
+  .label-micro {
+    font-size: 11px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+  /* 1px hairline grid for the panel desk */
+  .hairline-grid {
+    background-color: var(--hairline);
+    gap: 1px;
+  }
+}
