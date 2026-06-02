@@ -12,7 +12,7 @@ const TerminalShell = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex h-dvh items-center justify-center bg-canvas">
-        <span className="label-micro animate-pulse">booting desk…</span>
+        <span className="label-micro animate-pulse">Booting desk…</span>
       </div>
     ),
   },

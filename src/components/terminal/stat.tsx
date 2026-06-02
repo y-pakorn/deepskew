@@ -16,7 +16,7 @@ export function toneClass(tone: Tone = "default"): string {
     warn: "text-warn",
     breach: "text-breach",
     accent: "text-accent-brand",
-    key: "text-foreground",
+    key: "text-foreground", // key = brightest white, leads by weight + size, not hue
     dim: "text-text-dim",
   }[tone];
 }
@@ -33,31 +33,143 @@ function dotClass(tone: Tone): string {
   }[tone];
 }
 
-/** A label → value row. Quiet label, tabular value, right-aligned. */
+const LEAD = /^([$€£₿◎])/; // currency symbols → de-emphasize
+const TRAIL = /(%|bps|[KMBT]|e[-+]?\d+)$/i; // unit / scale / exponent → de-emphasize
+
+/**
+ * A numeric readout: JetBrains Mono tabular, with the leading currency symbol
+ * and the trailing unit/scale/exponent rendered dim + smaller so the magnitude
+ * leads. Non-string children pass through. The single biggest "terminal not
+ * document" move (Mercury/Kraken/OpenSea).
+ */
+export function MonoValue({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  if (typeof children !== "string") {
+    return <span className={cn("tabular", className)}>{children}</span>;
+  }
+  const orig = children;
+  let s = children;
+  let lead = "";
+  let trail = "";
+  const lm = s.match(LEAD);
+  if (lm) {
+    lead = lm[1];
+    s = s.slice(lead.length);
+  }
+  const tm = s.match(TRAIL);
+  // only dim a trailing token when it actually follows a digit (real value+unit)
+  if (tm && /[\d.]/.test(s[s.length - tm[1].length - 1] ?? "")) {
+    trail = tm[1];
+    s = s.slice(0, -trail.length);
+  }
+  // Only treat as magnitude+affix when the core is a plain number. Otherwise
+  // (addresses like 0x..3e45, durations like "11m 24s", mixed text) the regex
+  // would dim a real character — render the whole string bright instead.
+  if (!/^[+\-−]?[\d,]+(\.\d+)?$/.test(s)) {
+    return <span className={cn("tabular", className)}>{orig}</span>;
+  }
+  return (
+    <span className={cn("tabular", className)}>
+      {lead ? <span className="affix">{lead}</span> : null}
+      {s}
+      {trail ? <span className="affix">{trail}</span> : null}
+    </span>
+  );
+}
+
+/**
+ * Ledger row — label left, mono value right-aligned into a decimal column.
+ * For dense parameter lists; keep cells narrow (2-up grid) so the gutter reads
+ * as alignment, not void. `focal` tints the one value the panel is verdicting.
+ */
 export function Stat({
   label,
   value,
   tone = "default",
+  focal = false,
   mono = true,
 }: {
   label: string;
   value: React.ReactNode;
   tone?: Tone;
+  focal?: boolean;
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 py-1">
+    <div className="flex items-baseline justify-between gap-4 py-1">
       <span className="label-micro shrink-0">{label}</span>
-      <span
+      <MonoValue
         className={cn(
-          "truncate text-val leading-none",
-          mono && "tabular",
-          tone === "key" && "font-medium",
-          toneClass(tone),
+          "truncate text-right text-val leading-none",
+          mono ? "font-medium" : "",
+          focal ? "text-accent-brand" : toneClass(tone),
         )}
       >
         {value}
-      </span>
+      </MonoValue>
+    </div>
+  );
+}
+
+/**
+ * Stacked tile — tiny label on top, mono value directly below, left-aligned.
+ * No horizontal pairing → structurally no center void. For headline clusters;
+ * drop into a `<TileGrid>` so 1px hairline gaps divide the cells.
+ */
+export function StatTile({
+  label,
+  value,
+  tone = "default",
+  focal = false,
+  className,
+}: {
+  label: string;
+  value: React.ReactNode;
+  tone?: Tone;
+  focal?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("flex min-w-0 flex-col gap-1 bg-panel px-3 py-2", className)}
+    >
+      <span className="label-micro truncate">{label}</span>
+      <MonoValue
+        className={cn(
+          "truncate text-md font-medium leading-none tracking-tight",
+          focal ? "text-accent-brand" : toneClass(tone),
+        )}
+      >
+        {value}
+      </MonoValue>
+    </div>
+  );
+}
+
+/** Hairline-divided grid for `StatTile` clusters (1px gaps read as dividers). */
+export function TileGrid({
+  cols = 2,
+  className,
+  children,
+}: {
+  cols?: number;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "grid gap-px overflow-hidden rounded-md border border-hairline bg-hairline",
+        className,
+      )}
+      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+    >
+      {children}
     </div>
   );
 }
@@ -85,7 +197,7 @@ export function Verdict({
       <div className="min-w-0 flex-1">
         <div
           className={cn(
-            "truncate text-md font-medium leading-tight",
+            "truncate text-val font-medium leading-tight",
             toneClass(tone),
           )}
         >

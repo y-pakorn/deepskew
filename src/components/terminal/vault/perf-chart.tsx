@@ -35,9 +35,9 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
       height: el.clientHeight,
       layout: {
         background: { type: ColorType.Solid, color: "rgba(0,0,0,0)" },
-        textColor: "#5A626E",
+        textColor: "#8a8a8a",
         fontFamily: "var(--font-inter), sans-serif",
-        fontSize: 10,
+        fontSize: 12,
         attributionLogo: false,
       },
       grid: {

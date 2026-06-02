@@ -20,22 +20,28 @@ export function MarketSelector() {
     useMarket();
   const now = useNow();
 
-  const label = selectedOracle
-    ? `BTC · ${fmtDuration(selectedOracle.expiry - now)}`
-    : isLoading
-      ? "loading…"
-      : "no market";
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
           disabled={!activeOracles.length}
-          className="inline-flex items-center gap-1 rounded border border-hairline bg-panel px-2 py-1 text-val text-text-sec transition-colors hover:border-divider hover:text-foreground disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded border border-hairline bg-panel px-2 py-1 text-data text-text-sec transition-colors hover:border-divider hover:text-foreground disabled:opacity-50"
           title="Select market / expiry"
         >
-          {label}
+          {selectedOracle ? (
+            <>
+              BTC
+              <span className="text-text-faint">·</span>
+              <span className="tabular text-foreground">
+                {fmtDuration(selectedOracle.expiry - now)}
+              </span>
+            </>
+          ) : isLoading ? (
+            "Loading…"
+          ) : (
+            "No market"
+          )}
           <ChevronDown className="size-3 text-text-faint" />
         </button>
       </DropdownMenuTrigger>
@@ -53,7 +59,7 @@ export function MarketSelector() {
             <DropdownMenuItem
               key={o.oracle_id}
               onSelect={() => setSelectedOracleId(o.oracle_id)}
-              className="gap-3 text-val"
+              className="gap-3 text-data"
             >
               <span className={cn(selected ? "text-accent-brand" : "")}>
                 BTC

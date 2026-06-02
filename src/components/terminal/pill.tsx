@@ -23,8 +23,12 @@ export function Pill({
 }) {
   return (
     <span
+      // 12px via inline style: tailwind-merge drops the custom `text-data` size
+      // class when it co-occurs with a `text-{color}` (it can't tell size from
+      // color for non-default tokens), so set the size where it can't be merged.
+      style={{ fontSize: "0.75rem" }}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-data leading-none font-medium tabular",
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 leading-none font-medium",
         tones[tone],
         className,
       )}

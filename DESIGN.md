@@ -63,12 +63,13 @@ Never use drop shadows for elevation.
 | Token | Value | Role |
 |---|---|---|
 | `--text` | `#ffffff` | Polar White — primary text + **key/hero values**. |
-| `--text-sec` | `#b5b5b5` | Silver Tone — secondary text, panel titles, active labels. |
-| `--text-dim` | `#919191` | Pewter Mist — data labels (the workhorse), captions, icon strokes. |
-| `--text-faint` | `#606060` | Obsidian Grey — tertiary: axis ticks, footnotes, decorative. |
+| `--text-sec` | `#c4c4c4` | secondary text, panel titles, active labels. |
+| `--text-dim` | `#a8a8a8` | data labels (the workhorse), captions. |
+| `--text-faint` | `#8a8a8a` | tertiary floor — footer, axis ticks. **Never go below this for readable text** (`#606060` is a disabled-tier swatch, fails contrast on near-black). |
 
 Hierarchy comes from **size + weight + which grey** — never from uppercase shouting,
 never from hue. The headline value leads because it is the **brightest and biggest**.
+Readability floor: **12px** for any real text; lift the gray, don't shrink the type.
 
 ### 3.3 Accent & semantic roles (fixed — do not repurpose)
 
@@ -94,27 +95,44 @@ Confined to the surface mesh + its legend only.
 
 ## 4. Typography
 
-- **Font:** Inter, everywhere (no monospace). Numbers use **`font-variant-numeric: tabular-nums`**
-  (the `.tabular` class) for column alignment — this is why a mono font is unnecessary.
-- **Weights:** `400` (data/body), `500` (labels, secondary headings, key values, buttons),
-  `600` (panel heroes, the single biggest number). Weight is used **systematically**, never ad hoc.
-- **Letter-spacing:** `-0.011em` base; tighter on hero/large numbers.
+- **Font:** **Inter** for UI + labels; **JetBrains Mono (tabular)** for every number, value,
+  price, address, and SVI param. The `.tabular` class sets the mono family + `tabular-nums` — the
+  mono texture is the "machine data" signal that makes a readout read as data, not prose.
+- **De-emphasized affix** (`MonoValue` / `.affix`): a value's leading currency symbol and trailing
+  unit/scale/exponent (`$`, `%`, `M`, `e-6`) render dim + `0.82em` so the magnitude leads.
+- **Weights:** `400`/`500`/`600` only — **never 700+** on near-black (it blooms/muddies). 500 =
+  labels + inline values; 600 = tile/lead/hero numbers. Hierarchy is size + weight + brightness.
+- **Letter-spacing:** `0` for labels and mono values; `-0.02em` (`tracking-tight`) on hero/tile numbers.
 
-### Type scale (Tailwind utilities via `@theme`)
+### Type scale (Tailwind utilities via `@theme`) — 12px floor
 
 One size per role. **Never** mix ad-hoc Tailwind sizes (`text-sm`, `text-[14px]`) into the desk.
 
 | Utility | Size / line-height | Role |
 |---|---|---|
-| `text-micro` | 10 / 1.3 | footer status bar, ticker sub-labels, axis ticks |
-| `text-label` (`.label-micro`) | 11 / 1.3 | data labels, section labels |
-| `text-data` | 12 / 1.35 | dense table cells, pills/chips, panel titles |
-| `text-val` | 13 / 1.35 | **standard values + body base** |
-| `text-md` | 15 / 1.3 | verdict text, emphasized values |
-| `text-lead` | 20 / 1.2 | sub-hero values |
-| `text-hero` | 28 / 1.05 | the hero number (spot) |
+| `text-micro` | 12 / 1.4 | footer status bar, axis ticks (the floor — nothing smaller) |
+| `text-label` (`.label-micro`) | 12 / 1.4 · w500 | labels, section labels (`--text-dim` #a8a8a8) |
+| `text-data` | 12 / 1.35 | pills/badges, dense table cells, inline annotations |
+| `text-val` | 15 / 1.35 | standard ledger values |
+| `text-md` | 18 / 1.25 | tile values |
+| `text-lead` | 24 / 1.15 | sub-hero |
+| `text-hero` | 32 / 1.05 | the one hero number (spot) |
+| `.panel-title` | 13 · w500 | panel header |
 
-Labels are **lowercase / sentence case** (calm). Only acronyms stay caps (ATM, IV, SVI, PLP, UP/DN).
+Body base = **14px** (unclassed text never falls to the 16px UA default).
+
+**Size by structure, not role alone:**
+- **Label-led rows** (a label + value share a line — Stat ledger, ticker, section-header
+  annotations): the value reads ~12–15px so it *correlates* with its 12px label; it leads by
+  mono + brightness + weight, not a big size jump.
+- **Value-led stacked** (a tiny caption *above* a number — StatTile 18, vol matrix, hero 32): the
+  value is intentionally much larger; the stacked structure makes the jump read as one unit.
+
+**Casing = Sentence case.** Stat/section/pill/prose labels capitalize the first word only
+("Forward", "Expiry", "Vault value", "Active", "Arb-free"). Domain abbreviations & tickers stay
+canonical (ATM, IV, SVI, PLP, LP, OI, BTC, USD, MtM, RR, UTC, APY, 24h); math symbols (`a b m ρ σ`)
+and number-led labels stay as-is. **No forced lowercase, no shouty all-caps** — UPPERCASE is reserved
+only for a rare tracked micro-eyebrow above a hero number.
 
 ---
 
@@ -158,11 +176,19 @@ All terminal components compose from these primitives. Keep them consistent.
 - **Panel** — `--panel` surface, 1px hairline border, radius 8. Header (h-8): `panel-title`
   (sentence case, `--text-sec`, weight 500) + optional `code` (faint) + right slot for status pills.
   Body padding 12.
-- **Stat row** — `label` (`.label-micro`, `--text-dim`) ↔ `value` (`text-val`, tabular, tone). py 4 (tight).
-  Tone `key` = white `--text` + weight 500 (the brightest value), **not** a hue.
-- **Verdict** — status dot (tone) + tone-colored statement (`text-md`, weight 500) + sub label. Plain hairline border, `--panel-elev` tint.
-- **Pill** — compact capsule tag (`text-data`, weight 500, px 8, 999 radius). Variants: `neutral` (elevated bg, dim text),
-  `up` (emerald), `down` (red), `warn` (amber), `accent`/`key` (cerulean). For statuses: live, up/dn, arb-free, active, settled.
+- **MonoValue** — the numeric renderer: JetBrains Mono tabular, splitting off the leading currency
+  + trailing unit/exponent into a dim `.affix` so the magnitude leads. Only splits when the core is a
+  real number (addresses/durations render whole + bright). Every value flows through it (via Stat/StatTile).
+- **Stat row** (label-led) — `label` (`.label-micro`, `--text-dim`) ↔ mono `value` (`text-val`,
+  right-aligned into a decimal column). Use in a 2-up grid so the gutter reads as alignment, not void.
+  `focal` tints the one value the panel is verdicting (cerulean). Tone `key` = white, not a hue.
+- **StatTile + TileGrid** (value-led) — the void-killer for headline clusters: a tiny `.label-micro`
+  on top, mono value (`text-md`, 18) directly below, left-aligned; tiles sit in a hairline-divided
+  `TileGrid` (1px gaps as dividers). No horizontal label↔value pairing, so no center void.
+- **Verdict** — status dot (tone) + tone statement (`text-val`, 15, weight 500) + sub label. Plain hairline border, `--panel-elev` tint.
+- **Pill / badge** — compact capsule tag, **Inter** (not mono — these are status *words*), 12px, weight 500,
+  px 8, 999 radius, Sentence case. Variants: `neutral` (elevated bg, dim text), `up` (emerald),
+  `down` (red), `warn` (amber), `accent`/`key` (cerulean). Statuses: Live, Up/Dn, Arb-free, Active, Settled.
 - **Meter** — ~1px bar, track `--panel-elev`, fill tone (cerulean for neutral gauges). Utilization/risk gauges.
 - **Table** — dense: column-header row (`.label-micro`, dim, hairline-bottom), body rows ~24px,
   tabular values, hover row → `--panel-elev`, status via tone + pills. The Desk tape uses this.
@@ -215,17 +241,19 @@ labels; never decorative-only.
 
 ## 11. Do / Don't
 
-**Do:** layer surfaces for depth · reserve color roles · tabular numerals · one verdict per panel ·
-pack rows tightly · pills for status · weight scale 400/500/600 · sentence case · key value = brightest white, not a hue.
+**Do:** layer surfaces for depth · reserve color roles · JetBrains Mono tabular for every number ·
+Inter for labels/pills · de-emphasize units/affixes · one verdict per panel · pack rows tightly ·
+pills for status · weight scale 400/500/600 · Sentence case · key value = brightest white, not a hue.
 
-**Don't:** drop shadows · uppercase shouting on data · monospace font · decorative color · color a "key" value
-(it leads by size + weight + white) · mixed ad-hoc font sizes/weights/spacing · mid-panel voids · averaging references into a safe middle.
+**Don't:** drop shadows · forced lowercase OR all-caps labels · Inter for numbers / mono for word-pills ·
+text below 12px or grays below `#8a8a8a` for readable text · decorative color · color a "key" value
+(it leads by size + weight + white) · ad-hoc font sizes/weights/spacing · mid-panel voids · averaging references into a safe middle.
 
 ---
 
 ## 12. Accessibility
 
-- Body/value text ≥ 11px; primary values white on near-black (high contrast). Dim labels are
-  non-essential context, paired with bright values.
+- All readable text ≥ 12px; secondary grays ≥ `#8a8a8a` on near-black. Primary values are white
+  (high contrast); dim labels are paired context, not lone information.
 - Color is never the *only* signal — pair up/down color with ▲/▼ glyphs and labels.
 - Focus rings use `--accent-brand` (cerulean). Interactive targets ≥ 24px hit area.

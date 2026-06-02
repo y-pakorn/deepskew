@@ -14,7 +14,7 @@ import { FlashValue } from "./flash-value";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { Sparkline } from "./sparkline";
-import { Meter, Stat } from "./stat";
+import { Meter, Stat, StatTile, TileGrid } from "./stat";
 import { PerfChart } from "./vault/perf-chart";
 import { VaultStress } from "./vault/vault-stress";
 
@@ -70,7 +70,7 @@ export function VaultPanel({ className }: { className?: string }) {
         data ? (
           <FlashValue
             value={data.plp_share_price}
-            className="text-val tabular text-text-dim"
+            className="text-data tabular text-text-dim"
           >
             PLP ${data.plp_share_price.toFixed(4)}
           </FlashValue>
@@ -78,7 +78,7 @@ export function VaultPanel({ className }: { className?: string }) {
       }
     >
       {isError ? (
-        <p className="label-micro text-breach">vault feed unreachable</p>
+        <p className="label-micro text-breach">Vault feed unreachable</p>
       ) : isLoading || !data ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Skeleton className="h-24 w-full bg-panel-elev" />
@@ -99,7 +99,7 @@ export function VaultPanel({ className }: { className?: string }) {
             <div className="mb-1 flex items-baseline justify-between">
               <span className="label-micro">PLP share price</span>
               {apy != null ? (
-                <span className="text-val tabular text-safe">
+                <span className="text-data tabular text-safe">
                   APY {apy.toFixed(1)}%
                 </span>
               ) : null}
@@ -110,7 +110,7 @@ export function VaultPanel({ className }: { className?: string }) {
               ) : (
                 <div className="flex h-full items-center justify-center">
                   <span className="label-micro text-text-dim">
-                    loading history…
+                    Loading history…
                   </span>
                 </div>
               )}
@@ -119,7 +119,7 @@ export function VaultPanel({ className }: { className?: string }) {
               <div className="mt-2">
                 <div className="mb-1 flex items-center justify-between">
                   <span className="label-micro">LP net flow</span>
-                  <span className="text-val tabular text-text-dim">
+                  <span className="text-data tabular text-text-dim">
                     {lp.supplyCount}↑ {lp.withdrawCount}↓ · net{" "}
                     {fmtUsdCompact(fromUnits(lp.net, DUSDC_DECIMALS))}
                   </span>
@@ -131,66 +131,66 @@ export function VaultPanel({ className }: { className?: string }) {
 
           <div className="flex flex-col gap-3">
             <div>
-              <Stat label="utilization" value={fmtPct(data.utilization)} />
+              <Stat label="Utilization" value={fmtPct(data.utilization)} />
               <Meter value={data.utilization} tone="accent" />
             </div>
             <div>
               <Stat
-                label="max payout util"
+                label="Max payout util"
                 value={fmtPct(data.max_payout_utilization)}
               />
               <Meter value={data.max_payout_utilization} tone="warn" />
             </div>
-            <div className="space-y-0.5 border-t border-hairline pt-2">
-              <Stat
-                label="vault value"
+            <TileGrid cols={2}>
+              <StatTile
+                label="Vault value"
                 value={fmtUsdCompact(fromUnits(data.vault_value, DUSDC_DECIMALS))}
               />
-              <Stat
-                label="available liq"
+              <StatTile
+                label="Available liq"
                 value={fmtUsdCompact(
                   fromUnits(data.available_liquidity, DUSDC_DECIMALS),
                 )}
               />
-              <Stat
-                label="max payout"
+              <StatTile
+                label="Max payout"
                 value={fmtUsdCompact(
                   fromUnits(data.total_max_payout, DUSDC_DECIMALS),
                 )}
                 tone="warn"
               />
-              <Stat
-                label="net deposits"
+              <StatTile
+                label="Net deposits"
                 value={fmtUsdCompact(
                   fromUnits(data.net_deposits, DUSDC_DECIMALS),
                 )}
               />
-              <Stat
-                label="supplied"
+              <StatTile
+                label="Supplied"
                 value={fmtUsdCompact(
                   fromUnits(data.total_supplied, DUSDC_DECIMALS),
                 )}
                 tone="safe"
               />
-              <Stat
-                label="withdrawn"
+              <StatTile
+                label="Withdrawn"
                 value={fmtUsdCompact(
                   fromUnits(data.total_withdrawn, DUSDC_DECIMALS),
                 )}
                 tone="dim"
               />
-              <Stat
-                label="total MtM"
+              <StatTile
+                label="Total MtM"
                 value={fmtUsdCompact(fromUnits(data.total_mtm, DUSDC_DECIMALS))}
               />
-              <Stat
+              <StatTile
                 label="PLP supply"
                 value={fmtUsdCompact(
                   fromUnits(data.plp_total_supply, DUSDC_DECIMALS),
                 )}
                 tone="dim"
               />
-            </div>
+            </TileGrid>
           </div>
         </div>
       )}

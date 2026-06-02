@@ -22,7 +22,7 @@ import { Panel } from "./panel";
 import { Pill } from "./pill";
 import { SmileChart } from "./smile-chart";
 import { StrikeHistogram } from "./strike-histogram";
-import { Stat, Verdict } from "./stat";
+import { StatTile, TileGrid, Verdict } from "./stat";
 
 const WING = 0.1; // ±10% log-moneyness readouts
 const SMILE_OPTS = { kMin: -0.3, kMax: 0.3, steps: 80 };
@@ -69,21 +69,21 @@ export function SmilePanel() {
   return (
     <Panel
       title="Smile / skew"
-      code={isLive ? "live" : "replay"}
+      code={isLive ? "Live" : "Replay"}
       right={
         model ? (
           isLive ? (
-            <Pill tone="up">live</Pill>
+            <Pill tone="up">Live</Pill>
           ) : (
-            <Pill tone="warn">{utcClock(new Date(model.ts))} · replay</Pill>
+            <Pill tone="warn">{utcClock(new Date(model.ts))} · Replay</Pill>
           )
         ) : null
       }
     >
       {!selectedOracleId ? (
-        <p className="label-micro text-text-dim">no active market</p>
+        <p className="label-micro text-text-dim">No active market</p>
       ) : isError ? (
-        <p className="label-micro text-breach">smile feed unreachable</p>
+        <p className="label-micro text-breach">Smile feed unreachable</p>
       ) : isLoading || !model ? (
         <div className="space-y-2">
           <div className="h-36 w-full animate-pulse rounded bg-panel-elev" />
@@ -92,7 +92,7 @@ export function SmilePanel() {
       ) : model.settled ? (
         <div className="flex h-full flex-col justify-between gap-2">
           <p className="label-micro text-text-dim">
-            expiry settled — no live smile
+            Expiry settled — no live smile
           </p>
           <ArbVerdict bf={model.bf} />
         </div>
@@ -104,28 +104,33 @@ export function SmilePanel() {
               <div className="mb-1 flex items-center justify-between">
                 <span className="label-micro">OI by strike</span>
                 <span className="label-micro text-text-faint">
-                  <span className="text-safe">up</span> ·{" "}
-                  <span className="text-breach">dn</span>
+                  <span className="text-safe">Up</span> ·{" "}
+                  <span className="text-breach">Dn</span>
                 </span>
               </div>
               <StrikeHistogram buckets={strikes} />
             </div>
           ) : null}
-          <div>
-            <Stat label="ATM" value={fmtPctValue(model.atm)} tone="key" />
-            <Stat label="put −10%" value={fmtPctValue(model.put)} />
-            <Stat label="call +10%" value={fmtPctValue(model.call)} />
-            <Stat
-              label="skew (RR)"
+          <TileGrid cols={2}>
+            <StatTile
+              label="ATM"
+              value={fmtPctValue(model.atm)}
+              focal
+              className="col-span-2"
+            />
+            <StatTile label="Put −10%" value={fmtPctValue(model.put)} />
+            <StatTile label="Call +10%" value={fmtPctValue(model.call)} />
+            <StatTile
+              label="Skew (RR)"
               value={fmtSigned(model.skew, 1)}
               tone={model.skew >= 0 ? "default" : "warn"}
             />
-            <Stat label="fly" value={fmtSigned(model.fly, 1)} />
-          </div>
+            <StatTile label="Fly" value={fmtSigned(model.fly, 1)} />
+          </TileGrid>
           {n > 1 ? (
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="label-micro">time-travel</span>
+                <span className="label-micro">Time-travel</span>
                 <button
                   type="button"
                   onClick={() => setScrub(null)}
@@ -136,7 +141,7 @@ export function SmilePanel() {
                       : "text-accent-brand hover:opacity-80",
                   )}
                 >
-                  {isLive ? "live" : "→ jump to live"}
+                  {isLive ? "Live" : "→ Jump to live"}
                 </button>
               </div>
               <Slider
@@ -159,7 +164,7 @@ export function SmilePanel() {
 
 function ArbVerdict({ bf }: { bf: ButterflyCheck }) {
   return bf.butterflyFree ? (
-    <Verdict tone="safe" sub="butterfly · Durrleman g(k) ≥ 0">
+    <Verdict tone="safe" sub="Butterfly · Durrleman g(k) ≥ 0">
       Arb-free ✓
     </Verdict>
   ) : (

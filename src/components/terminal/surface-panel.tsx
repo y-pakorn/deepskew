@@ -36,10 +36,10 @@ export function SurfacePanel({ className }: { className?: string }) {
           {arb ? (
             <Pill tone={arbOk ? "up" : "down"}>
               {arbOk
-                ? "arb-free ✓"
+                ? "Arb-free ✓"
                 : !arb.calendarFree
-                  ? "calendar ✕"
-                  : "butterfly ✕"}
+                  ? "Calendar ✕"
+                  : "Butterfly ✕"}
             </Pill>
           ) : null}
           <span className="label-micro text-text-faint">
@@ -55,7 +55,7 @@ export function SurfacePanel({ className }: { className?: string }) {
         ) : (
           <div className="flex h-full items-center justify-center">
             <span className="label-micro animate-pulse text-text-dim">
-              resolving surface…
+              Resolving surface…
             </span>
           </div>
         )}
@@ -71,22 +71,22 @@ export function SurfacePanel({ className }: { className?: string }) {
           />
         </div>
         {frontIV != null && backIV != null ? (
-          <div className="pointer-events-none absolute left-3 top-8 text-val tabular text-text-dim">
+          <div className="pointer-events-none absolute left-3 top-8 text-data tabular text-text-dim">
             ATM <span className="text-foreground">{frontIV.toFixed(0)}%</span> →{" "}
             {backIV.toFixed(0)}%
           </div>
         ) : null}
         <span className="pointer-events-none absolute right-3 top-2 label-micro text-text-faint">
-          strike →
+          Strike →
         </span>
 
         <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 overflow-hidden border-t border-hairline bg-canvas/50 px-3 py-1.5 backdrop-blur-sm">
-          <span className="label-micro">tenor</span>
+          <span className="label-micro">Tenor</span>
           {rows.map((r, i) => (
             <span
               key={r.oracleId}
               className={cn(
-                "text-val tabular",
+                "text-data tabular",
                 i === 0 ? "text-accent-brand" : "text-text-dim",
               )}
             >
@@ -94,7 +94,7 @@ export function SurfacePanel({ className }: { className?: string }) {
             </span>
           ))}
           <span className="ml-auto label-micro shrink-0 text-text-faint">
-            drag to orbit
+            Drag to orbit
           </span>
         </div>
       </div>

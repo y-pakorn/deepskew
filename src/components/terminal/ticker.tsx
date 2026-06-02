@@ -69,7 +69,7 @@ export function Ticker() {
 
   return (
     <div className="flex items-center gap-5 overflow-x-auto border-b border-hairline bg-canvas px-3 py-2">
-      <Item label="spot" value={spot != null ? fmtPrice(spot) : "—"} tone="key" />
+      <Item label="Spot" value={spot != null ? fmtPrice(spot) : "—"} tone="key" />
       <Item
         label="ATM IV"
         value={atmIV != null ? fmtPctValue(atmIV) : "—"}
@@ -80,7 +80,7 @@ export function Ticker() {
         value={fmtUsdCompact(fromUnits(vol, DUSDC_DECIMALS))}
       />
       <Item
-        label="taker win"
+        label="Taker win"
         value={stats.total ? `${stats.winRate.toFixed(0)}%` : "—"}
         tone={stats.total ? (stats.winRate < 50 ? "up" : "down") : "default"}
       />
@@ -89,14 +89,14 @@ export function Ticker() {
         value={vault ? `$${vault.plp_share_price.toFixed(4)}` : "—"}
       />
       <Item
-        label="vault"
+        label="Vault"
         value={
           vault ? fmtUsdCompact(fromUnits(vault.vault_value, DUSDC_DECIMALS)) : "—"
         }
       />
       {arbFree != null ? (
         <Pill tone={arbFree ? "up" : "down"} className="shrink-0">
-          {arbFree ? "arb-free ✓" : "arb ✕"}
+          {arbFree ? "Arb-free ✓" : "Arb ✕"}
         </Pill>
       ) : null}
     </div>

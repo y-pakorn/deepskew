@@ -54,8 +54,8 @@ export function VaultStress({
       </Verdict>
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <span className="label-micro">stress ±σ</span>
-          <span className="text-val tabular text-text-sec">
+          <span className="label-micro">Stress ±σ</span>
+          <span className="text-data tabular text-text-sec">
             {sigma.toFixed(1)}σ
           </span>
         </div>
@@ -77,11 +77,11 @@ export function VaultStress({
           <Stat label="BTC →" value={fmtPrice(stressedSpot)} />
         ) : null}
         <Stat
-          label="modeled payout"
+          label="Modeled payout"
           value={fmtUsdCompact(fromUnits(stressedPayout, DUSDC_DECIMALS))}
         />
         <Stat
-          label="available"
+          label="Available"
           value={fmtUsdCompact(fromUnits(availLiq, DUSDC_DECIMALS))}
           tone="safe"
         />
@@ -89,9 +89,9 @@ export function VaultStress({
 
       <div className="border-t border-hairline pt-2">
         <div className="mb-1 grid grid-cols-3 label-micro">
-          <span>shock</span>
-          <span className="text-right">move</span>
-          <span className="text-right">buffer</span>
+          <span>Shock</span>
+          <span className="text-right">Move</span>
+          <span className="text-right">Buffer</span>
         </div>
         <div className="space-y-0.5">
           {LADDER.map((s) => {
@@ -99,7 +99,7 @@ export function VaultStress({
             return (
               <div
                 key={s}
-                className="grid grid-cols-3 text-val tabular"
+                className="grid grid-cols-3 text-data tabular"
               >
                 <span className="text-text-dim">{s}σ</span>
                 <span className="text-right text-warn">

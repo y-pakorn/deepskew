@@ -27,7 +27,7 @@ import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { Pill, type PillTone } from "./pill";
 import { Sparkline } from "./sparkline";
-import { Stat } from "./stat";
+import { MonoValue, Stat, StatTile, TileGrid } from "./stat";
 
 const MATRIX_K = [-0.2, -0.1, 0, 0.1, 0.2];
 
@@ -64,9 +64,9 @@ export function OraclePanel() {
       right={oracle ? <StatusChip status={oracle.status} /> : null}
     >
       {!selectedOracleId ? (
-        <p className="label-micro text-text-dim">no active market</p>
+        <p className="label-micro text-text-dim">No active market</p>
       ) : isError ? (
-        <p className="label-micro text-breach">oracle feed unreachable</p>
+        <p className="label-micro text-breach">Oracle feed unreachable</p>
       ) : isLoading || !data || !oracle ? (
         <div className="space-y-2">
           <Skeleton className="h-8 w-1/2 bg-panel-elev" />
@@ -82,16 +82,16 @@ export function OraclePanel() {
               {price ? (
                 <FlashValue
                   value={price.spot}
-                  className="text-hero font-medium tabular text-foreground"
+                  className="text-hero font-medium tracking-tight text-foreground"
                 >
-                  {fmtPrice(price.spot)}
+                  <MonoValue>{fmtPrice(price.spot)}</MonoValue>
                 </FlashValue>
               ) : (
                 <span className="text-hero font-medium tabular text-foreground">
                   —
                 </span>
               )}
-              <span className="label-micro">spot</span>
+              <span className="label-micro">Spot</span>
             </div>
             {spots.length >= 2 ? (
               <div className="mt-2 flex items-center gap-3">
@@ -108,23 +108,26 @@ export function OraclePanel() {
             ) : null}
           </div>
 
-          <div className="grid grid-cols-2 gap-x-5 border-t border-hairline pt-2">
-            <Stat label="forward" value={price ? fmtPrice(price.forward) : "—"} />
-            <Stat
-              label="expiry"
-              value={oracle.status === "settled" ? "settled" : fmtDuration(toExp)}
+          <TileGrid cols={2}>
+            <StatTile
+              label="Forward"
+              value={price ? fmtPrice(price.forward) : "—"}
+            />
+            <StatTile
+              label="Expiry"
+              value={oracle.status === "settled" ? "Settled" : fmtDuration(toExp)}
               tone={oracle.status === "settled" ? "warn" : "default"}
             />
-            <Stat
+            <StatTile
               label="ATM IV"
               value={atmIV != null ? fmtPctValue(atmIV) : "—"}
-              tone="key"
+              focal
             />
-            <Stat
+            <StatTile
               label="ATM var"
               value={atmVar != null ? atmVar.toExponential(2) : "—"}
             />
-          </div>
+          </TileGrid>
 
           {p && T > 0 ? <VolMatrix p={p} T={T} /> : null}
 
@@ -160,7 +163,7 @@ export function OraclePanel() {
             <Stat label="m" value={p ? p.m.toFixed(5) : "—"} />
             <Stat label="σ sigma" value={p ? p.sigma.toFixed(5) : "—"} />
             <Stat
-              label="checkpoint"
+              label="Checkpoint"
               value={price ? price.checkpoint.toLocaleString() : "—"}
               tone="dim"
             />
@@ -168,12 +171,12 @@ export function OraclePanel() {
 
           <div className="mt-auto grid grid-cols-2 gap-x-5 border-t border-hairline pt-2">
             <Stat
-              label="oracle"
+              label="Oracle"
               value={truncateAddr(oracle.oracle_id, 6, 4)}
               tone="dim"
             />
             <Stat
-              label="feed"
+              label="Feed"
               value={ageS != null ? `▲ ${ageS}s ago` : "—"}
               tone={ageS != null && ageS < 120 ? "safe" : "warn"}
             />
@@ -187,7 +190,7 @@ export function OraclePanel() {
 function VolMatrix({ p, T }: { p: SviParams; T: number }) {
   return (
     <div className="border-t border-hairline pt-2">
-      <span className="label-micro">vol by strike · IV</span>
+      <span className="label-micro">Vol by strike · IV</span>
       <div className="mt-2 grid grid-cols-5 gap-1 text-center">
         {MATRIX_K.map((k) => {
           const iv = impliedVol(k, p, T) * 100;
@@ -216,5 +219,7 @@ function VolMatrix({ p, T }: { p: SviParams; T: number }) {
 function StatusChip({ status }: { status: string }) {
   const tone: PillTone =
     status === "active" ? "up" : status === "settled" ? "neutral" : "warn";
-  return <Pill tone={tone}>{status}</Pill>;
+  return (
+    <Pill tone={tone}>{status.charAt(0).toUpperCase() + status.slice(1)}</Pill>
+  );
 }

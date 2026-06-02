@@ -17,11 +17,13 @@
   --hairline: #232323; /* 1px dividers / borders (subtle) */
   --divider: #3b3b3b; /* stronger divider */
 
-  /* Text hierarchy */
-  --text: #ffffff; /* Polar White */
-  --text-sec: #b5b5b5; /* Silver Tone */
-  --text-dim: #919191; /* Pewter Mist — labels / icon strokes */
-  --text-faint: #606060; /* Obsidian Grey */
+  /* Text hierarchy — grays lifted for legibility on near-black (12px floor).
+     #606060 was a disabled-tier swatch (fails contrast); content text never
+     goes below #8a8a8a. Hierarchy = brightness + size, not dimness. */
+  --text: #ffffff; /* Polar White — primary values */
+  --text-sec: #c4c4c4; /* secondary text, panel titles */
+  --text-dim: #a8a8a8; /* data labels (the workhorse) — readable */
+  --text-faint: #8a8a8a; /* footer / faint metadata floor (never below this) */
 
   /* Accent — Cerulean: live / interactive / data highlight */
   --accent-brand: #007eed;
@@ -136,25 +138,27 @@
   --radius-lg: calc(var(--radius) + 2px); /* 8px */
   --radius-xl: calc(var(--radius) + 6px); /* 12px */
 
-  /* type scale (text-label, text-val, text-hero, …) */
-  --text-micro: 0.625rem;
-  --text-micro--line-height: 1.3;
-  --text-label: 0.6875rem;
-  --text-label--line-height: 1.3;
-  --text-data: 0.75rem;
+  /* Type scale — a populated, readable ladder (~1.25x). 12px floor for any
+     real text; values clearly larger than labels so hierarchy comes from
+     size + weight, not from shrinking/dimming labels. */
+  --text-micro: 0.75rem; /* 12 — footer, axis ticks (12px floor: nothing smaller) */
+  --text-micro--line-height: 1.4;
+  --text-label: 0.75rem; /* 12 — labels, section labels, table headers */
+  --text-label--line-height: 1.4;
+  --text-data: 0.75rem; /* 12 — pills, dense table cells */
   --text-data--line-height: 1.35;
-  --text-val: 0.8125rem;
+  --text-val: 0.9375rem; /* 15 — inline values + body readouts */
   --text-val--line-height: 1.35;
-  --text-md: 0.9375rem;
-  --text-md--line-height: 1.3;
-  --text-lead: 1.25rem;
-  --text-lead--line-height: 1.2;
-  --text-hero: 1.75rem;
+  --text-md: 1.125rem; /* 18 — tile values, verdict statement */
+  --text-md--line-height: 1.25;
+  --text-lead: 1.5rem; /* 24 — sub-hero / section KPI */
+  --text-lead--line-height: 1.15;
+  --text-hero: 2rem; /* 32 — the one hero number per instrument */
   --text-hero--line-height: 1.05;
 
-  /* fonts — Inter only; tabular figures give column alignment */
+  /* fonts — Inter for UI, JetBrains Mono (tabular) for every number/readout */
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 @layer base {
@@ -167,35 +171,47 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans), system-ui, sans-serif;
-    /* Terminal base: 13px. Any unclassed text settles here, never the 16px UA
-       default — the scale tokens (label-micro 11, text-val 13, …) layer on top. */
-    font-size: 0.8125rem;
+    /* Terminal base: 14px. Any unclassed text settles here, never the 16px UA
+       default — the scale tokens (label 12, value 15, …) layer on top. */
+    font-size: 0.875rem;
     line-height: 1.4;
     letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-  /* tabular, lining numerals everywhere numbers live */
+  /* Numbers: JetBrains Mono + tabular figures. `.tabular` is the value hook —
+     mono texture is what makes a readout read as "data", not prose. */
   .tabular,
   .font-mono {
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "zero";
+  }
+  /* De-emphasized affix: leading currency / trailing unit / exponent recede so
+     the magnitude leads (white "1.01" + dim "M"). Relative to the value's color. */
+  .affix {
+    font-size: 0.82em;
+    opacity: 0.5;
+    font-weight: 400;
   }
 }
 
 @layer components {
   /* Panel identity — sentence case, value-contrast hierarchy. */
   .panel-title {
-    font-size: var(--text-data);
+    font-size: 0.8125rem; /* 13 — header sits above 12px labels */
     line-height: 1;
     font-weight: 500;
     letter-spacing: -0.01em;
     color: var(--text-sec);
   }
-  /* Quiet data / section label — recedes so values lead. */
+  /* Data / section label — 12px, weight 500, readable gray. Recedes from the
+     value by size + weight + color, never by being tiny or dim. Sentence case. */
   .label-micro {
     font-size: var(--text-label);
-    line-height: 1.3;
+    line-height: 1.4;
+    font-weight: 500;
     letter-spacing: 0;
     color: var(--text-dim);
   }
