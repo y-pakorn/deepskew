@@ -32,8 +32,11 @@ export function SmilePanel({ className }: { className?: string }) {
   const { selectedOracleId } = useMarket();
   const { data: state, isLoading, isError } = useOracleState(selectedOracleId);
   const { data: history = [] } = useSviHistory(selectedOracleId);
-  const strikes = useStrikeDistribution(state?.latest_price?.spot ?? null);
-  const hasOi = strikes.some((b) => b.up + b.dn > 0);
+  const strikes = useStrikeDistribution(
+    selectedOracleId,
+    state?.latest_price?.spot ?? null,
+  );
+  const showOi = strikes.length > 0;
 
   const [scrub, setScrub] = useState<number | null>(null); // null = live
   const n = history.length;
@@ -72,6 +75,7 @@ export function SmilePanel({ className }: { className?: string }) {
     <Panel
       title="Smile / skew"
       className={className}
+      bodyClassName="overflow-visible lg:overflow-auto"
       code={isLive ? "Live" : "Replay"}
       right={
         model ? (
@@ -114,7 +118,7 @@ export function SmilePanel({ className }: { className?: string }) {
       ) : (
         <div className="flex h-full flex-col gap-3">
           <SmileChart pts={model.pts} />
-          {hasOi ? (
+          {showOi ? (
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <span className="label-micro">OI by strike</span>
@@ -123,7 +127,7 @@ export function SmilePanel({ className }: { className?: string }) {
                   <span className="text-breach">Dn</span>
                 </span>
               </div>
-              <StrikeHistogram buckets={strikes} />
+              <StrikeHistogram strikes={strikes} />
             </div>
           ) : null}
           <TileGrid cols={2}>

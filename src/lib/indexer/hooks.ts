@@ -146,39 +146,40 @@ export function useSettlementStats(): SettlementStats {
   }, [data]);
 }
 
-export interface StrikeBucket {
-  mid: number; // log-ish moneyness (strike/spot − 1)
-  up: number;
-  dn: number;
+export interface StrikeOi {
+  strike: number; // 1e9-scaled
+  mny: number; // strike / spot − 1
+  up: number; // # up positions at this strike
+  dn: number; // # down positions
 }
 
-/** Open-interest strike distribution from /positions/minted, bucketed by
- *  moneyness relative to `spot` (1e9-scaled, same as strike). */
-export function useStrikeDistribution(spot: number | null): StrikeBucket[] {
+/** Open interest grouped by the distinct strikes actually traded on one oracle,
+ *  expressed as moneyness vs `spot`. Adaptive (no fixed grid) so a handful of
+ *  near-ATM strikes still read clearly. */
+export function useStrikeDistribution(
+  oracleId: string | null,
+  spot: number | null,
+): StrikeOi[] {
   const { data = [] } = useQuery({
     queryKey: ["positions", "minted"],
     queryFn: () => indexer.positionsMinted(),
     refetchInterval: 6_000,
   });
   return useMemo(() => {
-    if (!spot || spot <= 0) return [];
-    const N = 13;
-    const MIN = -0.3;
-    const MAX = 0.3;
-    const arr: StrikeBucket[] = Array.from({ length: N }, (_, i) => ({
-      mid: MIN + ((MAX - MIN) * i) / (N - 1),
-      up: 0,
-      dn: 0,
-    }));
+    if (!oracleId || !spot || spot <= 0) return [];
+    const byStrike = new Map<number, { up: number; dn: number }>();
     for (const m of data) {
-      const mny = m.strike / spot - 1;
-      if (mny < MIN || mny > MAX) continue;
-      const idx = Math.round(((mny - MIN) / (MAX - MIN)) * (N - 1));
-      if (m.is_up) arr[idx].up++;
-      else arr[idx].dn++;
+      if (m.oracle_id !== oracleId) continue;
+      if (Math.abs(m.strike / spot - 1) > 0.5) continue; // drop far outliers
+      const cur = byStrike.get(m.strike) ?? { up: 0, dn: 0 };
+      if (m.is_up) cur.up += 1;
+      else cur.dn += 1;
+      byStrike.set(m.strike, cur);
     }
-    return arr;
-  }, [data, spot]);
+    return [...byStrike.entries()]
+      .map(([strike, c]) => ({ strike, mny: strike / spot - 1, up: c.up, dn: c.dn }))
+      .sort((a, b) => a.strike - b.strike);
+  }, [data, oracleId, spot]);
 }
 
 export interface LpFlow {

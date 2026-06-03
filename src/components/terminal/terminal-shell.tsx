@@ -23,7 +23,7 @@ export function TerminalShell() {
           <CommandStrip />
           <div className="grid flex-1 grid-cols-1 gap-px bg-hairline lg:min-h-0 lg:grid-cols-[1.6fr_1fr_1fr] lg:grid-rows-[1.3fr_1fr]">
             <SurfacePanel className="min-h-[260px] lg:min-h-0" />
-            <SmilePanel className="min-h-[480px] lg:min-h-0" />
+            <SmilePanel />
             <OraclePanel />
             <VaultPanel className="min-h-[220px] lg:col-span-2 lg:min-h-0" />
             <DeskPanel />
