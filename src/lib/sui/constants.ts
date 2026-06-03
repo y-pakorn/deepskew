@@ -61,3 +61,5 @@ export const explorerTx = (digest: string) =>
   `https://suiscan.xyz/testnet/tx/${digest}`;
 export const explorerObject = (id: string) =>
   `https://suiscan.xyz/testnet/object/${id}`;
+export const explorerAccount = (address: string) =>
+  `https://suiscan.xyz/testnet/account/${address}`;
