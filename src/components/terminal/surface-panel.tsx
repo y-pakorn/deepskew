@@ -89,20 +89,24 @@ export function SurfacePanel({ className }: { className?: string }) {
           Strike →
         </span>
 
-        <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 overflow-hidden border-t border-hairline bg-canvas/50 px-3 py-1.5 backdrop-blur-sm">
-          <span className="label-micro">Tenor</span>
-          {rows.map((r, i) => (
-            <span
-              key={r.oracleId}
-              className={cn(
-                "text-data tabular",
-                i === 0 ? "text-accent-brand" : "text-text-dim",
-              )}
-            >
-              {fmtDuration(r.expiry - now)}
-            </span>
-          ))}
-          <span className="ml-auto label-micro shrink-0 text-text-faint">
+        <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 border-t border-hairline bg-canvas/50 px-3 py-1.5 backdrop-blur-sm">
+          <span className="label-micro shrink-0">Tenor</span>
+          {/* Each tenor reads "34m 09s" — keep it on one line and let the row
+              clip trailing tenors rather than wrap them when space is tight. */}
+          <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+            {rows.map((r, i) => (
+              <span
+                key={r.oracleId}
+                className={cn(
+                  "shrink-0 whitespace-nowrap text-data tabular",
+                  i === 0 ? "text-accent-brand" : "text-text-dim",
+                )}
+              >
+                {fmtDuration(r.expiry - now)}
+              </span>
+            ))}
+          </div>
+          <span className="label-micro shrink-0 text-text-faint">
             Drag to orbit
           </span>
         </div>
