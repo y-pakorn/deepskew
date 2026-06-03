@@ -42,7 +42,7 @@ export function SmileChart({ pts }: { pts: { k: number; iv: number }[] }) {
   return (
     <div
       ref={ref}
-      className="relative h-52 w-full shrink-0 lg:h-auto lg:min-h-[140px] lg:flex-1 lg:shrink"
+      className="relative h-52 w-full shrink-0 lg:h-auto lg:min-h-[104px] lg:flex-1 lg:shrink 2xl:min-h-[160px]"
       onMouseMove={onMove}
       onMouseLeave={() => setHover(null)}
     >

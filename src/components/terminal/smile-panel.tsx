@@ -122,68 +122,67 @@ export function SmilePanel({ className }: { className?: string }) {
         </div>
       ) : (
         <div className="flex h-full flex-col gap-2 2xl:gap-3">
-          {/* Chart + readouts scroll on a short viewport; the arb verdict stays
-              pinned as a footer so the panel's whole point never clips away. */}
-          <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto 2xl:gap-3">
-            <SmileChart pts={model.pts} />
-            {showOi ? (
-              <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <LabelTip k="oi-by-strike" className="label-micro">OI by strike</LabelTip>
-                  <LabelTip k="up-dn-legend" className="label-micro text-text-faint">
-                    <span className="text-safe">Up</span> ·{" "}
-                    <span className="text-breach">Dn</span>
-                  </LabelTip>
-                </div>
-                <StrikeHistogram strikes={strikes} />
+          {/* The chart (flex-1) absorbs the slack so the readouts and verdict
+              sit at natural size — the panel fits with no inner scroll region,
+              so there's no stray scrollbar even when it's exactly full. */}
+          <SmileChart pts={model.pts} />
+          {showOi ? (
+            <div className="shrink-0">
+              <div className="mb-1 flex items-center justify-between">
+                <LabelTip k="oi-by-strike" className="label-micro">OI by strike</LabelTip>
+                <LabelTip k="up-dn-legend" className="label-micro text-text-faint">
+                  <span className="text-safe">Up</span> ·{" "}
+                  <span className="text-breach">Dn</span>
+                </LabelTip>
               </div>
-            ) : null}
-            <TileGrid cols={2}>
-              <StatTile
-                label="ATM"
-                tip="atm-iv"
-                value={fmtPctValue(model.atm)}
-                focal
-                className="col-span-2"
-              />
-              <StatTile label="Put −10%" tip="put-wing" value={fmtPctValue(model.put)} />
-              <StatTile label="Call +10%" tip="call-wing" value={fmtPctValue(model.call)} />
-              <StatTile
-                label="Skew (RR)"
-                tip="skew-rr"
-                value={fmtSigned(model.skew, 1)}
-                tone={model.skew >= 0 ? "default" : "warn"}
-              />
-              <StatTile label="Fly" tip="fly" value={fmtSigned(model.fly, 1)} />
-            </TileGrid>
-            {n > 1 ? (
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <LabelTip k="time-travel" className="label-micro">Time-travel</LabelTip>
-                  <button
-                    type="button"
-                    onClick={() => setScrub(null)}
-                    className={cn(
-                      "label-micro transition-colors",
-                      isLive
-                        ? "text-text-faint"
-                        : "text-accent-brand hover:opacity-80",
-                    )}
-                  >
-                    {isLive ? "Live" : "→ Jump to live"}
-                  </button>
-                </div>
-                <Slider
-                  value={[idx]}
-                  min={0}
-                  max={liveIdx}
-                  step={1}
-                  onValueChange={([v]) => setScrub(v >= liveIdx ? null : v)}
-                />
+              <StrikeHistogram strikes={strikes} />
+            </div>
+          ) : null}
+          <TileGrid cols={2} className="shrink-0">
+            <StatTile
+              label="ATM"
+              tip="atm-iv"
+              value={fmtPctValue(model.atm)}
+              focal
+              className="col-span-2"
+            />
+            <StatTile label="Put −10%" tip="put-wing" value={fmtPctValue(model.put)} />
+            <StatTile label="Call +10%" tip="call-wing" value={fmtPctValue(model.call)} />
+            <StatTile
+              label="Skew (RR)"
+              tip="skew-rr"
+              value={fmtSigned(model.skew, 1)}
+              tone={model.skew >= 0 ? "default" : "warn"}
+            />
+            <StatTile label="Fly" tip="fly" value={fmtSigned(model.fly, 1)} />
+          </TileGrid>
+          {n > 1 ? (
+            <div className="shrink-0">
+              <div className="mb-2 flex items-center justify-between">
+                <LabelTip k="time-travel" className="label-micro">Time-travel</LabelTip>
+                <button
+                  type="button"
+                  onClick={() => setScrub(null)}
+                  className={cn(
+                    "label-micro transition-colors",
+                    isLive
+                      ? "text-text-faint"
+                      : "text-accent-brand hover:opacity-80",
+                  )}
+                >
+                  {isLive ? "Live" : "→ Jump to live"}
+                </button>
               </div>
-            ) : null}
-          </div>
-          <div className="shrink-0 pt-1">
+              <Slider
+                value={[idx]}
+                min={0}
+                max={liveIdx}
+                step={1}
+                onValueChange={([v]) => setScrub(v >= liveIdx ? null : v)}
+              />
+            </div>
+          ) : null}
+          <div className="shrink-0">
             <ArbVerdict bf={model.bf} />
           </div>
         </div>
