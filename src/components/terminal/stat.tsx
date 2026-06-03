@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export type Tone =
@@ -36,24 +39,12 @@ function dotClass(tone: Tone): string {
 const LEAD = /^([$€£₿◎])/; // currency symbols → de-emphasize
 const TRAIL = /(%|bps|[KMBT]|e[-+]?\d+)$/i; // unit / scale / exponent → de-emphasize
 
-/**
- * A numeric readout: JetBrains Mono tabular, with the leading currency symbol
- * and the trailing unit/scale/exponent rendered dim + smaller so the magnitude
- * leads. Non-string children pass through. The single biggest "terminal not
- * document" move (Mercury/Kraken/OpenSea).
- */
-export function MonoValue({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  if (typeof children !== "string") {
-    return <span className={cn("tabular", className)}>{children}</span>;
-  }
-  const orig = children;
-  let s = children;
+/** Split a value into a magnitude + de-emphasizable affixes, or null if the
+ *  core isn't a plain number (addresses, durations, mixed text). */
+function parseValue(
+  text: string,
+): { lead: string; core: string; trail: string } | null {
+  let s = text;
   let lead = "";
   let trail = "";
   const lm = s.match(LEAD);
@@ -62,22 +53,77 @@ export function MonoValue({
     s = s.slice(lead.length);
   }
   const tm = s.match(TRAIL);
-  // only dim a trailing token when it actually follows a digit (real value+unit)
   if (tm && /[\d.]/.test(s[s.length - tm[1].length - 1] ?? "")) {
     trail = tm[1];
     s = s.slice(0, -trail.length);
   }
-  // Only treat as magnitude+affix when the core is a plain number. Otherwise
-  // (addresses like 0x..3e45, durations like "11m 24s", mixed text) the regex
-  // would dim a real character — render the whole string bright instead.
-  if (!/^[+\-−]?[\d,]+(\.\d+)?$/.test(s)) {
-    return <span className={cn("tabular", className)}>{orig}</span>;
+  if (!/^[+\-−]?[\d,]+(\.\d+)?$/.test(s)) return null;
+  return { lead, core: s, trail };
+}
+
+/**
+ * A numeric readout: Geist Mono tabular, with the leading currency symbol and
+ * the trailing unit/scale/exponent rendered dim + smaller so the magnitude
+ * leads. With `pop`, each character re-enters with a blurred slide whenever the
+ * value changes (transitions-dev number pop-in) — for live, value-led numbers.
+ */
+export function MonoValue({
+  children,
+  className,
+  pop = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  pop?: boolean;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const text = typeof children === "string" ? children : null;
+
+  // Replay the per-digit pop-in on every value change (and on mount). Reflow
+  // between remove + re-add is what restarts the CSS animation.
+  useEffect(() => {
+    if (!pop) return;
+    const el = ref.current;
+    if (!el) return;
+    el.classList.remove("is-animating");
+    void el.offsetHeight;
+    el.classList.add("is-animating");
+  }, [text, pop]);
+
+  if (text == null) {
+    return <span className={cn("tabular", className)}>{children}</span>;
   }
+  const parts = parseValue(text);
+
+  if (!pop) {
+    if (!parts) return <span className={cn("tabular", className)}>{text}</span>;
+    return (
+      <span className={cn("tabular", className)}>
+        {parts.lead ? <span className="affix">{parts.lead}</span> : null}
+        {parts.core}
+        {parts.trail ? <span className="affix">{parts.trail}</span> : null}
+      </span>
+    );
+  }
+
+  const lead = parts?.lead ?? "";
+  const core = parts ? parts.core : text;
+  const trail = parts?.trail ?? "";
+  const chars = [...(lead + core + trail)];
+  const n = chars.length;
+  const leadLen = lead.length;
+  const coreEnd = lead.length + core.length;
   return (
-    <span className={cn("tabular", className)}>
-      {lead ? <span className="affix">{lead}</span> : null}
-      {s}
-      {trail ? <span className="affix">{trail}</span> : null}
+    <span ref={ref} className={cn("tabular t-digit-group", className)}>
+      {chars.map((ch, i) => (
+        <span
+          key={i}
+          className={cn("t-digit", (i < leadLen || i >= coreEnd) && "affix")}
+          data-stagger={i === n - 2 ? "1" : i === n - 1 ? "2" : undefined}
+        >
+          {ch}
+        </span>
+      ))}
     </span>
   );
 }
@@ -140,6 +186,7 @@ export function StatTile({
     >
       <span className="label-micro truncate">{label}</span>
       <MonoValue
+        pop
         className={cn(
           "truncate text-md font-medium leading-none tracking-tight",
           focal ? "text-accent-brand" : toneClass(tone),

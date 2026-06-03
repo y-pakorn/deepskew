@@ -13,6 +13,7 @@ import { decodeSvi, impliedVol, yearsToExpiry } from "@/lib/svi";
 import { FlashValue } from "./flash-value";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
+import { PanelState } from "./panel-state";
 import { Sparkline } from "./sparkline";
 import { Meter, Stat, StatTile, TileGrid } from "./stat";
 import { PerfChart } from "./vault/perf-chart";
@@ -78,12 +79,36 @@ export function VaultPanel({ className }: { className?: string }) {
       }
     >
       {isError ? (
-        <p className="label-micro text-breach">Vault feed unreachable</p>
+        <PanelState kind="error">Vault feed unreachable</PanelState>
       ) : isLoading || !data ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24 w-full bg-panel-elev" />
-          <Skeleton className="h-24 w-full bg-panel-elev" />
-          <Skeleton className="h-24 w-full bg-panel-elev" />
+        <div className="grid h-full grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[1.1fr_1.2fr_0.9fr]">
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-12 w-full rounded-md bg-panel-elev" />
+            <Skeleton className="h-1 w-full rounded-full bg-panel-elev" />
+            <div className="space-y-1.5 pt-1">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-3.5 bg-panel-elev" />
+              ))}
+            </div>
+            <Skeleton className="mt-1 h-16 w-full bg-panel-elev" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-3 w-24 bg-panel-elev" />
+            <Skeleton className="min-h-[90px] flex-1 bg-panel-elev" />
+            <Skeleton className="h-6 w-full bg-panel-elev" />
+          </div>
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-3.5 bg-panel-elev" />
+            <Skeleton className="h-1 rounded-full bg-panel-elev" />
+            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-1.5 bg-panel px-3 py-2">
+                  <Skeleton className="h-2.5 w-12 bg-panel-elev" />
+                  <Skeleton className="h-4 w-14 bg-panel-elev" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid h-full grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[1.1fr_1.2fr_0.9fr]">

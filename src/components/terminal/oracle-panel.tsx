@@ -25,9 +25,11 @@ import { cn } from "@/lib/utils";
 import { FlashValue } from "./flash-value";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
+import { PanelState } from "./panel-state";
 import { Pill, type PillTone } from "./pill";
 import { Sparkline } from "./sparkline";
 import { MonoValue, Stat, StatTile, TileGrid } from "./stat";
+import { TextSwap } from "./text-swap";
 
 const MATRIX_K = [-0.2, -0.1, 0, 0.1, 0.2];
 
@@ -64,16 +66,34 @@ export function OraclePanel() {
       right={oracle ? <StatusChip status={oracle.status} /> : null}
     >
       {!selectedOracleId ? (
-        <p className="label-micro text-text-dim">No active market</p>
+        <PanelState kind="empty">No active market</PanelState>
       ) : isError ? (
-        <p className="label-micro text-breach">Oracle feed unreachable</p>
+        <PanelState kind="error">Oracle feed unreachable</PanelState>
       ) : isLoading || !data || !oracle ? (
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-1/2 bg-panel-elev" />
-          <Skeleton className="h-7 w-full bg-panel-elev" />
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-4 w-full bg-panel-elev" />
-          ))}
+        <div className="flex h-full flex-col gap-3">
+          <div className="flex items-baseline justify-between">
+            <Skeleton className="h-8 w-32 bg-panel-elev" />
+            <Skeleton className="h-3 w-8 bg-panel-elev" />
+          </div>
+          <Skeleton className="h-4 w-full bg-panel-elev" />
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-1.5 bg-panel px-3 py-2">
+                <Skeleton className="h-2.5 w-12 bg-panel-elev" />
+                <Skeleton className="h-4 w-16 bg-panel-elev" />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-5 gap-1 border-t border-hairline pt-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-7 bg-panel-elev" />
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-x-5 gap-y-2 border-t border-hairline pt-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-3.5 bg-panel-elev" />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="flex h-full flex-col gap-3">
@@ -84,7 +104,7 @@ export function OraclePanel() {
                   value={price.spot}
                   className="text-hero font-medium tracking-tight text-foreground"
                 >
-                  <MonoValue>{fmtPrice(price.spot)}</MonoValue>
+                  <MonoValue pop>{fmtPrice(price.spot)}</MonoValue>
                 </FlashValue>
               ) : (
                 <span className="text-hero font-medium tabular text-foreground">
@@ -220,6 +240,8 @@ function StatusChip({ status }: { status: string }) {
   const tone: PillTone =
     status === "active" ? "up" : status === "settled" ? "neutral" : "warn";
   return (
-    <Pill tone={tone}>{status.charAt(0).toUpperCase() + status.slice(1)}</Pill>
+    <Pill tone={tone}>
+      <TextSwap>{status.charAt(0).toUpperCase() + status.slice(1)}</TextSwap>
+    </Pill>
   );
 }

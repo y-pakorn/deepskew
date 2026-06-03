@@ -205,9 +205,18 @@ All terminal components compose from these primitives. Keep them consistent.
 
 ## 8. Motion
 
+Motion is reserved for *live state changes* — it signals that data moved, never decorates.
+Snippets are namespaced `t-*` (transitions-dev) and every one ships a `prefers-reduced-motion` guard.
+
 - Surface auto-rotates on idle (slow), orbits on drag; **pulses cerulean ~600ms** on each oracle tick — the soul.
-- **Values flash on update:** green (`--safe`) on an up-tick, red (`--breach`) on a down-tick, decaying ~600ms
-  back to their own color. Numbers never jump jarringly.
+- **Number pop-in** (`t-digit-group`, ~420ms): value-led numbers (the spot hero, every tile, ticker
+  values) re-enter per-digit with a blurred slide *only when their value changes*. Reserved for
+  prominent readouts — **never** the dense ledger, vol matrix, ladder, or trade tape (would be noise).
+- **Values flash on update:** green (`--safe`) up-tick / red (`--breach`) down-tick, decaying ~600ms.
+- **Text states swap** (`t-text-swap`, ~170ms): status words that change in place (live pill, status
+  chip, arb pills) exit up + blur, the new text enters from below.
+- **Loading skeletons** mirror the real layout (tile grids, charts, tape rows) — no layout shift on load.
+  Empty/error use a centered `PanelState` (icon + message), never a lone line at the top-left.
 - Panel entrance: fade-in ~300ms. Transitions 150–200ms ease-out. Never bouncy.
 
 ---

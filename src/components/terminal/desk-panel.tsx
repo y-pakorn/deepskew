@@ -12,6 +12,7 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { fmtPrice, fmtUsdCompact, fromUnits, utcClock } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
+import { PanelState } from "./panel-state";
 
 export function DeskPanel({ className }: { className?: string }) {
   const account = useCurrentAccount();
@@ -97,11 +98,19 @@ export function DeskPanel({ className }: { className?: string }) {
       </div>
 
       {isError ? (
-        <p className="label-micro p-3 text-breach">Flow feed unreachable</p>
+        <PanelState kind="error">Flow feed unreachable</PanelState>
       ) : isLoading && !items.length ? (
-        <div className="space-y-1.5 p-3">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-4 w-full bg-panel-elev" />
+        <div className="px-3 py-1.5">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-[3.6rem_2rem_1fr_auto] items-center gap-x-2 py-1"
+            >
+              <Skeleton className="h-3 w-12 bg-panel-elev" />
+              <Skeleton className="h-3 w-6 bg-panel-elev" />
+              <Skeleton className="h-3 w-16 bg-panel-elev" />
+              <Skeleton className="h-3 w-12 justify-self-end bg-panel-elev" />
+            </div>
           ))}
         </div>
       ) : (

@@ -2,6 +2,7 @@
 
 import { useIndexerStatus } from "@/lib/indexer/hooks";
 import { cn } from "@/lib/utils";
+import { TextSwap } from "./text-swap";
 
 /** ● live · lag Ns — driven by the indexer `/status` endpoint. */
 export function LivePill() {
@@ -21,7 +22,7 @@ export function LivePill() {
         ) : null}
         <span className={cn("relative inline-flex size-1.5 rounded-full", dot)} />
       </span>
-      <span className="label-micro text-text-sec">{text}</span>
+      <TextSwap className="label-micro text-text-sec">{text}</TextSwap>
       {lag != null ? (
         <span className="text-data tabular text-text-dim">
           · Lag {lag}s

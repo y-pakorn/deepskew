@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
 import { Pill } from "./pill";
 import { SurfaceScene } from "./surface/scene";
+import { TextSwap } from "./text-swap";
 
 /** The visual hero — a live glowing 3-D IV surface across the term structure. */
 export function SurfacePanel({ className }: { className?: string }) {
@@ -35,11 +36,13 @@ export function SurfacePanel({ className }: { className?: string }) {
         <span className="flex items-center gap-2">
           {arb ? (
             <Pill tone={arbOk ? "up" : "down"}>
-              {arbOk
-                ? "Arb-free ✓"
-                : !arb.calendarFree
-                  ? "Calendar ✕"
-                  : "Butterfly ✕"}
+              <TextSwap>
+                {arbOk
+                  ? "Arb-free ✓"
+                  : !arb.calendarFree
+                    ? "Calendar ✕"
+                    : "Butterfly ✕"}
+              </TextSwap>
             </Pill>
           ) : null}
           <span className="label-micro text-text-faint">

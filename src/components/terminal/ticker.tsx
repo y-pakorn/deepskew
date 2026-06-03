@@ -12,6 +12,8 @@ import { checkButterfly, decodeSvi, impliedVol, yearsToExpiry } from "@/lib/svi"
 import { cn } from "@/lib/utils";
 import { useMarket } from "./market-context";
 import { Pill } from "./pill";
+import { MonoValue } from "./stat";
+import { TextSwap } from "./text-swap";
 
 function Item({
   label,
@@ -25,9 +27,10 @@ function Item({
   return (
     <div className="flex shrink-0 items-baseline gap-2 whitespace-nowrap">
       <span className="label-micro">{label}</span>
-      <span
+      <MonoValue
+        pop
         className={cn(
-          "text-val tabular",
+          "text-val",
           tone === "key"
             ? "font-medium text-foreground"
             : tone === "up"
@@ -38,7 +41,7 @@ function Item({
         )}
       >
         {value}
-      </span>
+      </MonoValue>
     </div>
   );
 }
@@ -96,7 +99,7 @@ export function Ticker() {
       />
       {arbFree != null ? (
         <Pill tone={arbFree ? "up" : "down"} className="shrink-0">
-          {arbFree ? "Arb-free ✓" : "Arb ✕"}
+          <TextSwap>{arbFree ? "Arb-free ✓" : "Arb ✕"}</TextSwap>
         </Pill>
       ) : null}
     </div>
