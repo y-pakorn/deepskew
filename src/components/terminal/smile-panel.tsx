@@ -28,11 +28,12 @@ import { StatTile, TileGrid, Verdict } from "./stat";
 const WING = 0.1; // ±10% log-moneyness readouts
 const SMILE_OPTS = { kMin: -0.3, kMax: 0.3, steps: 80 };
 
-export function SmilePanel() {
+export function SmilePanel({ className }: { className?: string }) {
   const { selectedOracleId } = useMarket();
   const { data: state, isLoading, isError } = useOracleState(selectedOracleId);
   const { data: history = [] } = useSviHistory(selectedOracleId);
   const strikes = useStrikeDistribution(state?.latest_price?.spot ?? null);
+  const hasOi = strikes.some((b) => b.up + b.dn > 0);
 
   const [scrub, setScrub] = useState<number | null>(null); // null = live
   const n = history.length;
@@ -70,6 +71,7 @@ export function SmilePanel() {
   return (
     <Panel
       title="Smile / skew"
+      className={className}
       code={isLive ? "Live" : "Replay"}
       right={
         model ? (
@@ -112,7 +114,7 @@ export function SmilePanel() {
       ) : (
         <div className="flex h-full flex-col gap-3">
           <SmileChart pts={model.pts} />
-          {strikes.length ? (
+          {hasOi ? (
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <span className="label-micro">OI by strike</span>
