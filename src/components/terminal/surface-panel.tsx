@@ -99,7 +99,7 @@ export function SurfacePanel({ className }: { className?: string }) {
           <span className="label-micro shrink-0">Tenor</span>
           {/* Each tenor reads "34m 09s" — keep it on one line and let the row
               clip trailing tenors rather than wrap them when space is tight. */}
-          <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+          <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden [mask-image:linear-gradient(to_right,#000_88%,transparent)]">
             {rows.map((r, i) => (
               <span
                 key={r.oracleId}
@@ -116,7 +116,7 @@ export function SurfacePanel({ className }: { className?: string }) {
               </span>
             ))}
           </div>
-          <span className="label-micro shrink-0 text-text-faint">
+          <span className="hidden shrink-0 text-text-faint label-micro xl:inline">
             Drag to orbit
           </span>
         </div>

@@ -10,8 +10,8 @@ export function StatusBar() {
   const ok = !isError && data?.status === "OK";
 
   return (
-    <footer className="flex h-6 shrink-0 items-center gap-4 border-t border-hairline bg-canvas px-3 text-micro text-text-faint">
-      <span className="flex items-center gap-1.5">
+    <footer className="flex h-6 shrink-0 items-center gap-4 overflow-hidden border-t border-hairline bg-canvas px-3 text-micro text-text-faint">
+      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
         <span
           className={cn(
             "size-1 rounded-full",
@@ -20,14 +20,20 @@ export function StatusBar() {
         />
         Indexer {isError ? "Offline" : ok ? "OK" : "Sync"}
       </span>
-      {data ? <span className="tabular">Lag {data.max_time_lag_seconds}s</span> : null}
       {data ? (
-        <span className="tabular">
+        <span className="shrink-0 whitespace-nowrap tabular">
+          Lag {data.max_time_lag_seconds}s
+        </span>
+      ) : null}
+      {data ? (
+        <span className="shrink-0 whitespace-nowrap tabular">
           Ckpt {data.latest_onchain_checkpoint.toLocaleString()}
         </span>
       ) : null}
-      <span>Sui · {SUI_NETWORK}</span>
-      <span className="ml-auto flex items-center gap-4">
+      <span className="hidden shrink-0 whitespace-nowrap sm:inline">
+        Sui · {SUI_NETWORK}
+      </span>
+      <span className="ml-auto flex shrink-0 items-center gap-4">
         <a
           href="https://docs.sui.io/onchain-finance/deepbook-predict/"
           target="_blank"
@@ -44,7 +50,7 @@ export function StatusBar() {
         >
           DeepBook
         </a>
-        <span>Redeploys mainnet day one</span>
+        <span className="hidden 2xl:inline">Redeploys mainnet day one</span>
       </span>
     </footer>
   );

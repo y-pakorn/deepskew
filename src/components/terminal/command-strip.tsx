@@ -11,7 +11,7 @@ import { MarketSelector } from "./market-selector";
 /** Top command strip — the authority signal of the desk. */
 export function CommandStrip() {
   return (
-    <header className="flex h-11 shrink-0 items-center gap-3 border-b border-hairline bg-canvas px-3">
+    <header className="flex h-11 shrink-0 items-center gap-3 overflow-hidden border-b border-hairline bg-canvas px-3">
       <Link
         href="/"
         className="flex items-center gap-2 text-md font-semibold tracking-tight text-foreground transition-opacity hover:opacity-80"
@@ -22,7 +22,7 @@ export function CommandStrip() {
       <span className="text-text-faint">·</span>
       <MarketSelector />
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex shrink-0 items-center gap-3">
         <LivePill />
         <Separator orientation="vertical" className="h-4 bg-hairline" />
         <Clock />

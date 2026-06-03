@@ -116,63 +116,67 @@ export function SmilePanel({ className }: { className?: string }) {
           <ArbVerdict bf={model.bf} />
         </div>
       ) : (
-        <div className="flex h-full flex-col gap-3">
-          <SmileChart pts={model.pts} />
-          {showOi ? (
-            <div>
-              <div className="mb-1 flex items-center justify-between">
-                <span className="label-micro">OI by strike</span>
-                <span className="label-micro text-text-faint">
-                  <span className="text-safe">Up</span> ·{" "}
-                  <span className="text-breach">Dn</span>
-                </span>
+        <div className="flex h-full flex-col gap-2 2xl:gap-3">
+          {/* Chart + readouts scroll on a short viewport; the arb verdict stays
+              pinned as a footer so the panel's whole point never clips away. */}
+          <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto 2xl:gap-3">
+            <SmileChart pts={model.pts} />
+            {showOi ? (
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="label-micro">OI by strike</span>
+                  <span className="label-micro text-text-faint">
+                    <span className="text-safe">Up</span> ·{" "}
+                    <span className="text-breach">Dn</span>
+                  </span>
+                </div>
+                <StrikeHistogram strikes={strikes} />
               </div>
-              <StrikeHistogram strikes={strikes} />
-            </div>
-          ) : null}
-          <TileGrid cols={2}>
-            <StatTile
-              label="ATM"
-              value={fmtPctValue(model.atm)}
-              focal
-              className="col-span-2"
-            />
-            <StatTile label="Put −10%" value={fmtPctValue(model.put)} />
-            <StatTile label="Call +10%" value={fmtPctValue(model.call)} />
-            <StatTile
-              label="Skew (RR)"
-              value={fmtSigned(model.skew, 1)}
-              tone={model.skew >= 0 ? "default" : "warn"}
-            />
-            <StatTile label="Fly" value={fmtSigned(model.fly, 1)} />
-          </TileGrid>
-          {n > 1 ? (
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <span className="label-micro">Time-travel</span>
-                <button
-                  type="button"
-                  onClick={() => setScrub(null)}
-                  className={cn(
-                    "label-micro transition-colors",
-                    isLive
-                      ? "text-text-faint"
-                      : "text-accent-brand hover:opacity-80",
-                  )}
-                >
-                  {isLive ? "Live" : "→ Jump to live"}
-                </button>
-              </div>
-              <Slider
-                value={[idx]}
-                min={0}
-                max={liveIdx}
-                step={1}
-                onValueChange={([v]) => setScrub(v >= liveIdx ? null : v)}
+            ) : null}
+            <TileGrid cols={2}>
+              <StatTile
+                label="ATM"
+                value={fmtPctValue(model.atm)}
+                focal
+                className="col-span-2"
               />
-            </div>
-          ) : null}
-          <div className="pt-1">
+              <StatTile label="Put −10%" value={fmtPctValue(model.put)} />
+              <StatTile label="Call +10%" value={fmtPctValue(model.call)} />
+              <StatTile
+                label="Skew (RR)"
+                value={fmtSigned(model.skew, 1)}
+                tone={model.skew >= 0 ? "default" : "warn"}
+              />
+              <StatTile label="Fly" value={fmtSigned(model.fly, 1)} />
+            </TileGrid>
+            {n > 1 ? (
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="label-micro">Time-travel</span>
+                  <button
+                    type="button"
+                    onClick={() => setScrub(null)}
+                    className={cn(
+                      "label-micro transition-colors",
+                      isLive
+                        ? "text-text-faint"
+                        : "text-accent-brand hover:opacity-80",
+                    )}
+                  >
+                    {isLive ? "Live" : "→ Jump to live"}
+                  </button>
+                </div>
+                <Slider
+                  value={[idx]}
+                  min={0}
+                  max={liveIdx}
+                  step={1}
+                  onValueChange={([v]) => setScrub(v >= liveIdx ? null : v)}
+                />
+              </div>
+            ) : null}
+          </div>
+          <div className="shrink-0 pt-1">
             <ArbVerdict bf={model.bf} />
           </div>
         </div>

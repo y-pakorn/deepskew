@@ -7,6 +7,7 @@ import {
   useTermStructure,
 } from "@/lib/indexer/hooks";
 import {
+  fmtCompact,
   fmtDuration,
   fmtPctValue,
   fmtPrice,
@@ -96,7 +97,7 @@ export function OraclePanel() {
           </div>
         </div>
       ) : (
-        <div className="flex h-full flex-col gap-3">
+        <div className="flex h-full flex-col gap-2 2xl:gap-3">
           <div>
             <div className="flex items-baseline justify-between">
               {price ? (
@@ -172,7 +173,7 @@ export function OraclePanel() {
             </div>
           ) : null}
 
-          <div className="grid grid-cols-2 gap-x-5 border-t border-hairline pt-2">
+          <div className="mt-auto grid grid-cols-2 gap-x-4 border-t border-hairline pt-2">
             <Stat label="a" value={p ? p.a.toExponential(3) : "—"} />
             <Stat label="b" value={p ? p.b.toExponential(3) : "—"} />
             <Stat
@@ -184,12 +185,9 @@ export function OraclePanel() {
             <Stat label="σ sigma" value={p ? p.sigma.toFixed(5) : "—"} />
             <Stat
               label="Checkpoint"
-              value={price ? price.checkpoint.toLocaleString() : "—"}
+              value={price ? fmtCompact(price.checkpoint) : "—"}
               tone="dim"
             />
-          </div>
-
-          <div className="mt-auto grid grid-cols-2 gap-x-5 border-t border-hairline pt-2">
             <Stat
               label="Oracle"
               value={truncateAddr(oracle.oracle_id, 6, 4)}

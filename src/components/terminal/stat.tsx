@@ -179,7 +179,10 @@ export function StatTile({
 }) {
   return (
     <div
-      className={cn("flex min-w-0 flex-col gap-1 bg-panel px-3 py-2", className)}
+      className={cn(
+        "flex min-w-0 flex-col gap-1 bg-panel px-3 py-1.5 2xl:py-2",
+        className,
+      )}
     >
       <span className="label-micro truncate">{label}</span>
       <MonoValue
@@ -208,7 +211,10 @@ export function TileGrid({
   return (
     <div
       className={cn(
-        "grid gap-px overflow-hidden rounded-md border border-hairline bg-hairline",
+        // shrink-0: a tile cluster must never collapse below its content when it
+        // lives inside a scrollable flex column (overflow-hidden otherwise lets
+        // flexbox squeeze it to zero height).
+        "grid shrink-0 gap-px overflow-hidden rounded-md border border-hairline bg-hairline",
         className,
       )}
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
@@ -224,11 +230,13 @@ export function Verdict({
   children,
   sub,
   className,
+  wrap = false,
 }: {
   tone?: Tone;
   children: React.ReactNode;
   sub?: React.ReactNode;
   className?: string;
+  wrap?: boolean;
 }) {
   return (
     <div
@@ -241,7 +249,8 @@ export function Verdict({
       <div className="min-w-0 flex-1">
         <div
           className={cn(
-            "truncate text-val font-medium leading-tight",
+            "text-val font-medium leading-tight",
+            wrap ? "whitespace-normal" : "truncate",
             toneClass(tone),
           )}
         >

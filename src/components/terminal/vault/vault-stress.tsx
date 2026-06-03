@@ -46,9 +46,10 @@ export function VaultStress({
   const LADDER = [1, 2, 3, 5];
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 2xl:gap-3">
       <Verdict
         tone={tone}
+        wrap
         sub={
           <>
             ±<span className="tabular">{sigmaLabel}</span>σ · 1-day shock ·

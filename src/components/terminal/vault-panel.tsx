@@ -114,7 +114,7 @@ export function VaultPanel({ className }: { className?: string }) {
           </div>
         </div>
       ) : (
-        <div className="grid h-full min-h-0 grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[1.1fr_1.2fr_0.9fr]">
+        <div className="grid h-full min-h-0 grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-[1.1fr_1.2fr_0.9fr] 2xl:gap-y-4">
           <div className="min-h-0 lg:overflow-y-auto">
             <VaultStress
               availLiq={data.available_liquidity}
@@ -125,7 +125,7 @@ export function VaultPanel({ className }: { className?: string }) {
             />
           </div>
 
-          <div className="flex min-h-0 flex-col">
+          <div className="flex min-h-0 flex-col lg:overflow-y-auto">
             <div className="mb-1 flex items-baseline justify-between">
               <span className="label-micro">PLP share price</span>
               {apy != null ? (
@@ -159,7 +159,7 @@ export function VaultPanel({ className }: { className?: string }) {
             ) : null}
           </div>
 
-          <div className="flex min-h-0 flex-col gap-3 lg:overflow-y-auto">
+          <div className="flex min-h-0 flex-col gap-2 lg:overflow-y-auto 2xl:gap-3">
             <div>
               <Stat label="Utilization" value={fmtPct(data.utilization)} />
               <Meter value={data.utilization} tone="accent" />
