@@ -6,7 +6,7 @@
 /* ───────────────────────────────────────────────────────────────────────────
    DEEPSKEW — design tokens (see DESIGN.md). Dark-only.
    Design system = Tatem ("Midnight Terminal"): #000 canvas, #161616 panel,
-   #007eed cerulean for data/interaction, status colors carry risk. Inter +
+   #007eed cerulean for data/interaction, status colors carry risk. Geist +
    tabular figures. Color = information, never decoration.
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
@@ -195,7 +195,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-  /* Numbers: JetBrains Mono + tabular figures. `.tabular` is the value hook —
+  /* Numbers: Geist Mono + tabular figures. `.tabular` is the value hook —
      mono texture is what makes a readout read as "data", not prose. */
   .tabular,
   .font-mono {

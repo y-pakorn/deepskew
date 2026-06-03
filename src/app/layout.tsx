@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s · DEEPSKEW",
   },
   description:
-    "DEEPSKEW is a Dense Quant Terminal for DeepBook Predict on Sui: a live on-chain BTC implied-volatility surface, an arbitrage-free checker, a ±5σ PLP vault risk simulator, and a one-click settlement desk. Make Predict legible.",
+    "DEEPSKEW is a Dense Quant Terminal for DeepBook Predict on Sui: a live on-chain BTC implied-volatility surface, an arbitrage-free checker, a ±5σ PLP vault risk simulator, and a live settlement tape. Make Predict legible.",
   applicationName: "DEEPSKEW",
   keywords: [
     "DeepBook Predict",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "DEEPSKEW — On-chain BTC vol surface & PLP risk terminal",
     description:
-      "Live on-chain BTC implied-volatility surface, arb-free checker, ±5σ PLP risk simulator, and settlement desk for DeepBook Predict on Sui.",
+      "Live on-chain BTC implied-volatility surface, arb-free checker, ±5σ PLP risk simulator, and a live settlement tape for DeepBook Predict on Sui.",
     url: "https://deepskew.xyz",
     siteName: "DEEPSKEW",
     type: "website",

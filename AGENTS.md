@@ -23,7 +23,7 @@ data layer, SVI math, and contract integration.
   with shadcn semantic tokens (`--background/--card/--primary/…`) aliased onto
   them. Custom utilities: `bg-canvas`, `bg-panel`, `text-text-sec/-dim/-faint`,
   `text-accent-brand`, `border-hairline`, `.label-micro`.
-- **Type:** Inter for UI; **JetBrains Mono (tabular)** for every number, address,
+- **Type:** **Geist** for UI; **Geist Mono (tabular)** for every number, address,
   and SVI param.
 - **shadcn/ui** (new-york) in `src/components/ui` — add via
   `pnpm dlx shadcn@latest add <name>`. `cn()` in `src/lib/utils.ts`.
