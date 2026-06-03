@@ -98,9 +98,12 @@ export function VolSurface({
       );
       const row = data.nearestRealRow[r];
       setPick({ row, col: c });
+      const canvas = e.nativeEvent.target as HTMLElement | null;
       onHover({
         x: e.nativeEvent.offsetX,
         y: e.nativeEvent.offsetY,
+        w: canvas?.clientWidth ?? 0,
+        h: canvas?.clientHeight ?? 0,
         k: data.colK[c],
         T: data.rowT[row],
         iv: data.ivGrid[row * nk + c],

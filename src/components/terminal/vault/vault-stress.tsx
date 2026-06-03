@@ -109,7 +109,7 @@ export function VaultStress({
       </div>
 
       <div className="border-t border-hairline pt-2">
-        <div className="mb-1 grid grid-cols-3 label-micro">
+        <div className="mb-1 grid grid-cols-[auto_1fr_1fr] gap-x-2 label-micro">
           <span>Shock</span>
           <span className="text-right">Move</span>
           <span className="text-right">Buffer</span>
@@ -120,7 +120,7 @@ export function VaultStress({
             return (
               <div
                 key={s}
-                className="grid grid-cols-3 text-data tabular"
+                className="grid grid-cols-[auto_1fr_1fr] gap-x-2 whitespace-nowrap text-data tabular"
               >
                 <span className="text-text-dim">{s}σ</span>
                 <span className="text-right text-warn">

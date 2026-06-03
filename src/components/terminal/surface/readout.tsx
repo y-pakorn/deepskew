@@ -1,6 +1,7 @@
 "use client";
 
 import { fmtDuration } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
 
@@ -9,6 +10,8 @@ const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
 export interface HoverInfo {
   x: number;
   y: number;
+  w: number; // canvas client width (for edge-clamping the readout)
+  h: number; // canvas client height
   k: number; // log-moneyness
   T: number; // years to expiry at the snapped real tenor
   iv: number; // implied vol, 0..1
@@ -22,10 +25,17 @@ export function SurfaceReadout({ info }: { info: HoverInfo | null }) {
   if (!info) return null;
   const moneyness = (Math.exp(info.k) - 1) * 100;
   const sign = moneyness >= 0 ? "+" : "−";
+  // Keep the popover inside the canvas: clamp x to a padding inset, and drop it
+  // below the cursor when there isn't room to float above (e.g. the IV peak).
+  const left = Math.max(80, Math.min(info.x, info.w - 80));
+  const below = info.y < 88;
   return (
     <div
-      className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-[125%] whitespace-nowrap rounded border border-hairline bg-panel-elev px-2 py-1.5 shadow-lg"
-      style={{ left: info.x, top: info.y }}
+      className={cn(
+        "pointer-events-none absolute z-20 -translate-x-1/2 whitespace-nowrap rounded border border-hairline bg-panel-elev px-2 py-1.5 shadow-lg",
+        below ? "translate-y-3" : "-translate-y-[125%]",
+      )}
+      style={{ left, top: info.y }}
     >
       <div className="grid grid-cols-[auto_auto] items-baseline gap-x-3 gap-y-0.5">
         <span className="label-micro text-text-faint">IV</span>

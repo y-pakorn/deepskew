@@ -134,7 +134,7 @@ export function VaultPanel({ className }: { className?: string }) {
                 </span>
               ) : null}
             </div>
-            <div className="min-h-[90px] flex-1">
+            <div className="min-h-[90px] flex-1 2xl:min-h-[120px]">
               {perfData.length ? (
                 <PerfChart data={perfData} />
               ) : (
@@ -147,9 +147,9 @@ export function VaultPanel({ className }: { className?: string }) {
             </div>
             {lp.series.length >= 2 ? (
               <div className="mt-2">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="label-micro">LP net flow</span>
-                  <span className="text-data tabular text-text-dim">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="label-micro shrink-0">LP net flow</span>
+                  <span className="min-w-0 truncate text-right text-data tabular text-text-dim">
                     {lp.supplyCount}↑ {lp.withdrawCount}↓ · net{" "}
                     {fmtUsdCompact(fromUnits(lp.net, DUSDC_DECIMALS))}
                   </span>

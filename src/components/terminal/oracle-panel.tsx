@@ -116,7 +116,9 @@ export function OraclePanel() {
             </div>
             {spots.length >= 2 ? (
               <div className="mt-2 flex items-center gap-3">
-                <Sparkline values={spots} />
+                <div className="min-w-0 flex-1">
+                  <Sparkline values={spots} />
+                </div>
                 <span
                   className={cn(
                     "shrink-0 text-val tabular",
@@ -154,9 +156,11 @@ export function OraclePanel() {
 
           {term.length >= 2 ? (
             <div className="border-t border-hairline pt-2">
-              <div className="mb-1 flex items-baseline justify-between">
-                <span className="label-micro">ATM IV term structure</span>
-                <span className="text-val tabular text-text-dim">
+              <div className="mb-1 flex items-baseline justify-between gap-2">
+                <span className="label-micro min-w-0 truncate">
+                  ATM IV term structure
+                </span>
+                <span className="shrink-0 whitespace-nowrap text-val tabular text-text-dim">
                   {(term[0].atmIV * 100).toFixed(0)}% →{" "}
                   {(term.at(-1)!.atmIV * 100).toFixed(0)}%
                 </span>

@@ -81,7 +81,9 @@ export function PerfChart({ data }: { data: PerfPoint[] }) {
         return;
       }
       const d = new Date((param.time as number) * 1000);
-      const left = Math.max(30, Math.min(param.point.x, el.clientWidth - 30));
+      // Inset ~ half the tooltip's width so a near-edge crosshair can't push the
+      // centered (-translate-x-1/2) tooltip past the container.
+      const left = Math.max(46, Math.min(param.point.x, el.clientWidth - 46));
       setTip({
         left,
         value: point.value,

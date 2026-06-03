@@ -44,12 +44,12 @@ export function DeskPanel({ className }: { className?: string }) {
     >
       {items.length ? (
         <div className="border-b border-hairline px-3 py-2">
-          <div className="mb-1 flex items-center justify-between">
-            <span className="label-micro">
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <span className="label-micro min-w-0 truncate">
               Positioning · last{" "}
               <span className="tabular">{mints.length}</span>
             </span>
-            <span className="text-data tabular text-text-dim">
+            <span className="shrink-0 whitespace-nowrap text-data tabular text-text-dim">
               Vol {fmtUsdCompact(fromUnits(volume, DUSDC_DECIMALS))}
             </span>
           </div>
@@ -65,16 +65,16 @@ export function DeskPanel({ className }: { className?: string }) {
 
       {stats.total ? (
         <div className="border-b border-hairline px-3 py-2">
-          <div className="flex items-center justify-between">
-            <span className="label-micro">
+          <div className="flex items-center justify-between gap-2">
+            <span className="label-micro min-w-0 truncate">
               Settlement · <span className="tabular">{stats.total}</span>
             </span>
-            <span className="text-data tabular text-text-dim">
+            <span className="shrink-0 whitespace-nowrap text-data tabular text-text-dim">
               Payouts {fmtUsdCompact(fromUnits(stats.payouts, DUSDC_DECIMALS))}
             </span>
           </div>
-          <div className="mt-1 flex items-center justify-between text-data tabular">
-            <span className="text-text-sec">
+          <div className="mt-1 flex items-center justify-between gap-2 text-data tabular">
+            <span className="shrink-0 whitespace-nowrap text-text-sec">
               Taker win{" "}
               <span
                 className={stats.winRate < 50 ? "text-safe" : "text-warn"}
@@ -83,14 +83,14 @@ export function DeskPanel({ className }: { className?: string }) {
                 {stats.winRate.toFixed(0)}%
               </span>
             </span>
-            <span className="text-text-faint">
+            <span className="min-w-0 truncate text-right text-text-faint">
               UP {stats.upWinRate.toFixed(0)}% · DN {stats.dnWinRate.toFixed(0)}%
             </span>
           </div>
         </div>
       ) : null}
 
-      <div className="grid grid-cols-[3.6rem_2rem_1fr_auto] items-center gap-x-2 border-b border-hairline px-3 py-1.5">
+      <div className="grid grid-cols-[3.9rem_2rem_1fr_auto] items-center gap-x-2 border-b border-hairline px-3 py-1.5">
         <span className="label-micro">Time</span>
         <span className="label-micro">Side</span>
         <span className="label-micro">Strike</span>
@@ -104,7 +104,7 @@ export function DeskPanel({ className }: { className?: string }) {
           {Array.from({ length: 12 }).map((_, i) => (
             <div
               key={i}
-              className="grid grid-cols-[3.6rem_2rem_1fr_auto] items-center gap-x-2 py-1"
+              className="grid grid-cols-[3.9rem_2rem_1fr_auto] items-center gap-x-2 py-1"
             >
               <Skeleton className="h-3 w-12 bg-panel-elev" />
               <Skeleton className="h-3 w-6 bg-panel-elev" />
@@ -114,7 +114,7 @@ export function DeskPanel({ className }: { className?: string }) {
           ))}
         </div>
       ) : (
-        <ScrollArea className="min-h-0 flex-1">
+        <ScrollArea className="min-h-0 flex-1 [mask-image:linear-gradient(to_bottom,#000_calc(100%-1.25rem),transparent)]">
           <div>
             {items.map((it) => (
               <FlowRow
@@ -136,7 +136,7 @@ function FlowRow({ it, mine }: { it: FlowItem; mine: boolean }) {
   return (
     <div
       className={cn(
-        "grid grid-cols-[3.6rem_2rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-data tabular",
+        "grid grid-cols-[3.9rem_2rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-data tabular",
         mine && "bg-accent-brand/10",
       )}
     >
