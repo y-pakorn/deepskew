@@ -94,17 +94,18 @@ function ConnectDialog({ reconnecting }: { reconnecting: boolean }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {/* Plain button (not shadcn Button) to match the header's MarketSelector
-            / ⌘K chrome and avoid the outline variant's dark: bg winning out. */}
+        {/* Filled cerulean accent — the strip's one primary CTA, so it leads
+            against the neutral MarketSelector / ⌘K chrome. Plain button (not
+            shadcn Button) to stay literally on the Tatem accent tokens. */}
         <button
           type="button"
           disabled={reconnecting}
-          className="inline-flex h-7 items-center gap-1.5 rounded border border-hairline bg-panel px-2.5 text-data text-text-sec transition-colors hover:border-accent-brand/40 hover:bg-panel-elev hover:text-foreground disabled:opacity-50 data-[state=open]:border-accent-brand/40 data-[state=open]:text-foreground"
+          className="inline-flex h-7 items-center gap-1.5 rounded border border-accent-brand bg-accent-brand px-2.5 text-data text-primary-foreground transition-colors hover:border-accent-brand/90 hover:bg-accent-brand/90 disabled:opacity-50 data-[state=open]:border-accent-brand/90 data-[state=open]:bg-accent-brand/90"
         >
           {reconnecting ? (
-            <LoaderCircle className="size-3.5 animate-spin text-text-dim" />
+            <LoaderCircle className="size-3.5 animate-spin text-primary-foreground/80" />
           ) : (
-            <Wallet className="size-3.5 text-text-dim" />
+            <Wallet className="size-3.5 text-primary-foreground/80" />
           )}
           {reconnecting ? "Connecting…" : "Connect wallet"}
         </button>
