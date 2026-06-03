@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export type Tone =
@@ -64,8 +63,10 @@ function parseValue(
 /**
  * A numeric readout: Geist Mono tabular, with the leading currency symbol and
  * the trailing unit/scale/exponent rendered dim + smaller so the magnitude
- * leads. With `pop`, each character re-enters with a blurred slide whenever the
- * value changes (transitions-dev number pop-in) — for live, value-led numbers.
+ * leads. With `pop`, characters re-enter with a blurred slide (transitions-dev
+ * number pop-in) — but only the ones that actually changed since the previous
+ * value, diffed right-aligned so units stay put. A steadily-ticking countdown
+ * pops just its moving digit; a price tick pops just the digits that moved.
  */
 export function MonoValue({
   children,
@@ -76,19 +77,7 @@ export function MonoValue({
   className?: string;
   pop?: boolean;
 }) {
-  const ref = useRef<HTMLSpanElement>(null);
   const text = typeof children === "string" ? children : null;
-
-  // Replay the per-digit pop-in on every value change (and on mount). Reflow
-  // between remove + re-add is what restarts the CSS animation.
-  useEffect(() => {
-    if (!pop) return;
-    const el = ref.current;
-    if (!el) return;
-    el.classList.remove("is-animating");
-    void el.offsetHeight;
-    el.classList.add("is-animating");
-  }, [text, pop]);
 
   if (text == null) {
     return <span className={cn("tabular", className)}>{children}</span>;
@@ -106,6 +95,11 @@ export function MonoValue({
     );
   }
 
+  // Per-digit pop-in, keyed by right-aligned position + glyph. A character that
+  // didn't change keeps its key → React reuses the node → its animation stays
+  // finished (no replay). A character that changed gets a new key → React
+  // remounts it → its CSS animation restarts. So only the moving digits pop;
+  // the rest hold still, even as the panel re-renders every second.
   const lead = parts?.lead ?? "";
   const core = parts ? parts.core : text;
   const trail = parts?.trail ?? "";
@@ -114,16 +108,19 @@ export function MonoValue({
   const leadLen = lead.length;
   const coreEnd = lead.length + core.length;
   return (
-    <span ref={ref} className={cn("tabular t-digit-group", className)}>
-      {chars.map((ch, i) => (
-        <span
-          key={i}
-          className={cn("t-digit", (i < leadLen || i >= coreEnd) && "affix")}
-          data-stagger={i === n - 2 ? "1" : i === n - 1 ? "2" : undefined}
-        >
-          {ch}
-        </span>
-      ))}
+    <span className={cn("tabular t-digit-group is-animating", className)}>
+      {chars.map((ch, i) => {
+        const fromRight = n - 1 - i;
+        return (
+          <span
+            key={`${fromRight}:${ch}`}
+            className={cn("t-digit", (i < leadLen || i >= coreEnd) && "affix")}
+            data-stagger={i === n - 2 ? "1" : i === n - 1 ? "2" : undefined}
+          >
+            {ch}
+          </span>
+        );
+      })}
     </span>
   );
 }
