@@ -67,6 +67,9 @@ export function VaultPanel({ className }: { className?: string }) {
       title="Vault · PLP risk"
       code="dUSDC"
       className={className}
+      // At lg the desk is fixed-height: don't scroll the whole 3-column body as
+      // one unit (that clipped the bottom). Each column scrolls on its own below.
+      bodyClassName="lg:overflow-hidden"
       right={
         data ? (
           <FlashValue
@@ -81,8 +84,8 @@ export function VaultPanel({ className }: { className?: string }) {
       {isError ? (
         <PanelState kind="error">Vault feed unreachable</PanelState>
       ) : isLoading || !data ? (
-        <div className="grid h-full grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[1.1fr_1.2fr_0.9fr]">
-          <div className="flex flex-col gap-3">
+        <div className="grid h-full min-h-0 grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[1.1fr_1.2fr_0.9fr]">
+          <div className="flex min-h-0 flex-col gap-3">
             <Skeleton className="h-12 w-full rounded-md bg-panel-elev" />
             <Skeleton className="h-1 w-full rounded-full bg-panel-elev" />
             <div className="space-y-1.5 pt-1">
@@ -111,14 +114,16 @@ export function VaultPanel({ className }: { className?: string }) {
           </div>
         </div>
       ) : (
-        <div className="grid h-full grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[1.1fr_1.2fr_0.9fr]">
-          <VaultStress
-            availLiq={data.available_liquidity}
-            maxPayout={data.total_max_payout}
-            mtm={data.total_mtm}
-            spot={spot}
-            atmIV={atmIV}
-          />
+        <div className="grid h-full min-h-0 grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[1.1fr_1.2fr_0.9fr]">
+          <div className="min-h-0 lg:overflow-y-auto">
+            <VaultStress
+              availLiq={data.available_liquidity}
+              maxPayout={data.total_max_payout}
+              mtm={data.total_mtm}
+              spot={spot}
+              atmIV={atmIV}
+            />
+          </div>
 
           <div className="flex min-h-0 flex-col">
             <div className="mb-1 flex items-baseline justify-between">
@@ -154,7 +159,7 @@ export function VaultPanel({ className }: { className?: string }) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex min-h-0 flex-col gap-3 lg:overflow-y-auto">
             <div>
               <Stat label="Utilization" value={fmtPct(data.utilization)} />
               <Meter value={data.utilization} tone="accent" />
