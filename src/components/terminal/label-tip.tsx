@@ -35,7 +35,12 @@ export function LabelTip({
         <span
           tabIndex={0}
           className={cn(
-            "cursor-help underline decoration-dotted decoration-text-faint/70 underline-offset-2 outline-none transition-colors hover:decoration-text-dim focus-visible:decoration-accent-brand",
+            // w-fit + max-w-full: hug the text so only the label is hoverable —
+            // not the empty space of the flex/grid cell it sits in (a span gets
+            // blockified + stretched to full width as a column-flex or grid
+            // item). max-w-full keeps the `truncate` callers ellipsizing when
+            // the text outgrows a constrained column instead of overflowing it.
+            "w-fit max-w-full cursor-help underline decoration-dotted decoration-text-faint/70 underline-offset-2 outline-none transition-colors hover:decoration-text-dim focus-visible:decoration-accent-brand",
             className,
           )}
         >
