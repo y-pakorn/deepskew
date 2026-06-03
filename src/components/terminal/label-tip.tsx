@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { GLOSSARY } from "@/lib/glossary";
 import { cn } from "@/lib/utils";
+import { TipContent } from "./tip-content";
 
 /**
  * A label that explains itself: a dotted underline + help cursor signals it's
@@ -27,7 +28,7 @@ export function LabelTip({
   className?: string;
   side?: ComponentProps<typeof TooltipContent>["side"];
 }) {
-  const text = GLOSSARY[k] ?? k;
+  const doc = GLOSSARY[k] ?? k;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -41,7 +42,9 @@ export function LabelTip({
           {children}
         </span>
       </TooltipTrigger>
-      <TooltipContent side={side}>{text}</TooltipContent>
+      <TooltipContent side={side}>
+        <TipContent doc={doc} />
+      </TooltipContent>
     </Tooltip>
   );
 }
