@@ -2,7 +2,9 @@
 
 import { createContext, useContext, useMemo, useState } from "react";
 import { useActiveOracles } from "@/lib/indexer/hooks";
+import { useLiveEvents } from "@/lib/indexer/use-live-events";
 import type { OracleInfo } from "@/lib/indexer/types";
+import type { StreamStatus } from "@/lib/sui/events";
 
 interface MarketContextValue {
   activeOracles: OracleInfo[];
@@ -11,6 +13,8 @@ interface MarketContextValue {
   selectedOracleId: string | null;
   setSelectedOracleId: (id: string) => void;
   selectedOracle: OracleInfo | undefined;
+  /** On-chain checkpoint-stream connection state (the live push channel). */
+  liveStatus: StreamStatus;
 }
 
 const MarketContext = createContext<MarketContextValue | null>(null);
@@ -18,6 +22,9 @@ const MarketContext = createContext<MarketContextValue | null>(null);
 export function MarketProvider({ children }: { children: React.ReactNode }) {
   const { data: activeOracles = [], isLoading, isError } = useActiveOracles();
   const [picked, setPicked] = useState<string | null>(null);
+  // Mount the live on-chain checkpoint stream once for the whole terminal; it
+  // merges events into the shared query cache (no parallel store).
+  const liveStatus = useLiveEvents();
 
   // Derive the effective selection (no setState-in-effect): honor the user's
   // pick while it's still active, else fall back to the nearest-expiry oracle.
@@ -41,8 +48,16 @@ export function MarketProvider({ children }: { children: React.ReactNode }) {
       selectedOracleId,
       setSelectedOracleId: setPicked,
       selectedOracle,
+      liveStatus,
     }),
-    [activeOracles, isLoading, isError, selectedOracleId, selectedOracle],
+    [
+      activeOracles,
+      isLoading,
+      isError,
+      selectedOracleId,
+      selectedOracle,
+      liveStatus,
+    ],
   );
 
   return (
