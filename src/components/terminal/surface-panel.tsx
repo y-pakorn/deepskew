@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTermStructure } from "@/lib/indexer/hooks";
 import { fmtDuration } from "@/lib/format";
 import { checkButterfly, checkCalendar } from "@/lib/svi";
@@ -14,6 +15,7 @@ import { TextSwap } from "./text-swap";
 export function SurfacePanel({ className }: { className?: string }) {
   const { rows, version } = useTermStructure();
   const now = useNow();
+  const [hoverTenor, setHoverTenor] = useState<number | null>(null);
 
   const ready = rows.length >= 2;
   const arb = ready
@@ -60,7 +62,11 @@ export function SurfacePanel({ className }: { className?: string }) {
     >
       <div className="absolute inset-0 overflow-hidden">
         {ready ? (
-          <SurfaceScene rows={rows} version={version} />
+          <SurfaceScene
+            rows={rows}
+            version={version}
+            onTenorHover={setHoverTenor}
+          />
         ) : (
           <div className="flex h-full items-center justify-center">
             <span className="label-micro animate-pulse text-text-dim">
@@ -98,8 +104,12 @@ export function SurfacePanel({ className }: { className?: string }) {
               <span
                 key={r.oracleId}
                 className={cn(
-                  "shrink-0 whitespace-nowrap text-data tabular",
-                  i === 0 ? "text-accent-brand" : "text-text-dim",
+                  "shrink-0 whitespace-nowrap text-data tabular transition-colors",
+                  hoverTenor === i
+                    ? "text-foreground underline decoration-accent-brand underline-offset-4"
+                    : i === 0
+                      ? "text-accent-brand"
+                      : "text-text-dim",
                 )}
               >
                 {fmtDuration(r.expiry - now)}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ThreeEvent, useFrame } from "@react-three/fiber";
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -9,35 +9,46 @@ import {
   DoubleSide,
   type LineBasicMaterial,
 } from "three";
-import { buildSurface, type SurfaceRow } from "@/lib/surface";
+import { buildSurface, type SurfaceRow, X_HALF, Z_HALF } from "@/lib/surface";
+import type { HoverInfo } from "./readout";
+
+/** Markers must never intercept the ray, or hovering one breaks the readout. */
+const noRaycast = () => null;
+const clamp = (v: number, max: number) => Math.max(0, Math.min(max, v));
 
 /**
  * Glowing IV surface: a faint solid sheet + a clean quad wireframe with additive
  * blending (bright line crossings sparkle; bloom in the scene does the glow).
- * Geometry rebuilds only when `version` changes (a checksum of the live SVI
- * data), keeping GPU uploads off the 1s clock tick.
+ * Real oracle tenors render at full brightness; interpolated ribs are dimmed so
+ * they fill in the surface without blowing out under bloom. Geometry rebuilds
+ * only when `version` changes (a checksum of the live SVI data), keeping GPU
+ * uploads off the 1s clock tick.
+ *
+ * Pointer-move raycasts the sheet, snaps to the nearest grid node, drops a
+ * marker, and reports the node up via `onHover` for the DOM readout.
  */
 export function VolSurface({
   rows,
   version,
+  onHover,
 }: {
   rows: SurfaceRow[];
   version: number;
+  onHover: (info: HoverInfo | null) => void;
 }) {
-  const geom = useMemo(() => {
-    const data = buildSurface(rows);
-    if (!data) return null;
-    const position = new BufferAttribute(data.positions, 3);
-    const color = new BufferAttribute(data.colors, 3);
+  const { geom, data } = useMemo(() => {
+    const d = buildSurface(rows);
+    if (!d) return { geom: null, data: null };
+    const position = new BufferAttribute(d.positions, 3);
     const fill = new BufferGeometry();
     fill.setAttribute("position", position);
-    fill.setAttribute("color", color);
-    fill.setIndex(new BufferAttribute(data.indices, 1));
+    fill.setAttribute("color", new BufferAttribute(d.colors, 3));
+    fill.setIndex(new BufferAttribute(d.indices, 1));
     const lines = new BufferGeometry();
     lines.setAttribute("position", position);
-    lines.setAttribute("color", color);
-    lines.setIndex(new BufferAttribute(data.lineIndices, 1));
-    return { fill, lines };
+    lines.setAttribute("color", new BufferAttribute(d.lineColors, 3));
+    lines.setIndex(new BufferAttribute(d.lineIndices, 1));
+    return { geom: { fill, lines }, data: d };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- version captures rows' content
   }, [version]);
 
@@ -49,7 +60,8 @@ export function VolSurface({
     [geom],
   );
 
-  // Flare the wireframe on each new SVI tick (~700ms decay).
+  // Flare the wireframe on each new SVI tick (~700ms decay). Base opacity is
+  // lower than the sparse surface so the denser grid doesn't blow out.
   const wireRef = useRef<LineBasicMaterial>(null);
   const pulseStart = useRef(-Infinity);
   useEffect(() => {
@@ -61,13 +73,87 @@ export function VolSurface({
     if (!m) return;
     const e = performance.now() - pulseStart.current;
     const pulse = e >= 0 && e < 700 ? 1 - e / 700 : 0;
-    m.opacity = 0.85 + 0.25 * pulse;
+    m.opacity = 0.5 + 0.3 * pulse;
   });
+
+  // Hover picking. The mesh sits at the origin with no rotation (OrbitControls
+  // moves the camera, not the object), so a world-space hit inverts straight
+  // back to grid coordinates from x and z alone. The tenor (row) snaps to the
+  // nearest real oracle rib so the readout, the highlighted rib, and the bottom
+  // tenor strip all refer to the same real expiry.
+  const [pick, setPick] = useState<{ row: number; col: number } | null>(null);
+
+  const handleMove = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      if (!data) return;
+      e.stopPropagation();
+      const { nk, nr } = data;
+      const c = clamp(
+        Math.round(((e.point.x / X_HALF + 1) / 2) * (nk - 1)),
+        nk - 1,
+      );
+      const r = clamp(
+        Math.round(((1 - e.point.z / Z_HALF) / 2) * (nr - 1)),
+        nr - 1,
+      );
+      const row = data.nearestRealRow[r];
+      setPick({ row, col: c });
+      onHover({
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY,
+        k: data.colK[c],
+        T: data.rowT[row],
+        iv: data.ivGrid[row * nk + c],
+        tenorIndex: data.nearestRealIdx[r],
+      });
+    },
+    [data, onHover],
+  );
+
+  const handleOut = useCallback(() => {
+    setPick(null);
+    onHover(null);
+  }, [onHover]);
+
+  // The hovered tenor's smile curve, lifted a hair off the sheet so it reads as
+  // a bright iso-tenor rib over the dim grid.
+  const ribGeom = useMemo(() => {
+    if (!data || !pick || pick.row >= data.nr) return null;
+    const { nk } = data;
+    const seg = new Float32Array((nk - 1) * 2 * 3);
+    let o = 0;
+    for (let c = 0; c < nk - 1; c++) {
+      for (const cc of [c, c + 1]) {
+        const b = (pick.row * nk + cc) * 3;
+        seg[o++] = data.positions[b];
+        seg[o++] = data.positions[b + 1] + 0.012;
+        seg[o++] = data.positions[b + 2];
+      }
+    }
+    const g = new BufferGeometry();
+    g.setAttribute("position", new BufferAttribute(seg, 3));
+    return g;
+  }, [data, pick]);
+
+  useEffect(() => () => ribGeom?.dispose(), [ribGeom]);
+
+  const markerPos =
+    data && pick && pick.row < data.nr
+      ? ([
+          data.positions[(pick.row * data.nk + pick.col) * 3],
+          data.positions[(pick.row * data.nk + pick.col) * 3 + 1],
+          data.positions[(pick.row * data.nk + pick.col) * 3 + 2],
+        ] as [number, number, number])
+      : null;
 
   if (!geom) return null;
   return (
     <group>
-      <mesh geometry={geom.fill}>
+      <mesh
+        geometry={geom.fill}
+        onPointerMove={handleMove}
+        onPointerOut={handleOut}
+      >
         <meshBasicMaterial
           vertexColors
           transparent
@@ -81,12 +167,30 @@ export function VolSurface({
           ref={wireRef}
           vertexColors
           transparent
-          opacity={0.9}
+          opacity={0.5}
           blending={AdditiveBlending}
           depthWrite={false}
           toneMapped={false}
         />
       </lineSegments>
+      {ribGeom ? (
+        <lineSegments geometry={ribGeom} raycast={noRaycast}>
+          <lineBasicMaterial
+            color="#cdeeff"
+            transparent
+            opacity={0.95}
+            blending={AdditiveBlending}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </lineSegments>
+      ) : null}
+      {markerPos ? (
+        <mesh position={markerPos} raycast={noRaycast}>
+          <sphereGeometry args={[0.028, 16, 16]} />
+          <meshBasicMaterial color="#eaf6ff" toneMapped={false} />
+        </mesh>
+      ) : null}
     </group>
   );
 }

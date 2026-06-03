@@ -9,29 +9,36 @@ export interface TermRow {
   atmIV: number;
 }
 
-// Log-spaced tenors (~30m → ~2w) so the surface / term structure read as a real
-// curve instead of a cluster of near-identical intraday smiles.
-const TENOR_TARGETS_MIN = [30, 60, 120, 240, 480, 1440, 2880, 10080, 20160];
+// The surface draws every live expiry as a real rib, so the term structure is
+// as dense as the venue actually is (typically ~18 expiries: clustered intraday,
+// thinning out to a few weeks). Capped so a runaway expiry count can't blow up
+// the geometry / per-tenor SVI fan-out; if exceeded, we keep both ends and
+// evenly thin the middle.
+const MAX_TENORS = 24;
 
-/** Pick one active oracle nearest each target horizon, deduped, sorted by expiry. */
+/** Every active, not-yet-expired oracle as a tenor — one per distinct expiry,
+ *  sorted nearest-first, thinned to MAX_TENORS if the venue ever has more. */
 export function selectTermStructure(
   oracles: OracleInfo[],
   nowMs: number,
 ): OracleInfo[] {
   if (!oracles.length) return [];
-  const picked = new Map<string, OracleInfo>();
-  for (const min of TENOR_TARGETS_MIN) {
-    const want = nowMs + min * 60_000;
-    let best: OracleInfo | null = null;
-    let bestD = Infinity;
-    for (const o of oracles) {
-      const d = Math.abs(o.expiry - want);
-      if (d < bestD) {
-        bestD = d;
-        best = o;
-      }
-    }
-    if (best) picked.set(best.oracle_id, best);
+
+  const seen = new Set<number>();
+  const future: OracleInfo[] = [];
+  for (const o of [...oracles].sort((a, b) => a.expiry - b.expiry)) {
+    if (o.expiry <= nowMs || seen.has(o.expiry)) continue;
+    seen.add(o.expiry);
+    future.push(o);
   }
-  return [...picked.values()].sort((a, b) => a.expiry - b.expiry);
+  if (future.length <= MAX_TENORS) return future;
+
+  // Too many: keep first + last, evenly sample the rest by index.
+  const out: OracleInfo[] = [];
+  for (let i = 0; i < MAX_TENORS; i++) {
+    const idx = Math.round((i * (future.length - 1)) / (MAX_TENORS - 1));
+    const o = future[idx];
+    if (o && out[out.length - 1] !== o) out.push(o);
+  }
+  return out;
 }
