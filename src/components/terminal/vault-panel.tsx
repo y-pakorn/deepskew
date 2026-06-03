@@ -11,6 +11,7 @@ import { fmtPct, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { decodeSvi, impliedVol, yearsToExpiry } from "@/lib/svi";
 import { FlashValue } from "./flash-value";
+import { LabelTip } from "./label-tip";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
@@ -127,10 +128,10 @@ export function VaultPanel({ className }: { className?: string }) {
 
           <div className="flex min-h-0 flex-col lg:overflow-y-auto">
             <div className="mb-1 flex items-baseline justify-between">
-              <span className="label-micro">PLP share price</span>
+              <LabelTip k="plp-share-price" className="label-micro">PLP share price</LabelTip>
               {apy != null ? (
                 <span className="text-data tabular text-safe">
-                  APY {apy.toFixed(1)}%
+                  <LabelTip k="apy">APY</LabelTip> {apy.toFixed(1)}%
                 </span>
               ) : null}
             </div>
@@ -148,7 +149,7 @@ export function VaultPanel({ className }: { className?: string }) {
             {lp.series.length >= 2 ? (
               <div className="mt-2">
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <span className="label-micro shrink-0">LP net flow</span>
+                  <LabelTip k="lp-net-flow" className="label-micro shrink-0">LP net flow</LabelTip>
                   <span className="min-w-0 truncate text-right text-data tabular text-text-dim">
                     {lp.supplyCount}↑ {lp.withdrawCount}↓ · net{" "}
                     {fmtUsdCompact(fromUnits(lp.net, DUSDC_DECIMALS))}
@@ -161,12 +162,13 @@ export function VaultPanel({ className }: { className?: string }) {
 
           <div className="flex min-h-0 flex-col gap-2 lg:overflow-y-auto 2xl:gap-3">
             <div>
-              <Stat label="Utilization" value={fmtPct(data.utilization)} />
+              <Stat label="Utilization" tip="utilization" value={fmtPct(data.utilization)} />
               <Meter value={data.utilization} tone="accent" />
             </div>
             <div>
               <Stat
                 label="Max payout util"
+                tip="max-payout-util"
                 value={fmtPct(data.max_payout_utilization)}
               />
               <Meter value={data.max_payout_utilization} tone="warn" />
@@ -174,16 +176,19 @@ export function VaultPanel({ className }: { className?: string }) {
             <TileGrid cols={2}>
               <StatTile
                 label="Vault value"
+                tip="vault-value"
                 value={fmtUsdCompact(fromUnits(data.vault_value, DUSDC_DECIMALS))}
               />
               <StatTile
                 label="Available liq"
+                tip="available-liq"
                 value={fmtUsdCompact(
                   fromUnits(data.available_liquidity, DUSDC_DECIMALS),
                 )}
               />
               <StatTile
                 label="Max payout"
+                tip="max-payout"
                 value={fmtUsdCompact(
                   fromUnits(data.total_max_payout, DUSDC_DECIMALS),
                 )}
@@ -191,12 +196,14 @@ export function VaultPanel({ className }: { className?: string }) {
               />
               <StatTile
                 label="Net deposits"
+                tip="net-deposits"
                 value={fmtUsdCompact(
                   fromUnits(data.net_deposits, DUSDC_DECIMALS),
                 )}
               />
               <StatTile
                 label="Supplied"
+                tip="supplied"
                 value={fmtUsdCompact(
                   fromUnits(data.total_supplied, DUSDC_DECIMALS),
                 )}
@@ -204,6 +211,7 @@ export function VaultPanel({ className }: { className?: string }) {
               />
               <StatTile
                 label="Withdrawn"
+                tip="withdrawn"
                 value={fmtUsdCompact(
                   fromUnits(data.total_withdrawn, DUSDC_DECIMALS),
                 )}
@@ -211,10 +219,12 @@ export function VaultPanel({ className }: { className?: string }) {
               />
               <StatTile
                 label="Total MtM"
+                tip="total-mtm"
                 value={fmtUsdCompact(fromUnits(data.total_mtm, DUSDC_DECIMALS))}
               />
               <StatTile
                 label="PLP supply"
+                tip="plp-supply"
                 value={fmtUsdCompact(
                   fromUnits(data.plp_total_supply, DUSDC_DECIMALS),
                 )}

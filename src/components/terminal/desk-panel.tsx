@@ -11,6 +11,7 @@ import {
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { fmtPrice, fmtUsdCompact, fromUnits, utcClock } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { LabelTip } from "./label-tip";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
 
@@ -45,12 +46,13 @@ export function DeskPanel({ className }: { className?: string }) {
       {items.length ? (
         <div className="border-b border-hairline px-3 py-2">
           <div className="mb-1 flex items-center justify-between gap-2">
-            <span className="label-micro min-w-0 truncate">
+            <LabelTip k="positioning" className="label-micro min-w-0 truncate">
               Positioning · last{" "}
               <span className="tabular">{mints.length}</span>
-            </span>
+            </LabelTip>
             <span className="shrink-0 whitespace-nowrap text-data tabular text-text-dim">
-              Vol {fmtUsdCompact(fromUnits(volume, DUSDC_DECIMALS))}
+              <LabelTip k="vol-premium">Vol</LabelTip>{" "}
+              {fmtUsdCompact(fromUnits(volume, DUSDC_DECIMALS))}
             </span>
           </div>
           <div className="flex h-1.5 overflow-hidden rounded-full bg-breach/30">
@@ -66,16 +68,17 @@ export function DeskPanel({ className }: { className?: string }) {
       {stats.total ? (
         <div className="border-b border-hairline px-3 py-2">
           <div className="flex items-center justify-between gap-2">
-            <span className="label-micro min-w-0 truncate">
+            <LabelTip k="settlement-count" className="label-micro min-w-0 truncate">
               Settlement · <span className="tabular">{stats.total}</span>
-            </span>
+            </LabelTip>
             <span className="shrink-0 whitespace-nowrap text-data tabular text-text-dim">
-              Payouts {fmtUsdCompact(fromUnits(stats.payouts, DUSDC_DECIMALS))}
+              <LabelTip k="payouts">Payouts</LabelTip>{" "}
+              {fmtUsdCompact(fromUnits(stats.payouts, DUSDC_DECIMALS))}
             </span>
           </div>
           <div className="mt-1 flex items-center justify-between gap-2 text-data tabular">
             <span className="shrink-0 whitespace-nowrap text-text-sec">
-              Taker win{" "}
+              <LabelTip k="taker-win">Taker win</LabelTip>{" "}
               <span
                 className={stats.winRate < 50 ? "text-safe" : "text-warn"}
                 title="< 50% means the PLP vault has an edge"
@@ -83,9 +86,9 @@ export function DeskPanel({ className }: { className?: string }) {
                 {stats.winRate.toFixed(0)}%
               </span>
             </span>
-            <span className="min-w-0 truncate text-right text-text-faint">
+            <LabelTip k="updn-win-split" className="min-w-0 truncate text-right text-text-faint">
               UP {stats.upWinRate.toFixed(0)}% · DN {stats.dnWinRate.toFixed(0)}%
-            </span>
+            </LabelTip>
           </div>
         </div>
       ) : null}
@@ -94,7 +97,7 @@ export function DeskPanel({ className }: { className?: string }) {
         <span className="label-micro">Time</span>
         <span className="label-micro">Side</span>
         <span className="label-micro">Strike</span>
-        <span className="label-micro text-right">Prem/payout</span>
+        <LabelTip k="flow-columns" className="label-micro text-right">Prem/payout</LabelTip>
       </div>
 
       {isError ? (

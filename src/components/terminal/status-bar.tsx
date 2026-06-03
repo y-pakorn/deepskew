@@ -3,6 +3,7 @@
 import { useIndexerStatus } from "@/lib/indexer/hooks";
 import { SUI_NETWORK } from "@/lib/sui/constants";
 import { cn } from "@/lib/utils";
+import { LabelTip } from "./label-tip";
 
 /** Thin footer status bar — indexer health, checkpoint, network, links. */
 export function StatusBar() {
@@ -18,17 +19,19 @@ export function StatusBar() {
             isError ? "bg-breach" : ok ? "bg-safe" : "bg-warn",
           )}
         />
-        Indexer {isError ? "Offline" : ok ? "OK" : "Sync"}
+        <LabelTip k="indexer-status">
+          Indexer {isError ? "Offline" : ok ? "OK" : "Sync"}
+        </LabelTip>
       </span>
       {data ? (
-        <span className="shrink-0 whitespace-nowrap tabular">
+        <LabelTip k="lag" className="shrink-0 whitespace-nowrap tabular">
           Lag {data.max_time_lag_seconds}s
-        </span>
+        </LabelTip>
       ) : null}
       {data ? (
-        <span className="shrink-0 whitespace-nowrap tabular">
+        <LabelTip k="checkpoint" className="shrink-0 whitespace-nowrap tabular">
           Ckpt {data.latest_onchain_checkpoint.toLocaleString()}
-        </span>
+        </LabelTip>
       ) : null}
       <span className="hidden shrink-0 whitespace-nowrap sm:inline">
         Sui · {SUI_NETWORK}

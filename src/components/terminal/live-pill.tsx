@@ -2,6 +2,7 @@
 
 import { useIndexerStatus } from "@/lib/indexer/hooks";
 import { cn } from "@/lib/utils";
+import { LabelTip } from "./label-tip";
 import { useMarket } from "./market-context";
 import { TextSwap } from "./text-swap";
 
@@ -29,7 +30,9 @@ export function LivePill() {
         ) : null}
         <span className={cn("relative inline-flex size-1.5 rounded-full", dot)} />
       </span>
-      <TextSwap className="label-micro text-text-sec">{text}</TextSwap>
+      <LabelTip k="live-pill">
+        <TextSwap className="label-micro text-text-sec">{text}</TextSwap>
+      </LabelTip>
       {lag != null ? (
         <span className="text-data tabular text-text-dim">
           · Lag {lag}s

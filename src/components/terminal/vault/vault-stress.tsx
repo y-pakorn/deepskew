@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { fmtNum, fmtPrice, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { LabelTip } from "../label-tip";
 import { Stat, Verdict } from "../stat";
 
 /**
@@ -50,6 +51,7 @@ export function VaultStress({
       <Verdict
         tone={tone}
         wrap
+        tip="stress-verdict"
         sub={
           <>
             ±<span className="tabular">{sigmaLabel}</span>σ · 1-day shock ·
@@ -75,7 +77,7 @@ export function VaultStress({
       </Verdict>
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <span className="label-micro">Stress ±σ</span>
+          <LabelTip k="stress-sigma" className="label-micro">Stress ±σ</LabelTip>
           <span className="text-data tabular text-text-sec">
             {sigma.toFixed(1)}σ
           </span>
@@ -91,18 +93,21 @@ export function VaultStress({
       <div>
         <Stat
           label="σ-move"
+          tip="sigma-move"
           value={`−${(moveFrac * 100).toFixed(1)}%`}
           tone="warn"
         />
         {stressedSpot != null ? (
-          <Stat label="BTC →" value={fmtPrice(stressedSpot)} />
+          <Stat label="BTC →" tip="stressed-spot" value={fmtPrice(stressedSpot)} />
         ) : null}
         <Stat
           label="Modeled payout"
+          tip="modeled-payout"
           value={fmtUsdCompact(fromUnits(stressedPayout, DUSDC_DECIMALS))}
         />
         <Stat
           label="Available"
+          tip="stress-available"
           value={fmtUsdCompact(fromUnits(availLiq, DUSDC_DECIMALS))}
           tone="safe"
         />
@@ -110,7 +115,7 @@ export function VaultStress({
 
       <div className="border-t border-hairline pt-2">
         <div className="mb-1 grid grid-cols-[auto_1fr_1fr] gap-x-2 label-micro">
-          <span>Shock</span>
+          <LabelTip k="stress-ladder">Shock</LabelTip>
           <span className="text-right">Move</span>
           <span className="text-right">Buffer</span>
         </div>

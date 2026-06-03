@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
+import { LabelTip } from "./label-tip";
 import { Pill } from "./pill";
 import { SmileChart } from "./smile-chart";
 import { StrikeHistogram } from "./strike-histogram";
@@ -124,11 +125,11 @@ export function SmilePanel({ className }: { className?: string }) {
             {showOi ? (
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="label-micro">OI by strike</span>
-                  <span className="label-micro text-text-faint">
+                  <LabelTip k="oi-by-strike" className="label-micro">OI by strike</LabelTip>
+                  <LabelTip k="up-dn-legend" className="label-micro text-text-faint">
                     <span className="text-safe">Up</span> ·{" "}
                     <span className="text-breach">Dn</span>
-                  </span>
+                  </LabelTip>
                 </div>
                 <StrikeHistogram strikes={strikes} />
               </div>
@@ -136,23 +137,25 @@ export function SmilePanel({ className }: { className?: string }) {
             <TileGrid cols={2}>
               <StatTile
                 label="ATM"
+                tip="atm-iv"
                 value={fmtPctValue(model.atm)}
                 focal
                 className="col-span-2"
               />
-              <StatTile label="Put −10%" value={fmtPctValue(model.put)} />
-              <StatTile label="Call +10%" value={fmtPctValue(model.call)} />
+              <StatTile label="Put −10%" tip="put-wing" value={fmtPctValue(model.put)} />
+              <StatTile label="Call +10%" tip="call-wing" value={fmtPctValue(model.call)} />
               <StatTile
                 label="Skew (RR)"
+                tip="skew-rr"
                 value={fmtSigned(model.skew, 1)}
                 tone={model.skew >= 0 ? "default" : "warn"}
               />
-              <StatTile label="Fly" value={fmtSigned(model.fly, 1)} />
+              <StatTile label="Fly" tip="fly" value={fmtSigned(model.fly, 1)} />
             </TileGrid>
             {n > 1 ? (
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="label-micro">Time-travel</span>
+                  <LabelTip k="time-travel" className="label-micro">Time-travel</LabelTip>
                   <button
                     type="button"
                     onClick={() => setScrub(null)}
@@ -187,12 +190,13 @@ export function SmilePanel({ className }: { className?: string }) {
 
 function ArbVerdict({ bf }: { bf: ButterflyCheck }) {
   return bf.butterflyFree ? (
-    <Verdict tone="safe" sub="Butterfly · Durrleman g(k) ≥ 0">
+    <Verdict tone="safe" tip="butterfly-arb" sub="Butterfly · Durrleman g(k) ≥ 0">
       Arb-free ✓
     </Verdict>
   ) : (
     <Verdict
       tone="breach"
+      tip="butterfly-arb"
       sub={
         <>
           <span className="tabular">{bf.violations.length}</span> butterfly
