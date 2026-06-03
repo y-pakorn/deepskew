@@ -38,7 +38,16 @@ export function SurfacePanel({ className }: { className?: string }) {
       right={
         <span className="flex items-center gap-2">
           {arb ? (
-            <Pill tone={arbOk ? "up" : "down"}>
+            <Pill
+              tone={arbOk ? "up" : "down"}
+              tip={
+                arbOk
+                  ? "arb-free"
+                  : !arb.calendarFree
+                    ? "calendar-arb"
+                    : "butterfly-arb"
+              }
+            >
               <TextSwap>
                 {arbOk
                   ? "Arb-free ✓"

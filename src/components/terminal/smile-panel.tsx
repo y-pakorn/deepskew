@@ -81,9 +81,13 @@ export function SmilePanel({ className }: { className?: string }) {
       right={
         model ? (
           isLive ? (
-            <Pill tone="up">Live</Pill>
+            <Pill tone="up" tip="live-replay">
+              Live
+            </Pill>
           ) : (
-            <Pill tone="warn">{utcClock(new Date(model.ts))} · Replay</Pill>
+            <Pill tone="warn" tip="live-replay">
+              {utcClock(new Date(model.ts))} · Replay
+            </Pill>
           )
         ) : null
       }

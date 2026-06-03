@@ -259,7 +259,7 @@ function StatusChip({ status }: { status: string }) {
   const tone: PillTone =
     status === "active" ? "up" : status === "settled" ? "neutral" : "warn";
   return (
-    <Pill tone={tone}>
+    <Pill tone={tone} tip="oracle-status">
       <TextSwap>{status.charAt(0).toUpperCase() + status.slice(1)}</TextSwap>
     </Pill>
   );

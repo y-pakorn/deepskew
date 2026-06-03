@@ -48,10 +48,11 @@ export const GLOSSARY: Record<string, TipEntry> = {
   },
   "calendar-arb": {
     title: "Calendar arbitrage",
-    body: "A longer-dated expiry priced with less total variance than a shorter one at the same strike — which should be impossible.",
-    math: "w_{T+1}(k)<w_T(k)",
+    body: "Total variance must never fall as expiry lengthens. ✕ means a longer-dated tenor is priced cheaper (in variance) than a nearer one at the same strike — free money on the table.",
+    math: "w_{T_2}(k)\\ge w_{T_1}(k)\\quad (T_2>T_1)",
     points: [
-      "Red when this holds for any sampled $k$ over $k_{\\min}..k_{\\max}$.",
+      "The pill flips red the moment this is violated for any sampled $k$.",
+      "Checked across the live term structure by `checkCalendar`.",
     ],
   },
   "iv-heat-legend": {
