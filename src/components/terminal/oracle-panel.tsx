@@ -24,6 +24,7 @@ import {
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { FlashValue } from "./flash-value";
+import { LabelTip } from "./label-tip";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
@@ -112,7 +113,9 @@ export function OraclePanel() {
                   —
                 </span>
               )}
-              <span className="label-micro">Spot</span>
+              <LabelTip k="spot" className="label-micro">
+                Spot
+              </LabelTip>
             </div>
             {spots.length >= 2 ? (
               <div className="mt-2 flex items-center gap-3">
@@ -134,20 +137,24 @@ export function OraclePanel() {
           <TileGrid cols={2}>
             <StatTile
               label="Forward"
+              tip="forward"
               value={price ? fmtPrice(price.forward) : "—"}
             />
             <StatTile
               label="Expiry"
+              tip="expiry"
               value={oracle.status === "settled" ? "Settled" : fmtDuration(toExp)}
               tone={oracle.status === "settled" ? "warn" : "default"}
             />
             <StatTile
               label="ATM IV"
+              tip="atm-iv"
               value={atmIV != null ? fmtPctValue(atmIV) : "—"}
               focal
             />
             <StatTile
               label="ATM var"
+              tip="atm-var"
               value={atmVar != null ? atmVar.toExponential(2) : "—"}
             />
           </TileGrid>
@@ -157,9 +164,9 @@ export function OraclePanel() {
           {term.length >= 2 ? (
             <div className="border-t border-hairline pt-2">
               <div className="mb-1 flex items-baseline justify-between gap-2">
-                <span className="label-micro min-w-0 truncate">
+                <LabelTip k="term-structure" className="label-micro min-w-0 truncate">
                   ATM IV term structure
-                </span>
+                </LabelTip>
                 <span className="shrink-0 whitespace-nowrap text-val tabular text-text-dim">
                   {(term[0].atmIV * 100).toFixed(0)}% →{" "}
                   {(term.at(-1)!.atmIV * 100).toFixed(0)}%
@@ -178,27 +185,35 @@ export function OraclePanel() {
           ) : null}
 
           <div className="mt-auto grid grid-cols-2 gap-x-4 border-t border-hairline pt-2">
-            <Stat label="a" value={p ? p.a.toExponential(3) : "—"} />
-            <Stat label="b" value={p ? p.b.toExponential(3) : "—"} />
+            <Stat label="a" tip="svi-a" value={p ? p.a.toExponential(3) : "—"} />
+            <Stat label="b" tip="svi-b" value={p ? p.b.toExponential(3) : "—"} />
             <Stat
               label="ρ rho"
+              tip="svi-rho"
               value={p ? p.rho.toFixed(4) : "—"}
               tone={p && p.rho < 0 ? "warn" : "default"}
             />
-            <Stat label="m" value={p ? p.m.toFixed(5) : "—"} />
-            <Stat label="σ sigma" value={p ? p.sigma.toFixed(5) : "—"} />
+            <Stat label="m" tip="svi-m" value={p ? p.m.toFixed(5) : "—"} />
+            <Stat
+              label="σ sigma"
+              tip="svi-sigma"
+              value={p ? p.sigma.toFixed(5) : "—"}
+            />
             <Stat
               label="Checkpoint"
+              tip="checkpoint"
               value={price ? fmtCompact(price.checkpoint) : "—"}
               tone="dim"
             />
             <Stat
               label="Oracle"
+              tip="oracle-id"
               value={truncateAddr(oracle.oracle_id, 6, 4)}
               tone="dim"
             />
             <Stat
               label="Feed"
+              tip="feed-age"
               value={ageS != null ? `▲ ${ageS}s ago` : "—"}
               tone={ageS != null && ageS < 120 ? "safe" : "warn"}
             />
@@ -212,7 +227,9 @@ export function OraclePanel() {
 function VolMatrix({ p, T }: { p: SviParams; T: number }) {
   return (
     <div className="border-t border-hairline pt-2">
-      <span className="label-micro">Vol by strike · IV</span>
+      <LabelTip k="vol-by-strike" className="label-micro">
+        Vol by strike · IV
+      </LabelTip>
       <div className="mt-2 grid grid-cols-5 gap-1 text-center">
         {MATRIX_K.map((k) => {
           const iv = impliedVol(k, p, T) * 100;

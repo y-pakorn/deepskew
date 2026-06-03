@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { LabelTip } from "./label-tip";
 
 export type Tone =
   | "default"
@@ -136,16 +137,24 @@ export function Stat({
   tone = "default",
   focal = false,
   mono = true,
+  tip,
 }: {
   label: string;
   value: React.ReactNode;
   tone?: Tone;
   focal?: boolean;
   mono?: boolean;
+  tip?: string;
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-1">
-      <span className="label-micro shrink-0">{label}</span>
+      {tip ? (
+        <LabelTip k={tip} className="label-micro shrink-0">
+          {label}
+        </LabelTip>
+      ) : (
+        <span className="label-micro shrink-0">{label}</span>
+      )}
       <MonoValue
         className={cn(
           "truncate text-right text-val leading-none",
@@ -170,12 +179,14 @@ export function StatTile({
   tone = "default",
   focal = false,
   className,
+  tip,
 }: {
   label: string;
   value: React.ReactNode;
   tone?: Tone;
   focal?: boolean;
   className?: string;
+  tip?: string;
 }) {
   return (
     <div
@@ -184,7 +195,13 @@ export function StatTile({
         className,
       )}
     >
-      <span className="label-micro truncate">{label}</span>
+      {tip ? (
+        <LabelTip k={tip} className="label-micro truncate">
+          {label}
+        </LabelTip>
+      ) : (
+        <span className="label-micro truncate">{label}</span>
+      )}
       <MonoValue
         pop
         className={cn(
@@ -231,12 +248,14 @@ export function Verdict({
   sub,
   className,
   wrap = false,
+  tip,
 }: {
   tone?: Tone;
   children: React.ReactNode;
   sub?: React.ReactNode;
   className?: string;
   wrap?: boolean;
+  tip?: string;
 }) {
   return (
     <div
@@ -254,7 +273,13 @@ export function Verdict({
             toneClass(tone),
           )}
         >
-          {children}
+          {tip ? (
+            <LabelTip k={tip} className="decoration-text-faint/50">
+              {children}
+            </LabelTip>
+          ) : (
+            children
+          )}
         </div>
         {sub ? <div className="label-micro mt-0.5 truncate">{sub}</div> : null}
       </div>
