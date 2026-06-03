@@ -76,7 +76,7 @@ export function SmilePanel({ className }: { className?: string }) {
     <Panel
       title="Smile / skew"
       className={className}
-      bodyClassName="overflow-visible lg:overflow-auto"
+      bodyClassName="overflow-visible lg:overflow-hidden"
       code={isLive ? "Live" : "Replay"}
       right={
         model ? (
