@@ -7,6 +7,7 @@ import { checkButterfly, checkCalendar } from "@/lib/svi";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "./label-tip";
+import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { Pill } from "./pill";
 import { SurfaceScene } from "./surface/scene";
@@ -15,8 +16,11 @@ import { TextSwap } from "./text-swap";
 /** The visual hero — a live glowing 3-D IV surface across the term structure. */
 export function SurfacePanel({ className }: { className?: string }) {
   const { rows, version } = useTermStructure();
+  const { selectedOracleId, setSelectedOracleId } = useMarket();
   const now = useNow();
   const [hoverTenor, setHoverTenor] = useState<number | null>(null);
+
+  const selectedIndex = rows.findIndex((r) => r.oracleId === selectedOracleId);
 
   const ready = rows.length >= 2;
   const arb = ready
@@ -76,6 +80,11 @@ export function SurfacePanel({ className }: { className?: string }) {
             rows={rows}
             version={version}
             onTenorHover={setHoverTenor}
+            selectedIndex={selectedIndex}
+            onSelect={(i) => {
+              const r = rows[i];
+              if (r) setSelectedOracleId(r.oracleId);
+            }}
           />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -121,23 +130,33 @@ export function SurfacePanel({ className }: { className?: string }) {
             Tenor
           </LabelTip>
           {/* Each tenor reads "34m 09s" — keep it on one line and let the row
-              clip trailing tenors rather than wrap them when space is tight. */}
+              clip trailing tenors rather than wrap them when space is tight.
+              Click one to switch the whole desk to that expiry. */}
           <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden [mask-image:linear-gradient(to_right,#000_88%,transparent)]">
-            {rows.map((r, i) => (
-              <span
-                key={r.oracleId}
-                className={cn(
-                  "shrink-0 whitespace-nowrap text-data tabular transition-colors",
-                  hoverTenor === i
-                    ? "text-foreground underline decoration-accent-brand underline-offset-4"
-                    : i === 0
-                      ? "text-accent-brand"
-                      : "text-text-dim",
-                )}
-              >
-                {fmtDuration(r.expiry - now)}
-              </span>
-            ))}
+            {rows.map((r, i) => {
+              const selected = r.oracleId === selectedOracleId;
+              return (
+                <button
+                  key={r.oracleId}
+                  type="button"
+                  onClick={() => setSelectedOracleId(r.oracleId)}
+                  onPointerEnter={() => setHoverTenor(i)}
+                  onPointerLeave={() => setHoverTenor(null)}
+                  aria-pressed={selected}
+                  title="Switch the desk to this expiry"
+                  className={cn(
+                    "shrink-0 cursor-pointer whitespace-nowrap rounded-sm text-data tabular underline-offset-4 outline-none transition-colors focus-visible:ring-1 focus-visible:ring-accent-brand",
+                    selected
+                      ? "text-accent-brand underline decoration-accent-brand"
+                      : hoverTenor === i
+                        ? "text-foreground underline decoration-accent-brand/60"
+                        : "text-text-dim hover:text-text-sec",
+                  )}
+                >
+                  {fmtDuration(r.expiry - now)}
+                </button>
+              );
+            })}
           </div>
           <span className="hidden shrink-0 text-text-faint label-micro xl:inline">
             Drag to orbit

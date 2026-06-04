@@ -31,10 +31,16 @@ export function VolSurface({
   rows,
   version,
   onHover,
+  selectedIndex,
+  onSelect,
 }: {
   rows: SurfaceRow[];
   version: number;
   onHover: (info: HoverInfo | null) => void;
+  /** Index (into `rows`) of the desk's active expiry, or -1 for none. */
+  selectedIndex?: number;
+  /** Lock the desk to a tenor by clicking its rib. */
+  onSelect?: (index: number) => void;
 }) {
   const { geom, data } = useMemo(() => {
     const d = buildSurface(rows);
@@ -82,6 +88,10 @@ export function VolSurface({
   // nearest real oracle rib so the readout, the highlighted rib, and the bottom
   // tenor strip all refer to the same real expiry.
   const [pick, setPick] = useState<{ row: number; col: number } | null>(null);
+  // Tenor index under the cursor + the pointer-down spot, so a click can lock
+  // the desk to a rib while a drag is left to OrbitControls for orbiting.
+  const hoverIdx = useRef<number | null>(null);
+  const downPos = useRef<{ x: number; y: number } | null>(null);
 
   const handleMove = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
@@ -98,7 +108,9 @@ export function VolSurface({
       );
       const row = data.nearestRealRow[r];
       setPick({ row, col: c });
+      hoverIdx.current = data.nearestRealIdx[r];
       const canvas = e.nativeEvent.target as HTMLElement | null;
+      if (canvas) canvas.style.cursor = "pointer";
       onHover({
         x: e.nativeEvent.offsetX,
         y: e.nativeEvent.offsetY,
@@ -113,10 +125,33 @@ export function VolSurface({
     [data, onHover],
   );
 
-  const handleOut = useCallback(() => {
+  const handleOut = useCallback((e: ThreeEvent<PointerEvent>) => {
+    const canvas = e.nativeEvent.target as HTMLElement | null;
+    if (canvas) canvas.style.cursor = "";
     setPick(null);
+    hoverIdx.current = null;
     onHover(null);
   }, [onHover]);
+
+  const handleDown = useCallback((e: ThreeEvent<PointerEvent>) => {
+    downPos.current = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY };
+  }, []);
+
+  const handleClick = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      const d = downPos.current;
+      downPos.current = null;
+      if (!d || hoverIdx.current == null) return;
+      // Released far from where it went down → that was a drag to orbit.
+      const moved = Math.hypot(
+        e.nativeEvent.clientX - d.x,
+        e.nativeEvent.clientY - d.y,
+      );
+      if (moved > 6) return;
+      onSelect?.(hoverIdx.current);
+    },
+    [onSelect],
+  );
 
   // The hovered tenor's smile curve, lifted a hair off the sheet so it reads as
   // a bright iso-tenor rib over the dim grid.
@@ -140,6 +175,37 @@ export function VolSurface({
 
   useEffect(() => () => ribGeom?.dispose(), [ribGeom]);
 
+  // A persistent accent rib marking the desk's active expiry, so the surface
+  // reflects the selected tenor even when nothing is hovered. Sits a hair below
+  // the hover rib so hovering the active tenor still reads white on top.
+  const selectedRibGeom = useMemo(() => {
+    if (
+      !data ||
+      selectedIndex == null ||
+      selectedIndex < 0 ||
+      selectedIndex >= data.realRows.length
+    )
+      return null;
+    const row = data.realRows[selectedIndex];
+    if (row < 0 || row >= data.nr) return null;
+    const { nk } = data;
+    const seg = new Float32Array((nk - 1) * 2 * 3);
+    let o = 0;
+    for (let c = 0; c < nk - 1; c++) {
+      for (const cc of [c, c + 1]) {
+        const b = (row * nk + cc) * 3;
+        seg[o++] = data.positions[b];
+        seg[o++] = data.positions[b + 1] + 0.009;
+        seg[o++] = data.positions[b + 2];
+      }
+    }
+    const g = new BufferGeometry();
+    g.setAttribute("position", new BufferAttribute(seg, 3));
+    return g;
+  }, [data, selectedIndex]);
+
+  useEffect(() => () => selectedRibGeom?.dispose(), [selectedRibGeom]);
+
   const markerPos =
     data && pick && pick.row < data.nr
       ? ([
@@ -156,6 +222,8 @@ export function VolSurface({
         geometry={geom.fill}
         onPointerMove={handleMove}
         onPointerOut={handleOut}
+        onPointerDown={handleDown}
+        onClick={handleClick}
       >
         <meshBasicMaterial
           vertexColors
@@ -176,6 +244,18 @@ export function VolSurface({
           toneMapped={false}
         />
       </lineSegments>
+      {selectedRibGeom ? (
+        <lineSegments geometry={selectedRibGeom} raycast={noRaycast}>
+          <lineBasicMaterial
+            color="#1f93ff"
+            transparent
+            opacity={0.9}
+            blending={AdditiveBlending}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </lineSegments>
+      ) : null}
       {ribGeom ? (
         <lineSegments geometry={ribGeom} raycast={noRaycast}>
           <lineBasicMaterial

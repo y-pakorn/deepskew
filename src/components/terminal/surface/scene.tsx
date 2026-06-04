@@ -14,10 +14,14 @@ export function SurfaceScene({
   rows,
   version,
   onTenorHover,
+  selectedIndex,
+  onSelect,
 }: {
   rows: SurfaceRow[];
   version: number;
   onTenorHover?: (index: number | null) => void;
+  selectedIndex?: number;
+  onSelect?: (index: number) => void;
 }) {
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const handleHover = (info: HoverInfo | null) => {
@@ -35,7 +39,13 @@ export function SurfaceScene({
         <color attach="background" args={["#0a0b0e"]} />
         <fogExp2 attach="fog" args={["#0a0b0e", 0.05]} />
         <group position={[0, -0.5, 0]}>
-          <VolSurface rows={rows} version={version} onHover={handleHover} />
+          <VolSurface
+            rows={rows}
+            version={version}
+            onHover={handleHover}
+            selectedIndex={selectedIndex}
+            onSelect={onSelect}
+          />
         </group>
         <OrbitControls
           makeDefault

@@ -25,6 +25,8 @@ export interface SurfaceGeometryData {
   nearestRealRow: Int16Array;
   /** Per render-row: index into the input rows of the nearest real tenor. */
   nearestRealIdx: Int16Array;
+  /** Per real tenor (input order): its render-row index in the grid. */
+  realRows: Int16Array;
   /** Per-column log-moneyness. */
   colK: Float32Array;
   /** Raw IV per node (nr × nk, row-major) — for the hover readout. */
@@ -206,6 +208,7 @@ export function buildSurface(rows: SurfaceRow[]): SurfaceGeometryData | null {
     rowReal: Uint8Array.from(rowRealArr),
     nearestRealRow,
     nearestRealIdx,
+    realRows: Int16Array.from(realRows),
     colK,
     ivGrid,
     nr,
