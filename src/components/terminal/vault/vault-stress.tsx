@@ -6,7 +6,7 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { fmtNum, fmtPrice, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "../label-tip";
-import { Stat, Verdict } from "../stat";
+import { Hero, Stat } from "../stat";
 
 /**
  * ±Nσ PLP stress simulator. Sizes a 1-day N-σ BTC shock from the live ATM IV,
@@ -48,33 +48,27 @@ export function VaultStress({
 
   return (
     <div className="flex flex-col gap-2 2xl:gap-3">
-      <Verdict
-        tone={tone}
-        wrap
+      <Hero
+        label={`±${sigmaLabel}σ buffer · 1-day shock`}
         tip="stress-verdict"
-        sub={
-          <>
-            ±<span className="tabular">{sigmaLabel}</span>σ · 1-day shock ·
-            payouts capped
-          </>
+        tone={tone}
+        value={
+          buffer >= 1
+            ? `${
+                Number.isFinite(buffer)
+                  ? fmtNum(buffer, buffer >= 100 ? 0 : 1)
+                  : "∞"
+              }×`
+            : "Breach"
         }
-      >
-        {buffer >= 1 ? (
-          <>
-            Survives <span className="tabular">{sigmaLabel}</span>σ ·{" "}
-            <span className="tabular">
-              {Number.isFinite(buffer)
-                ? fmtNum(buffer, buffer >= 100 ? 0 : 1)
-                : "∞"}
-            </span>
-            × buffer
-          </>
-        ) : (
-          <>
-            Breach at <span className="tabular">{sigmaLabel}</span>σ
-          </>
-        )}
-      </Verdict>
+        sub={
+          buffer >= 1 ? (
+            <>survives {sigmaLabel}σ · payouts capped</>
+          ) : (
+            <>breach at {sigmaLabel}σ</>
+          )
+        }
+      />
       <div>
         <div className="mb-2 flex items-center justify-between">
           <LabelTip k="stress-sigma" className="label-micro">Stress ±σ</LabelTip>

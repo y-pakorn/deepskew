@@ -119,9 +119,9 @@ export function DeskPanel({ className }: { className?: string }) {
       ) : (
         <ScrollArea className="min-h-0 flex-1 [mask-image:linear-gradient(to_bottom,#000_calc(100%-1.25rem),transparent)]">
           <div>
-            {items.map((it) => (
+            {items.map((it, i) => (
               <FlowRow
-                key={`${it.digest}-${it.kind}`}
+                key={`${it.digest}-${it.kind}-${i}`}
                 it={it}
                 mine={!!account && account.address === it.actor}
               />

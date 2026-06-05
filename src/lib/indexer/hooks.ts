@@ -1,11 +1,21 @@
+import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import type { MarkMap, OracleMark } from "@/lib/analytics";
 import { PREDICT_ID } from "@/lib/sui/constants";
 import { decodeSvi, impliedVol, yearsToExpiry } from "@/lib/svi";
 import { selectTermStructure, type TermRow } from "@/lib/term-structure";
 import { useNow } from "@/lib/use-now";
 import { indexer } from "./client";
-import type { OracleInfo } from "./types";
+import type {
+  ManagerPositionSummary,
+  ManagerSummary,
+  OracleInfo,
+  PositionMinted,
+  PositionRedeemed,
+  RangeMinted,
+  RangeRedeemed,
+} from "./types";
 
 /** A merged mint/redeem flow event for the Desk feed. */
 export interface FlowItem {
@@ -182,8 +192,16 @@ export function useStrikeDistribution(
   }, [data, oracleId, spot]);
 }
 
+export interface LpEvent {
+  ts: number;
+  type: "supply" | "withdraw";
+  amount: number; // 1e6
+  actor: string;
+}
+
 export interface LpFlow {
   series: number[]; // cumulative net (1e6)
+  events: LpEvent[]; // recent supplies + withdrawals, newest first
   supplyCount: number;
   withdrawCount: number;
   supplied: number;
@@ -222,8 +240,23 @@ export function useLpFlow(): LpFlow {
     }
     const supplied = (sup.data ?? []).reduce((s, x) => s + x.amount, 0);
     const withdrawn = (wd.data ?? []).reduce((s, x) => s + x.amount, 0);
+    const events: LpEvent[] = [
+      ...(sup.data ?? []).map((s) => ({
+        ts: s.checkpoint_timestamp_ms,
+        type: "supply" as const,
+        amount: s.amount,
+        actor: s.supplier,
+      })),
+      ...(wd.data ?? []).map((w) => ({
+        ts: w.checkpoint_timestamp_ms,
+        type: "withdraw" as const,
+        amount: w.amount,
+        actor: w.withdrawer,
+      })),
+    ].sort((a, b) => b.ts - a.ts);
     return {
       series,
+      events,
       supplyCount: sup.data?.length ?? 0,
       withdrawCount: wd.data?.length ?? 0,
       supplied,
@@ -325,4 +358,444 @@ export function useVaultPerformance(predictId: string = PREDICT_ID, range = "ALL
     queryFn: () => indexer.vaultPerformance(predictId, range),
     refetchInterval: 30_000,
   });
+}
+
+/** Live house rules (spread/risk config + trading-paused). Fields may be null
+ *  until published on-chain — callers must degrade gracefully. */
+export function usePredictConfig(predictId: string = PREDICT_ID) {
+  return useQuery({
+    queryKey: ["predict", predictId, "config"],
+    queryFn: () => indexer.predictState(predictId),
+    refetchInterval: 30_000,
+  });
+}
+
+/** Latest mintable ask-price clamp for an oracle (often null on testnet). */
+export function useOracleAskBounds(oracleId: string | null) {
+  return useQuery({
+    queryKey: ["oracle", oracleId, "ask-bounds"],
+    queryFn: () => indexer.oracleAskBounds(oracleId as string),
+    enabled: !!oracleId,
+    refetchInterval: 15_000,
+  });
+}
+
+// ─── Live oracle marks (per-oracle SVI + forward → fair binary pricing) ──────
+
+/**
+ * Marks for every active oracle: decoded SVI, live forward, T, ATM IV and
+ * settlement state — the context that prices any on-chain binary to fair value.
+ * Fans out /oracles/:id/state across the active set (the selected oracle dedupes
+ * with useOracleState). Powers the edge tape, attribution and scenario engine.
+ */
+export function useActiveOracleMarks(): {
+  marks: MarkMap;
+  total: number;
+  priced: number;
+} {
+  const { data: oracles = [] } = useActiveOracles();
+  const states = useQueries({
+    queries: oracles.map((o) => ({
+      queryKey: ["oracle", o.oracle_id, "state"],
+      queryFn: () => indexer.oracleState(o.oracle_id),
+      enabled: !!o.oracle_id,
+      refetchInterval: 10_000,
+      staleTime: 5_000,
+    })),
+  });
+  return useMemo(() => {
+    const marks: MarkMap = new Map();
+    let priced = 0;
+    states.forEach((q, i) => {
+      const o = oracles[i];
+      const st = q.data;
+      if (!o || !st) return;
+      const svi = st.latest_svi;
+      const forward = st.latest_price?.forward ?? 0;
+      const spot = st.latest_price?.spot ?? 0;
+      const params = svi ? decodeSvi(svi) : null;
+      const T = svi ? yearsToExpiry(o.expiry, svi.checkpoint_timestamp_ms) : 0;
+      const atmIV = params && T > 0 ? impliedVol(0, params, T) : 0;
+      const lastUpdateMs = Math.max(
+        svi?.checkpoint_timestamp_ms ?? 0,
+        st.latest_price?.checkpoint_timestamp_ms ?? 0,
+      );
+      marks.set(o.oracle_id, {
+        oracleId: o.oracle_id,
+        params,
+        forward,
+        spot,
+        T,
+        atmIV,
+        status: o.status,
+        settlementPrice: o.settlement_price,
+        expiry: o.expiry,
+        lastUpdateMs,
+      } satisfies OracleMark);
+      if (params && forward > 0 && T > 0) priced += 1;
+    });
+    return { marks, total: oracles.length, priced };
+  }, [states, oracles]);
+}
+
+/** A larger minted/redeemed window for book reconstruction. `truncated` warns
+ *  when the result hit the server limit (so reconstructed exposure is a lower
+ *  bound, not the full book). */
+export function useBookFlow(limit = 500): {
+  mints: PositionMinted[];
+  redeems: PositionRedeemed[];
+  truncated: boolean;
+  isLoading: boolean;
+  isError: boolean;
+} {
+  const minted = useQuery({
+    queryKey: ["positions", "minted", limit],
+    queryFn: () => indexer.positionsMinted(limit),
+    refetchInterval: 12_000,
+  });
+  const redeemed = useQuery({
+    queryKey: ["positions", "redeemed", limit],
+    queryFn: () => indexer.positionsRedeemed(limit),
+    refetchInterval: 12_000,
+  });
+  const mints = minted.data ?? [];
+  const redeems = redeemed.data ?? [];
+  return {
+    mints,
+    redeems,
+    truncated: mints.length >= limit || redeems.length >= limit,
+    isLoading: minted.isLoading || redeemed.isLoading,
+    isError: minted.isError || redeemed.isError,
+  };
+}
+
+// ─── Accounts: manager leaderboard + connected-wallet blotter ────────────────
+
+export interface CohortRow {
+  managerId: string;
+  owner: string;
+  volume: number; // 1e6 traded premium in window
+  equity: number[]; // cumulative net cashflow series (1e6)
+}
+
+/**
+ * Active desks in the flow window, ranked by traded volume — fully client-side,
+ * no per-manager fetches. The leaderboard paginates this and fetches summaries
+ * only for the visible page (see `useManagerSummaries`).
+ */
+export function useManagerCohort(): { rows: CohortRow[]; isLoading: boolean } {
+  const { mints, redeems, isLoading } = useBookFlow(1000);
+  return useMemo(() => {
+    const map = new Map<string, { owner: string; volume: number }>();
+    const evs = new Map<string, { ts: number; delta: number }[]>();
+    const pushEv = (id: string, ts: number, delta: number) => {
+      const arr = evs.get(id);
+      if (arr) arr.push({ ts, delta });
+      else evs.set(id, [{ ts, delta }]);
+    };
+    for (const m of mints) {
+      const e = map.get(m.manager_id) ?? { owner: m.trader, volume: 0 };
+      e.volume += m.cost;
+      map.set(m.manager_id, e);
+      pushEv(m.manager_id, m.checkpoint_timestamp_ms, -m.cost);
+    }
+    for (const r of redeems) {
+      const e = map.get(r.manager_id) ?? { owner: r.owner, volume: 0 };
+      e.volume += r.payout;
+      map.set(r.manager_id, e);
+      pushEv(r.manager_id, r.checkpoint_timestamp_ms, r.payout);
+    }
+    const equity = (id: string): number[] => {
+      const list = (evs.get(id) ?? []).sort((a, b) => a.ts - b.ts);
+      let run = 0;
+      return list.map((e) => (run += e.delta));
+    };
+    const rows: CohortRow[] = [...map.entries()]
+      .map(([managerId, v]) => ({
+        managerId,
+        owner: v.owner,
+        volume: v.volume,
+        equity: equity(managerId),
+      }))
+      .sort((a, b) => b.volume - a.volume);
+    return { rows, isLoading };
+  }, [mints, redeems, isLoading]);
+}
+
+/**
+ * Authoritative summaries for a specific set of managers — the visible
+ * leaderboard page only. The summary route does an on-chain dev-inspect
+ * server-side, so it's gated to 3 concurrent (client) + cached 5 min; React
+ * Query caches per id, so paging back and forth never re-fetches.
+ */
+export function useManagerSummaries(ids: string[]): {
+  byId: Map<string, ManagerSummary>;
+  loaded: number;
+  isLoading: boolean;
+} {
+  const summaries = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["manager", id, "summary"],
+      queryFn: () => indexer.managerSummary(id),
+      staleTime: 300_000,
+      refetchInterval: false as const,
+      retry: 0,
+    })),
+  });
+  const byId = new Map<string, ManagerSummary>();
+  summaries.forEach((q, i) => {
+    if (q.data) byId.set(ids[i], q.data);
+  });
+  return {
+    byId,
+    loaded: byId.size,
+    isLoading: summaries.some((q) => q.isLoading),
+  };
+}
+
+/** The owner↔manager directory (all managers, or one owner's). */
+export function useManagers(owner?: string) {
+  return useQuery({
+    queryKey: ["managers", owner ?? "all"],
+    queryFn: () => indexer.managers(owner),
+    refetchInterval: owner ? 15_000 : 60_000,
+    staleTime: 30_000,
+  });
+}
+
+/** Authoritative per-manager account summary. */
+export function useManagerSummary(managerId: string | null) {
+  return useQuery({
+    queryKey: ["manager", managerId, "summary"],
+    queryFn: () => indexer.managerSummary(managerId as string),
+    enabled: !!managerId,
+    refetchInterval: 15_000,
+  });
+}
+
+/** Per-manager realized-PnL series (range = 1D/1W/1M/3M/ALL). */
+export function useManagerPnl(managerId: string | null, range = "ALL") {
+  return useQuery({
+    queryKey: ["manager", managerId, "pnl", range],
+    queryFn: () => indexer.managerPnl(managerId as string, range),
+    enabled: !!managerId,
+    refetchInterval: 30_000,
+  });
+}
+
+/** Per-manager mark-priced position book (server-side marks). */
+export function useManagerPositions(managerId: string | null) {
+  return useQuery({
+    queryKey: ["manager", managerId, "positions-summary"],
+    queryFn: () => indexer.managerPositionsSummary(managerId as string),
+    enabled: !!managerId,
+    refetchInterval: 15_000,
+  });
+}
+
+/** A manager's raw binary trade tape (mints + redeems merged, newest first). */
+export function useManagerTrades(managerId: string | null): {
+  items: FlowItem[];
+  isLoading: boolean;
+} {
+  const { data, isLoading } = useQuery({
+    queryKey: ["manager", managerId, "trades"],
+    queryFn: () => indexer.managerTrades(managerId as string),
+    enabled: !!managerId,
+    refetchInterval: 15_000,
+  });
+  const items = useMemo<FlowItem[]>(() => {
+    const m: FlowItem[] = (data?.minted ?? []).map((p) => ({
+      kind: "mint",
+      ts: p.checkpoint_timestamp_ms,
+      oracleId: p.oracle_id,
+      strike: p.strike,
+      isUp: p.is_up,
+      amount: p.cost,
+      actor: p.trader,
+      digest: p.digest,
+    }));
+    const r: FlowItem[] = (data?.redeemed ?? []).map((p) => ({
+      kind: "redeem",
+      ts: p.checkpoint_timestamp_ms,
+      oracleId: p.oracle_id,
+      strike: p.strike,
+      isUp: p.is_up,
+      amount: p.payout,
+      actor: p.owner,
+      digest: p.digest,
+      settled: p.is_settled,
+    }));
+    return [...m, ...r].sort((a, b) => b.ts - a.ts);
+  }, [data]);
+  return { items, isLoading };
+}
+
+/** A manager's range (vertical-spread) positions. */
+export function useManagerRanges(managerId: string | null) {
+  return useQuery({
+    queryKey: ["manager", managerId, "ranges"],
+    queryFn: () => indexer.managerRanges(managerId as string),
+    enabled: !!managerId,
+    refetchInterval: 20_000,
+  });
+}
+
+/** The connected wallet's owner address + its manager account ids. */
+export function useAccount(): { owner: string | null; managerIds: string[] } {
+  const account = useCurrentAccount();
+  const owner = account?.address ?? null;
+  const { data = [] } = useQuery({
+    queryKey: ["managers", "owner", owner],
+    queryFn: () => indexer.managers(owner as string),
+    enabled: !!owner,
+    refetchInterval: 20_000,
+  });
+  return { owner, managerIds: data.map((m) => m.manager_id) };
+}
+
+export interface AccountSummary {
+  accountValue: number;
+  realizedPnl: number;
+  unrealizedPnl: number;
+  openExposure: number;
+  redeemableValue: number;
+  openPositions: number;
+  awaiting: number;
+  balance: number;
+}
+
+export interface AccountBlotter {
+  positions: ManagerPositionSummary[];
+  summary: AccountSummary | null;
+  isLoading: boolean;
+  hasAccount: boolean;
+}
+
+/** The connected wallet's mark-priced position book + account roll-up,
+ *  aggregated across all of its manager accounts. */
+export function useAccountBlotter(): AccountBlotter {
+  const { owner, managerIds } = useAccount();
+  const summaries = useQueries({
+    queries: managerIds.map((id) => ({
+      queryKey: ["manager", id, "summary"],
+      queryFn: () => indexer.managerSummary(id),
+      refetchInterval: 12_000,
+    })),
+  });
+  const positionsQ = useQueries({
+    queries: managerIds.map((id) => ({
+      queryKey: ["manager", id, "positions-summary"],
+      queryFn: () => indexer.managerPositionsSummary(id),
+      refetchInterval: 12_000,
+    })),
+  });
+  return useMemo(() => {
+    const positions = positionsQ
+      .flatMap((q) => q.data ?? [])
+      .sort((a, b) => b.last_activity_at - a.last_activity_at);
+    const sums = summaries
+      .map((q) => q.data)
+      .filter((d): d is ManagerSummary => !!d);
+    const summary: AccountSummary | null = sums.length
+      ? sums.reduce<AccountSummary>(
+          (acc, s) => ({
+            accountValue: acc.accountValue + s.account_value,
+            realizedPnl: acc.realizedPnl + s.realized_pnl,
+            unrealizedPnl: acc.unrealizedPnl + s.unrealized_pnl,
+            openExposure: acc.openExposure + s.open_exposure,
+            redeemableValue: acc.redeemableValue + s.redeemable_value,
+            openPositions: acc.openPositions + s.open_positions,
+            awaiting: acc.awaiting + s.awaiting_settlement_positions,
+            balance: acc.balance + s.trading_balance,
+          }),
+          {
+            accountValue: 0,
+            realizedPnl: 0,
+            unrealizedPnl: 0,
+            openExposure: 0,
+            redeemableValue: 0,
+            openPositions: 0,
+            awaiting: 0,
+            balance: 0,
+          },
+        )
+      : null;
+    return {
+      positions,
+      summary,
+      isLoading:
+        summaries.some((q) => q.isLoading) ||
+        positionsQ.some((q) => q.isLoading),
+      hasAccount: !!owner && managerIds.length > 0,
+    };
+  }, [positionsQ, summaries, owner, managerIds]);
+}
+
+// ─── Range (vertical-spread) flow ────────────────────────────────────────────
+
+export interface RangeFlowItem {
+  kind: "mint" | "redeem";
+  ts: number;
+  oracleId: string;
+  lower: number; // 1e9
+  higher: number; // 1e9
+  qty: number; // 1e6
+  amount: number; // cost (mint) or payout (redeem), 1e6
+  actor: string;
+  digest: string;
+  settled?: boolean;
+}
+
+/** Recent range mints + redeems merged newest-first, plus the raw arrays. */
+export function useRangeFlow(limit = 80): {
+  items: RangeFlowItem[];
+  mints: RangeMinted[];
+  redeems: RangeRedeemed[];
+  isLoading: boolean;
+  isError: boolean;
+} {
+  const minted = useQuery({
+    queryKey: ["ranges", "minted", limit],
+    queryFn: () => indexer.rangesMinted(limit),
+    refetchInterval: 10_000,
+  });
+  const redeemed = useQuery({
+    queryKey: ["ranges", "redeemed", limit],
+    queryFn: () => indexer.rangesRedeemed(limit),
+    refetchInterval: 10_000,
+  });
+  const items = useMemo<RangeFlowItem[]>(() => {
+    const m: RangeFlowItem[] = (minted.data ?? []).map((r) => ({
+      kind: "mint",
+      ts: r.checkpoint_timestamp_ms,
+      oracleId: r.oracle_id,
+      lower: r.lower_strike,
+      higher: r.higher_strike,
+      qty: r.quantity,
+      amount: r.cost,
+      actor: r.trader,
+      digest: r.digest,
+    }));
+    const r: RangeFlowItem[] = (redeemed.data ?? []).map((x) => ({
+      kind: "redeem",
+      ts: x.checkpoint_timestamp_ms,
+      oracleId: x.oracle_id,
+      lower: x.lower_strike,
+      higher: x.higher_strike,
+      qty: x.quantity,
+      amount: x.payout,
+      actor: x.trader,
+      digest: x.digest,
+      settled: x.is_settled,
+    }));
+    return [...m, ...r].sort((a, b) => b.ts - a.ts).slice(0, limit);
+  }, [minted.data, redeemed.data, limit]);
+  return {
+    items,
+    mints: minted.data ?? [],
+    redeems: redeemed.data ?? [],
+    isLoading: minted.isLoading || redeemed.isLoading,
+    isError: minted.isError || redeemed.isError,
+  };
 }

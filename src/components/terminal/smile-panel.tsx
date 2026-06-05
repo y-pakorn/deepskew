@@ -24,7 +24,7 @@ import { LabelTip } from "./label-tip";
 import { Pill } from "./pill";
 import { SmileChart } from "./smile-chart";
 import { StrikeHistogram } from "./strike-histogram";
-import { StatTile, TileGrid, Verdict } from "./stat";
+import { Hero, StatTile, TileGrid } from "./stat";
 
 const WING = 0.1; // ±10% log-moneyness readouts
 const SMILE_OPTS = { kMin: -0.3, kMax: 0.3, steps: 80 };
@@ -192,22 +192,23 @@ export function SmilePanel({ className }: { className?: string }) {
 }
 
 function ArbVerdict({ bf }: { bf: ButterflyCheck }) {
-  return bf.butterflyFree ? (
-    <Verdict tone="safe" tip="butterfly-arb" sub="Butterfly · Durrleman g(k) ≥ 0">
-      Arb-free ✓
-    </Verdict>
-  ) : (
-    <Verdict
-      tone="breach"
+  return (
+    <Hero
+      divider={false}
+      label="Arbitrage check · butterfly"
       tip="butterfly-arb"
+      tone={bf.butterflyFree ? "safe" : "breach"}
+      value={bf.butterflyFree ? "Arb-free ✓" : "Butterfly ✕"}
       sub={
-        <>
-          <span className="tabular">{bf.violations.length}</span> butterfly
-          violations
-        </>
+        bf.butterflyFree ? (
+          <>Durrleman g(k) ≥ 0 across strikes</>
+        ) : (
+          <>
+            <span className="tabular">{bf.violations.length}</span> butterfly
+            violations
+          </>
+        )
       }
-    >
-      Butterfly ✕
-    </Verdict>
+    />
   );
 }

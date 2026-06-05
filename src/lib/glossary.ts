@@ -878,4 +878,388 @@ export const GLOSSARY: Record<string, TipEntry> = {
       "The authority signal of the desk.",
     ],
   },
+  // — Vol analytics tab —
+  "rnd": {
+    title: "Risk-neutral density",
+    body: "The full distribution of where the market prices BTC ending at expiry, recovered from one SVI smile — not a single number but the whole shape.",
+    math: "q(k)=\\tfrac{g(k)}{\\sqrt{2\\pi w(k)}}\\,e^{-d_-(k)^2/2},\\quad d_-=-\\tfrac{k}{\\sqrt w}-\\tfrac{\\sqrt w}{2}",
+    points: [
+      "Breeden–Litzenberger via Gatheral; $g(k)$ is Durrleman's function.",
+      "Normalised to integrate to 1 over the log-moneyness grid.",
+    ],
+  },
+  "rnd-tail": {
+    title: "Tail shape",
+    body: "Which side of the distribution carries more weight — a fat left tail means crash risk is priced richer than upside.",
+    points: [
+      "Compares the 10% and 90% move quantiles: $q_{90}+q_{10}<0$ ⇒ fat left.",
+      "Warn tone for left-skew (downside), safe for right-skew.",
+    ],
+  },
+  "rnd-mode": {
+    title: "Modal move",
+    body: "The single most-likely outcome the density implies, as a percentage move versus the forward.",
+    math: "\\text{mode}=e^{k^*}-1,\\quad k^*=\\arg\\max_k q(k)",
+    points: ["Signed; near 0% when the smile is centred on the forward."],
+  },
+  "rnd-range": {
+    title: "10–90% range",
+    body: "The market-priced range of moves: from the 10th to the 90th percentile of the implied distribution.",
+    points: ["Both legs are $e^{k}-1$ at the 10%/90% cumulative density."],
+  },
+  "rnd-pup": {
+    title: "Risk-neutral P(up)",
+    body: "The probability the underlying finishes above the forward, read off the implied density.",
+    math: "P(\\text{up})=\\int_{k>0} q(k)\\,dk",
+    points: ["P(down) = 1 − P(up); both integrate the same density."],
+  },
+  "density-nonneg": {
+    title: "Density non-negativity",
+    body: "A valid probability density can never go negative — which is exactly the butterfly-arbitrage condition on the smile.",
+    points: [
+      "$q(k)\\ge 0 \\iff g(k)\\ge 0$ (Durrleman).",
+      "Green when the minimum sampled $g(k)\\ge0$; red flags an arb.",
+    ],
+  },
+  "rr25": {
+    title: "25Δ risk reversal",
+    body: "How much richer 25-delta calls are than 25-delta puts, in vol points — the headline directional-skew gauge.",
+    math: "\\text{RR}_{25}=\\text{IV}(25\\Delta\\,\\text{call})-\\text{IV}(25\\Delta\\,\\text{put})",
+    points: [
+      "Negative = puts bid (crash fear), the normal BTC regime; warn tone.",
+      "25Δ strikes solved off the smile by inverting $N(d_1)$.",
+    ],
+  },
+  "bf25": {
+    title: "25Δ butterfly",
+    body: "How much the 25-delta wings sit above the at-the-money vol — a measure of how convex (fat-tailed) the smile is.",
+    math: "\\text{BF}_{25}=\\tfrac12\\big(\\text{IV}_c+\\text{IV}_p\\big)-\\text{IV}_{\\text{atm}}",
+    points: ["In vol points; positive = wings richer than ATM."],
+  },
+  "implied-move": {
+    title: "Implied move",
+    body: "The 1-standard-deviation move the market prices into this expiry — the straddle-width breakeven.",
+    math: "\\pm\\,\\sigma_{\\text{ATM}}\\sqrt{T}",
+    points: ["Shown as a percentage of the forward."],
+  },
+  "forward-vol": {
+    title: "Forward vol",
+    body: "The volatility priced for the window between two expiries — exposes event risk a flat ATM curve hides.",
+    math: "\\sigma_{\\text{fwd}}=\\sqrt{\\tfrac{w_2-w_1}{T_2-T_1}}",
+    points: [
+      "From ATM total variance $w=\\text{totalVariance}(0)$ at each tenor.",
+      "Blank when variance isn't increasing (calendar-arb in the window).",
+    ],
+  },
+  "atm-term-curve": {
+    title: "ATM term structure",
+    body: "At-the-money vol across every live expiry — upward (contango) means longer-dated vol is richer; inverted (backwardation) means near-term stress.",
+    math: "\\sigma_{\\text{ATM}}(T)=\\sqrt{w(0)/T}",
+    points: ["Plotted nearest→farthest; verdict from back minus front IV."],
+  },
+  "skew-rotation": {
+    title: "Skew rotation",
+    body: "How fast the risk reversal is moving — whether the desk is actively re-skewing the smile (a signal) or holding it steady.",
+    math: "\\text{slope}=\\Delta\\text{RR}_{25}/\\Delta t",
+    points: [
+      "Vol points per hour over the cached SVI history.",
+      "Falling = steepening put skew; rising = calls richening.",
+    ],
+  },
+  // — Flow & edge tab —
+  "edge-bps": {
+    title: "Vault edge per fill",
+    body: "How much more the vault charged than the binary is worth, per fill, in basis points — the premium-weighted average over the window.",
+    math: "\\text{edge}=\\text{paid}-\\Phi(d_2),\\quad d_2=-\\tfrac{k}{\\sqrt w}-\\tfrac{\\sqrt w}{2}",
+    points: [
+      "Model-fair $\\Phi(d_2)$ uses each fill's own oracle SVI + forward.",
+      "Green = vault overcharged (edge); red = takers got it cheap.",
+    ],
+  },
+  "vol-risk-premium": {
+    title: "Vol-risk-premium captured",
+    body: "Cumulative signed dollar edge across the window — the realized premium the vault harvests for taking the other side.",
+    math: "\\textstyle\\sum_i (\\text{paid}_i-\\text{fair}_i)\\cdot q_i",
+    points: ["Positive when the book of fills was sold above model fair."],
+  },
+  "overpay-rate": {
+    title: "Overpay rate",
+    body: "The share of fills where the taker paid more than the model-fair probability — i.e. the vault had the edge on that trade.",
+    points: ["Count of fills with paid > fair, over all marked fills."],
+  },
+  "edge-fills": {
+    title: "Marked fills",
+    body: "How many recent binary mints could be priced against a live SVI smile and scored for edge.",
+    points: [
+      "Only fills on active, quotable oracles are marked.",
+      "Settled / un-fitted oracles are skipped.",
+    ],
+  },
+  "edge-scatter": {
+    title: "Paid vs fair",
+    body: "Every fill plotted by the price paid against its model-fair value, with the break-even diagonal.",
+    points: [
+      "Below the diagonal (paid > fair) = vault edge (green).",
+      "Dot size scales with contract quantity.",
+    ],
+  },
+  "settlement-outcomes": {
+    title: "Settlement outcomes",
+    body: "Every settled position as a dot over time — UP lane above, DN below, green when the taker won, sized by payout.",
+    points: ["From the redeemed feed where is_settled = true."],
+  },
+  "calibration": {
+    title: "Calibration",
+    body: "Does the price takers paid match how often that side actually won? A well-priced market sits on the diagonal.",
+    points: [
+      "Bar = average paid probability per side; tick = realized win rate.",
+      "A gap means UP or DN binaries were systematically mis-priced.",
+    ],
+  },
+  "pending-settlement": {
+    title: "Pending settlement",
+    body: "Oracles whose expiry has passed but which haven't settled yet — a 4th state the indexer's 3-state status can't express.",
+    points: [
+      "Active oracles with expiry < now.",
+      "Positions there can't be redeemed until settlement lands.",
+    ],
+  },
+  "net-flow": {
+    title: "Net directional flow",
+    body: "Premium spent opening UP binaries minus premium spent on DN over the window — the crowd's net directional bet, by money not count.",
+    math: "\\text{net}=\\textstyle\\sum\\text{cost}_{\\uparrow}-\\sum\\text{cost}_{\\downarrow}",
+    points: ["Green when net-long upside; red when net-long downside."],
+  },
+  "notional-positioning": {
+    title: "Positioning by notional",
+    body: "The UP/DN split of opening premium weighted by dollars, so one whale counts more than ten dust trades — the real order-flow skew.",
+    points: ["Contrast with the count-based OI histogram on the Desk."],
+  },
+  "mint-redeem-momentum": {
+    title: "Mint / redeem momentum",
+    body: "Premium paid to open new positions vs payouts flowing out on redemptions — whether risk is being opened or unwound.",
+    points: ["Mint-heavy = risk-on; redeem-heavy = unwind."],
+  },
+  "whale-flow": {
+    title: "Whale flow",
+    body: "The largest mints by premium in the window, with side, strike, moneyness and wallet — the size that actually moves the book.",
+    points: ["Your own fills are tinted; sorted by premium."],
+  },
+  "range-flow": {
+    title: "Range flow",
+    body: "Vertical-spread (range) instruments that pay inside a strike band — a separate product line from the up/down binaries.",
+    points: ["Premium and count of range mints over the window."],
+  },
+  "range-band": {
+    title: "Band ladder",
+    body: "Where range positions cluster: each top band drawn from its lower to upper strike, brighter for more notional.",
+    points: ["Bands aggregated by (lower, higher) strike pair."],
+  },
+  // — PLP risk tab —
+  "mtm-concentration": {
+    title: "MtM concentration",
+    body: "How much of the vault's open risk rides on a single expiry — concentrated books blow up faster on one bad settlement.",
+    math: "\\text{HHI}=\\textstyle\\sum_i s_i^2,\\quad s_i=\\tfrac{\\text{liability}_i}{\\sum\\text{liability}}",
+    points: [
+      "HHI ≥ 0.5 = concentrated; ≤ 0.25 = diversified.",
+      "Top-expiry and top-3 shares of marked liability.",
+    ],
+  },
+  "marked-liability": {
+    title: "Marked liability",
+    body: "What the vault owes per expiry, valuing every open binary at its model-fair Φ(d₂) — the reconstructed contribution to total MtM.",
+    points: [
+      "Open quantity per (oracle, strike, side) marked at fair value.",
+      "Bar colour = net directional inventory (green up, red down).",
+    ],
+  },
+  "mtm-tieout": {
+    title: "MtM tie-out",
+    body: "The protocol's own total MtM, shown alongside the reconstructed liability as a sanity check — they should track, but the reconstruction is an estimate.",
+    points: [
+      "Reconstruction marks at client Φ(d₂); the contract uses cached matrix MtM.",
+      "Bounded by the indexer flow window (see 'partial book').",
+    ],
+  },
+  "book-truncated": {
+    title: "Partial book",
+    body: "The flow window hit the indexer's row limit, so the reconstructed exposure is a lower bound — older open positions may be missing.",
+    points: ["Fetch capped at 1000 rows; treat totals as a floor."],
+  },
+  "breach-sigma": {
+    title: "Breach σ",
+    body: "The worst-direction σ-shock the vault survives before LP equity is wiped — repricing the whole book through the SVI smile.",
+    math: "\\sigma_{\\text{breach}}=\\min\\{|n|:\\text{vaultValue}(n)\\le 0\\}",
+    points: [
+      "Forward shocked $F\\,e^{n\\sigma_T}$ per oracle, smile held fixed.",
+      "Stressed value applies Δliability to the live vault value.",
+    ],
+  },
+  "scenario-curve": {
+    title: "Scenario curve",
+    body: "Vault value across the full ±5σ shock range — where it crosses zero is the breach point.",
+    points: ["x = σ multiple; y = stressed vault value in dUSDC."],
+  },
+  "scenario-ladder": {
+    title: "Scenario ladder",
+    body: "The stressed vault value and buffer at fixed ±1/3/5σ, so you can read the whole tail at a glance.",
+    points: ["Buffer = stressed value ÷ current value; red below zero."],
+  },
+  "withdrawal-limiter": {
+    title: "Withdrawal limiter",
+    body: "The cap on how much LPs can pull out right now — the binding minimum of free liquidity and the limiter's budget.",
+    math: "\\text{exit}=\\min(\\text{available\\_liquidity},\\,\\text{available\\_withdrawal})",
+    points: [
+      "Open = limiter not binding; Throttled = limiter caps exit; Drained ≈ 0.",
+    ],
+  },
+  "exit-capacity": {
+    title: "Exit capacity",
+    body: "The limiter's current withdrawal budget against the vault's free liquidity — how much can leave before the throttle bites.",
+    points: ["available_withdrawal from the vault summary (1e6)."],
+  },
+  "solvency-floor": {
+    title: "Solvency floor",
+    body: "Cash left after the worst-case payout is reserved — the hard floor under withdrawals independent of the limiter.",
+    math: "\\max(0,\\ \\text{vault\\_balance}-\\text{total\\_max\\_payout})",
+    points: ["Whichever of this and the limiter budget is smaller binds."],
+  },
+  "max-drawdown": {
+    title: "Max drawdown",
+    body: "The deepest peak-to-trough fall in PLP share price over the range — the loss an LP who bought the top would have worn.",
+    math: "\\min_t\\Big(\\tfrac{\\text{share}_t}{\\max_{s\\le t}\\text{share}_s}-1\\Big)",
+    points: ["0% means share price only ever made new highs."],
+  },
+  "drawdown-replay": {
+    title: "Underwater curve",
+    body: "How far below its running peak the PLP share price sits at each point — flat at 0 on the highs, dipping when underwater.",
+    points: ["Range selector replays 1D / 1W / 1M / 3M / ALL."],
+  },
+  "lp-vol": {
+    title: "LP volatility",
+    body: "Annualised volatility of PLP share-price returns — how bumpy the LP ride has been.",
+    math: "\\text{stdev}(\\ln r)\\cdot\\sqrt{n/\\text{years}}",
+    points: ["From log share-price returns over the range."],
+  },
+  "risk-grade": {
+    title: "Risk grade",
+    body: "A composite LP-safety read — GREEN/AMBER/RED from utilization, MtM concentration and exit capacity.",
+    points: [
+      "Worst of: utilization, max-payout utilization, top-expiry share, exit ratio.",
+      "Export the metrics as CSV or print the one-pager.",
+    ],
+  },
+  "house-rules": {
+    title: "House rules",
+    body: "The live on-chain pricing and risk config the desk operates under — spread parameters and the trading-paused kill-switch.",
+    points: [
+      "From GET /config; null fields mean not yet published on-chain.",
+      "Spreads shown in basis points (1e9-scaled probability units).",
+    ],
+  },
+  "exposure-ceiling": {
+    title: "Exposure ceiling",
+    body: "The maximum share of the vault that may back open positions before new mints are blocked — the protocol's hard risk gate.",
+    points: ["RiskConfig.max_total_exposure_pct; null until published."],
+  },
+  "lp-economics": {
+    title: "LP economics",
+    body: "The vault's running LP track record — share price, net deposits, and gross supplied/withdrawn — shown when the on-chain pricing/risk config isn't published yet.",
+    points: ["All from the vault summary (share price + 1e6 amounts)."],
+  },
+  // — Accounts tab —
+  "leaderboard": {
+    title: "Manager leaderboard",
+    body: "Per-manager realized PnL attribution, ranked — the indexer's authoritative account roll-ups for the most active desks.",
+    points: [
+      "Cohort = highest-volume managers in the flow window.",
+      "Rank by realized PnL, account value or open exposure.",
+    ],
+  },
+  "equity-curve": {
+    title: "Equity curve",
+    body: "A desk's cumulative realized PnL over time — the shape of how it made (or lost) money.",
+    points: ["From the manager's realized-PnL series."],
+  },
+  "account-blotter": {
+    title: "Account blotter",
+    body: "The connected wallet's positions marked to market server-side, plus the account roll-up — including claimable winnings awaiting settlement.",
+    points: ["Aggregated across all of the wallet's manager accounts."],
+  },
+  "manager-market": {
+    title: "Market managers",
+    body: "Desk-level activity across the whole venue — how many PredictManager accounts exist and how many traded in the recent window.",
+    points: [
+      "Total from the /managers directory; active = distinct managers in flow.",
+      "Vault net = premium in minus settled payouts out.",
+    ],
+  },
+  "account-value": {
+    title: "Account value",
+    body: "Total worth of the account: trading balance plus the mark value of open positions and redeemable winnings.",
+    points: ["From the manager summary (1e6)."],
+  },
+  "open-exposure": {
+    title: "Open exposure",
+    body: "Capital tied up in open positions right now — the account's at-risk notional.",
+    points: ["From the manager summary (1e6)."],
+  },
+  "redeemable": {
+    title: "Redeemable",
+    body: "Winnings on settled positions that can be claimed now — value sitting idle until redeemed.",
+    points: ["From the manager summary (1e6)."],
+  },
+  // — Ops / health tab —
+  "feed-staleness": {
+    title: "Feed staleness",
+    body: "How long since each oracle last published a price/SVI update. Past the 30s window the contract treats the feed as stale and mints revert.",
+    points: [
+      "Active = fresh; Stale = > 30s; Pending = expired, not yet settled.",
+      "Verdict is HALTED if trading is paused, else DEGRADED if any are bad.",
+    ],
+  },
+  "pipeline-lag": {
+    title: "Pipeline lag",
+    body: "Per-pipeline indexer lag — how far behind chain each event pipeline is, beyond the single aggregate lag the footer shows.",
+    points: [
+      "Time lag in seconds and checkpoint lag per pipeline.",
+      "Backfill pipelines are excluded.",
+    ],
+  },
+  "kill-switch": {
+    title: "Kill-switch & assets",
+    body: "The trading-paused flag and the set of enabled quote assets the market currently accepts.",
+    points: ["From GET /config; paused halts all mints."],
+  },
+  // — Cross-venue tab —
+  "vol-arb": {
+    title: "Vol-arb spread",
+    body: "Predict's ATM vol minus Deribit's BTC DVOL index — when Predict trades rich the vault is selling vol above the reference.",
+    points: [
+      "≥ 2 vol points flags an actionable cross-venue spread.",
+      "Rich = sell Predict vol; cheap = buy it.",
+    ],
+  },
+  "dvol": {
+    title: "Deribit DVOL",
+    body: "Deribit's BTC volatility index — the market-standard reference for 30-day implied vol, pulled hourly.",
+    points: ["External reference; CORS-open public API."],
+  },
+  "vrp": {
+    title: "Vol-risk-premium",
+    body: "Implied vol minus trailing realized vol — what option sellers earn for bearing risk. Positive means options are rich, the LP's edge.",
+    math: "\\text{VRP}=\\sigma_{\\text{implied}}-\\sigma_{\\text{realized}}",
+    points: ["Sell-vol when positive; buy-vol when negative."],
+  },
+  "realized-vol": {
+    title: "Realized vol",
+    body: "Annualised volatility of actual BTC returns over the trailing window, from Binance hourly closes.",
+    math: "\\text{stdev}(\\ln r)\\cdot\\sqrt{24\\cdot365.25}",
+    points: ["24h rolling window of hourly log returns."],
+  },
+  "implied-vs-realized": {
+    title: "Implied vs realized",
+    body: "The two vol lines whose gap is the vol-risk-premium — implied (DVOL) over realized (Binance).",
+    points: ["Shaded gap is the premium option sellers capture."],
+  },
 };

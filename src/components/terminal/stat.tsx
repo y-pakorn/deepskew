@@ -241,6 +241,61 @@ export function TileGrid({
   );
 }
 
+/**
+ * A panel's headline metric — the "instrument" lead: a small label, one big mono
+ * number (tone-colored, affixes de-emphasized), and a one-line context. Put it
+ * at the top of a panel above the chart/table. Keep `value` short (a number +
+ * unit); push the qualitative phrase into `sub`.
+ */
+export function Hero({
+  label,
+  value,
+  sub,
+  tone = "default",
+  tip,
+  accessory,
+  divider = true,
+}: {
+  label: string;
+  value: React.ReactNode;
+  sub?: React.ReactNode;
+  tone?: Tone;
+  tip?: string;
+  accessory?: React.ReactNode;
+  divider?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "shrink-0",
+        divider && "border-b border-hairline pb-2.5",
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        {tip ? (
+          <LabelTip k={tip} className="label-micro">
+            {label}
+          </LabelTip>
+        ) : (
+          <span className="label-micro">{label}</span>
+        )}
+        {accessory ? <div className="shrink-0">{accessory}</div> : null}
+      </div>
+      <MonoValue
+        className={cn(
+          "mt-1 block truncate text-[1.75rem] leading-none font-medium tracking-tight",
+          toneClass(tone),
+        )}
+      >
+        {value}
+      </MonoValue>
+      {sub ? (
+        <div className="label-micro mt-1.5 truncate text-text-dim">{sub}</div>
+      ) : null}
+    </div>
+  );
+}
+
 /** The panel's headline answer: status dot + tone statement (weight 500). */
 export function Verdict({
   tone = "safe",

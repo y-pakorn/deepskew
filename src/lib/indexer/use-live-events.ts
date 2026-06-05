@@ -34,6 +34,7 @@ function toMinted(e: PredictEvent): PositionMinted {
   return {
     checkpoint_timestamp_ms: e.timestampMs,
     digest: e.txDigest,
+    manager_id: str(p.manager_id),
     trader: str(p.trader),
     oracle_id: str(p.oracle_id),
     expiry: num(p.expiry),
@@ -50,6 +51,7 @@ function toRedeemed(e: PredictEvent): PositionRedeemed {
   return {
     checkpoint_timestamp_ms: e.timestampMs,
     digest: e.txDigest,
+    manager_id: str(p.manager_id),
     owner: str(p.owner),
     oracle_id: str(p.oracle_id),
     expiry: num(p.expiry),
