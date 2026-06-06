@@ -1,5 +1,5 @@
 /**
- * DeepSkew mark — the implied-vol skew curve (steep put wing on the left, ATM
+ * deepskew mark: the implied-vol skew curve (steep put wing on the left, ATM
  * minimum, gentler call wing) that is the product's signature. `currentColor`
  * so it inherits the cerulean accent.
  */

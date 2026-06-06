@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ───────────────────────────────────────────────────────────────────────────
-   DEEPSKEW — design tokens (see DESIGN.md). Dark-only.
+   deepskew design tokens (see DESIGN.md). Dark-only.
    Design system = Tatem ("Midnight Terminal"): #000 canvas, #161616 panel,
    #007eed cerulean for data/interaction, status colors carry risk. Geist +
    tabular figures. Color = information, never decoration.
@@ -127,7 +127,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* DeepSkew utilities (bg-canvas, text-text-sec, …) */
+  /* deepskew utilities (bg-canvas, text-text-sec, …) */
   --color-canvas: var(--canvas);
   --color-panel: var(--panel);
   --color-panel-elev: var(--panel-elev);

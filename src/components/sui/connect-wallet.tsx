@@ -117,7 +117,7 @@ function ConnectDialog({ reconnecting }: { reconnecting: boolean }) {
             Connect a wallet
           </DialogTitle>
           <DialogDescription className="text-data text-text-dim">
-            Choose a Sui wallet to use with DeepSkew on {NETWORK_LABEL}.
+            Choose a Sui wallet to use with deepskew on {NETWORK_LABEL}.
           </DialogDescription>
         </DialogHeader>
 

@@ -1,36 +1,80 @@
-# DeepSkew
+# deepskew
 
 **A quant terminal for DeepBook Predict on Sui.**
 
 [deepskew.xyz](https://deepskew.xyz)
 
+![deepskew](https://deepskew.xyz/opengraph-image)
+
 DeepBook Predict puts options-style volatility trading on-chain. An oracle publishes a volatility surface, a liquidity vault underwrites every position, and traders mint and redeem against it block by block. It all settles on Sui in the open. The problem is that none of it is readable. A raw SVI parameter set tells you nothing about whether the surface admits arbitrage. A vault balance tells you nothing about whether it survives a sharp move in BTC. The information is on-chain. The meaning is not.
 
-DeepSkew is the legibility layer. It reads the live surface, the vault, and the settlement flow straight from the chain and turns each one into a single clear read with the numbers that back it underneath. It is the screen a desk would keep open while the market is live.
+deepskew is the legibility layer. It reads the live surface, the vault, and the settlement flow straight from the chain and turns each one into a single clear read with the numbers that back it underneath. It is the screen a desk would keep open while the market is live.
 
 ## Why it exists
 
 A traditional options desk has a wall of tools for exactly this: a surface viewer, an arbitrage monitor, a risk engine, a blotter. On-chain volatility has none of it. The data is public and the protocol is permissionless, which is the whole promise, but in practice you still have to decode fixed-point parameters, run the vol math yourself, and rebuild state from a stream of events before you can answer a basic question like "is this surface fair" or "can the vault take this trade."
 
-That gap is what keeps serious flow out. DeepSkew closes it by doing the decoding, the math, and the reconstruction for you, and by refusing to show a number without showing what it means.
+That gap is what keeps serious flow out. deepskew closes it by doing the decoding, the math, and the reconstruction for you, and by refusing to show a number without showing what it means.
 
-## What we're building
+## What's inside
 
-**A live implied-volatility surface.** The full BTC vol surface, reconstructed from the protocol's on-chain SVI parameters and drawn in 3D across strike and expiry. It updates as new parameters land on-chain, so you are always looking at the current market and not a snapshot. The shape is the point: where the skew steepens, where the term structure inverts, where the wings blow out.
+deepskew is one persistent desk with seven routed views. The market selection, the wallet, and the live query cache live in the shell, so moving between views keeps the data warm.
 
-**An arbitrage check that runs continuously.** A vol surface can be inconsistent in two ways, and both let someone trade against the vault for free. DeepSkew tests every surface for butterfly arbitrage within each expiry and calendar arbitrage across expiries, and leads with the verdict. A clean surface says so. A broken one shows which expiry fails and by how much.
+### Desk
 
-**A vault risk simulator.** The vault is the counterparty to every position, so its solvency is the market's solvency. DeepSkew stress-tests it against BTC moves out to ±5σ, sized by the live at-the-money volatility, and shows how much buffer is left at each shock. It answers the only question a liquidity provider really has: at what move does this break.
+The single-viewport instrument. The full BTC vol surface in 3D across strike and expiry, the current expiry's smile with its butterfly and calendar arbitrage verdict, the oracle state (spot, forward, ATM IV, the vol-by-strike matrix, and the raw SVI parameters), the PLP vault with its sigma stress, and a live tape of mints and redeems with running win rates. Every panel leads with one answer.
 
-**A live settlement tape.** Positions minted and redeemed stream in as they happen, with running win rates and payouts, so you can watch how the market is resolving instead of reconstructing it after the fact.
+### Vol Analytics (`/vol`)
+
+The volatility desk in depth. The smile across log-moneyness, the skew and term structure with 25-delta risk reversals and butterflies, forward vol and implied move per tenor, the risk-neutral density the surface prices (via Breeden-Litzenberger) with a digital probability ladder, and smile dynamics that measure whether the skew is rotating and how the SVI parameters drift over time.
+
+### Flow & Edge (`/flow`)
+
+Where the vault's edge is made or lost. Every fill is scored against its model-fair price (the digital N(d2) from the live surface) to show the vol-risk-premium captured fill by fill, in basis points and in dollars. Alongside it: settlement calibration (priced probability against realized outcome), whale flow ranked by notional rather than count, and the range (vertical-spread) product flow.
+
+### PLP Risk (`/risk`)
+
+The vault is the counterparty to every position, so its solvency is the market's solvency. This view reconstructs the open book from flow, marks every leg at fair value, and answers the LP's real questions: which expiry it is most concentrated in (HHI), at what BTC move it breaches (a full repricing out to five sigma sized by live ATM vol), the worst drawdown LPs have lived through, whether they can actually exit (limiter budget against free liquidity), and one GREEN, AMBER or RED grade that sums it up, exportable as a one-pager.
+
+### Managers (`/managers`)
+
+The desk leaderboard. Every trading account ranked by volume, with realized and unrealized PnL, account value, open exposure, and open positions, paginated and sortable, with drill-through to a per-desk page. The header rolls up market-wide activity and your own PnL.
+
+### Ops / Health (`/ops`)
+
+One read on whether the market is trustworthy right now. Per-feed oracle freshness against the staleness window, per-pipeline indexer lag against the chain head, and a single global verdict over the live data path. If a feed is stale or the indexer is behind, this is where it shows first.
+
+### Cross-Venue (`/cross-venue`)
+
+On-chain volatility in context. Predict's ATM vol against Deribit's DVOL index per tenor (where Predict is rich or cheap), and the volatility-risk-premium as Deribit implied vol minus Binance realized vol, the spread that tells an LP whether selling vol carries an edge.
 
 ## How it reads
 
-An instrument, not a dashboard. Every panel answers one question and leads with the answer in a single large figure. Everything else on the panel is there to justify that figure. Color is reserved for meaning: green is safe, amber is caution, red is a breach, and nothing is colored for decoration. The result is a screen you can read at a glance and trust on a second look.
+An instrument, not a dashboard. Every panel answers one question and leads with the answer in a single large figure. Everything else on the panel is there to justify that figure. Color is reserved for meaning: green is safe, amber is caution, red is a breach, cerulean is data and interaction, and nothing is colored for decoration. The result is a screen you can read at a glance and trust on a second look. The full design system lives in [DESIGN.md](./DESIGN.md).
 
 ## Built on live state
 
-Every figure on screen is computed from current on-chain state. The surface comes from the oracle's published SVI parameters, the risk numbers from the vault's real reserves and exposure, the tape from settlement events as they land. Nothing is sampled, mocked, or backfilled with placeholder data. If the chain has not produced it yet, DeepSkew does not show it.
+Every figure on screen is computed from current on-chain state. The surface comes from the oracle's published SVI parameters, the risk numbers from the vault's real reserves and exposure, the tape from settlement events as they land, the cross-venue references from Deribit and Binance directly. Nothing is sampled, mocked, or backfilled with placeholder data. If the chain has not produced it yet, deepskew does not show it.
+
+## The math
+
+All of it is pure and lives in `src/lib`, computed in the browser from decoded on-chain parameters.
+
+- **SVI surface.** Raw SVI total variance `w(k) = a + b(rho(k - m) + sqrt((k - m)^2 + sigma^2))`, with implied vol `sqrt(w/T)` (`src/lib/svi.ts`).
+- **Arbitrage-free checks.** Durrleman's butterfly condition `g(k) >= 0` sampled across the smile, and the calendar condition that total variance is non-decreasing in maturity.
+- **Digital pricing.** The fair value of every binary as `P(S_T > K) = N(d2)`, the price each on-chain fill is scored against.
+- **Risk-neutral density.** Breeden-Litzenberger applied to the SVI smile, normalized numerically, with mode, P(up), and tail quantiles.
+- **Skew metrics.** 25-delta risk reversal and butterfly via a delta-to-strike solve, forward vol between tenors, and implied move.
+- **Vault risk.** Open-book reconstruction from flow, per-oracle attribution with HHI, and a book-wide repricing out to five sigma to find the breach point.
+- **Vol-risk-premium.** Annualized realized vol from log returns against the implied reference.
+
+## Tech
+
+- **Next 16** (App Router, Turbopack) and **React 19**, TypeScript, Tailwind v4 with a CSS-first token theme, and shadcn/ui.
+- **Sui** via the new `@mysten/dapp-kit-react` 2.0 on a gRPC client (testnet), with Enoki for wallet onboarding.
+- **TanStack Query** over a typed indexer client for all live data (`src/lib/indexer`).
+- **three** with React Three Fiber and Drei for the 3D surface, **lightweight-charts** for time series, hand-rolled SVG for smiles, sparklines and ladders, and **KaTeX** for the math glossary.
+- **motion** for the live-state transitions, scoped to data changes only.
 
 ## Status
 
@@ -40,6 +84,24 @@ Running on Sui testnet today. It redeploys to mainnet on day one.
 
 ```bash
 pnpm install
-pnpm dev      # http://localhost:3000
+pnpm dev      # http://localhost:3000  (the terminal is the root /)
 pnpm build    # production build
+pnpm start    # serve the build
+pnpm lint
+```
+
+## Project layout
+
+```
+src/
+  app/                 routes (the desk shell + 7 views) and metadata assets
+  components/terminal/ every panel, grouped by view (surface, vol, flow, plp, ...)
+  lib/
+    svi.ts             the SVI + arbitrage + density math
+    analytics.ts       open-book reconstruction, edge, scenario engine
+    cross-venue.ts     Deribit and Binance references
+    indexer/           typed indexer client + React Query hooks
+    og/                the social-card renderer (per-route, live snapshot)
+    sui/               dapp-kit instance, constants, network config
+DESIGN.md              the Tatem design system (source of truth)
 ```

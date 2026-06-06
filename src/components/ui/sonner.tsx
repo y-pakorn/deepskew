@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
-// DeepSkew runs dark-only, so we skip next-themes and pin the dark theme.
+// deepskew runs dark-only, so we skip next-themes and pin the dark theme.
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
