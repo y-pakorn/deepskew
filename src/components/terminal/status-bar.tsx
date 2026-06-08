@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,14 +81,9 @@ export function StatusBar() {
             <SourceItem label="Indexer API" onClick={open(INDEXER_BASE_URL)} />
           </DropdownMenuContent>
         </DropdownMenu>
-        <a
-          href="https://docs.sui.io/onchain-finance/deepbook-predict/"
-          target="_blank"
-          rel="noreferrer"
-          className="transition-colors hover:text-text-dim"
-        >
+        <Link href="/docs" className="transition-colors hover:text-text-dim">
           Docs
-        </a>
+        </Link>
         <a
           href="https://x.com/DeepBookonSui"
           target="_blank"
