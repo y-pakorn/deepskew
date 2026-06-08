@@ -11,7 +11,13 @@ export const SUI_NETWORK = "testnet" as const;
 export const PREDICT_PACKAGE_ID =
   "0xf5ea2b3749c65d6e56507cc35388719aadb28f9cab873696a2f8687f5c785138";
 
-/** The Predict market shared object. */
+/**
+ * The Predict market shared object. On testnet there is exactly one: all 3.6k+
+ * oracles on the indexer report this single `predict_id`, so we treat it as a
+ * constant. Mainnet will likely run several markets (multiple predict ids), at
+ * which point this should become a runtime list resolved from the indexer
+ * rather than a hardcoded id.
+ */
 export const PREDICT_ID =
   "0xc8736204d12f0a7277c86388a68bf8a194b0a14c5538ad13f22cbd8e2a38028a";
 
