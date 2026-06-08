@@ -12,6 +12,7 @@ import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
+import { TxRow } from "../tx-row";
 
 /**
  * Digital Edge Tape — scores every live binary mint against the model-fair price
@@ -28,8 +29,8 @@ export function EdgeTapePanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Digital edge tape"
-      code="fair N(d₂) vs paid"
+      title="Digital Edge Tape"
+      code="Fair N(d₂) vs paid"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
       right={
@@ -62,7 +63,7 @@ export function EdgeTapePanel({ className }: { className?: string }) {
               value={`${fmtSigned(edge.meanEdgeBps, 0)} bps`}
               sub={
                 <>
-                  cum{" "}
+                  Cum{" "}
                   {fmtUsdCompact(fromUnits(edge.cumDollar, DUSDC_DECIMALS))} ·
                   takers overpay {(edge.overpayRate * 100).toFixed(0)}% ·{" "}
                   {edge.count} fills
@@ -124,7 +125,8 @@ export function EdgeTapePanel({ className }: { className?: string }) {
 
 function EdgeRowView({ r, mine }: { r: EdgeRow; mine: boolean }) {
   return (
-    <div
+    <TxRow
+      digest={r.digest}
       className={cn(
         "grid grid-cols-[2.6rem_1fr_3rem_3rem_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-data tabular",
         mine && "bg-accent-brand/10",
@@ -142,7 +144,7 @@ function EdgeRowView({ r, mine }: { r: EdgeRow; mine: boolean }) {
       <span className={cn("text-right", r.edge >= 0 ? "text-safe" : "text-breach")}>
         {fmtSigned(r.edgeBps, 0)}
       </span>
-    </div>
+    </TxRow>
   );
 }
 
@@ -189,10 +191,10 @@ function EdgeScatter({ rows, className }: { rows: EdgeRow[]; className?: string 
         })}
       </svg>
       <span className="label-micro pointer-events-none absolute top-0.5 left-1 text-text-faint">
-        fair ↑
+        Fair ↑
       </span>
       <span className="label-micro pointer-events-none absolute right-1 bottom-0.5 text-text-faint">
-        paid →
+        Paid →
       </span>
     </div>
   );

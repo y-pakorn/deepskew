@@ -65,7 +65,7 @@ export function VaultPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Vault · PLP risk"
+      title="Vault · PLP Risk"
       code="dUSDC"
       className={className}
       // At lg the desk is fixed-height: don't scroll the whole 3-column body as

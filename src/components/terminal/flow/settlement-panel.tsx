@@ -12,6 +12,7 @@ import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { Pill } from "../pill";
 import { Hero } from "../stat";
+import { TxRow } from "../tx-row";
 
 /** Settlement outcomes + a calibration cross-check: do the prices takers paid
  *  match how often they actually won? Surfaces PENDING_SETTLEMENT (expired but
@@ -59,8 +60,8 @@ export function SettlementPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Settlement & calibration"
-      code="outcomes · honesty"
+      title="Settlement & Calibration"
+      code="Outcomes · honesty"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
       right={
@@ -86,7 +87,7 @@ export function SettlementPanel({ className }: { className?: string }) {
             value={`${m.winRate.toFixed(0)}%`}
             sub={
               <>
-                {m.winRate < 50 ? "vault edge · " : ""}
+                {m.winRate < 50 ? "Vault edge · " : ""}
                 {m.total} settled · payouts{" "}
                 {fmtUsdCompact(fromUnits(m.payouts, DUSDC_DECIMALS))} · UP{" "}
                 {m.upWin.toFixed(0)}% DN {m.dnWin.toFixed(0)}%
@@ -124,8 +125,9 @@ export function SettlementPanel({ className }: { className?: string }) {
             </div>
             <ScrollArea className="min-h-0 flex-1 [mask-image:linear-gradient(to_bottom,#000_calc(100%-1.25rem),transparent)]">
               {m.settled.map((r, i) => (
-                <div
+                <TxRow
                   key={`${r.digest}-${i}`}
+                  digest={r.digest}
                   className="grid grid-cols-[3.4rem_2.4rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-0.5 py-1 text-data tabular"
                 >
                   <span className="text-text-faint">
@@ -147,7 +149,7 @@ export function SettlementPanel({ className }: { className?: string }) {
                       ? `+${fmtUsdCompact(fromUnits(r.payout, DUSDC_DECIMALS))}`
                       : "$0"}
                   </span>
-                </div>
+                </TxRow>
               ))}
             </ScrollArea>
           </div>

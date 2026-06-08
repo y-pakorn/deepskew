@@ -56,7 +56,7 @@ export function CommandPalette() {
       <CommandInput placeholder="Search markets, actions…" />
       <CommandList>
         <CommandEmpty>No results.</CommandEmpty>
-        <CommandGroup heading="Markets · BTC expiries">
+        <CommandGroup heading="Markets · BTC Expiries">
           {activeOracles.slice(0, 24).map((o) => (
             <CommandItem
               key={o.oracle_id}

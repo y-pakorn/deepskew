@@ -65,7 +65,7 @@ export function RndPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Risk-neutral density"
+      title="Risk-Neutral Density"
       code="Breeden–Litzenberger"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
@@ -145,7 +145,7 @@ function ProbabilityLadder({
         <LabelTip k="rnd-pup" className="label-micro">
           P(finish above)
         </LabelTip>
-        <span className="label-micro text-text-faint">by move</span>
+        <span className="label-micro text-text-faint">By move</span>
       </div>
       <div className="flex min-h-0 flex-1 flex-col justify-between gap-px">
         {rows.map((r) => (

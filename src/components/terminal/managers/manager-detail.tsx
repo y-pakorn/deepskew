@@ -103,7 +103,7 @@ export function ManagerDetail({ managerId }: { managerId: string }) {
             rel="noreferrer"
             className="ml-auto shrink-0 tabular text-data text-text-faint transition-colors hover:text-text-dim"
           >
-            owner {truncateAddr(summary.owner)} ↗
+            Owner {truncateAddr(summary.owner)} ↗
           </a>
         ) : null}
       </div>
@@ -120,8 +120,8 @@ export function ManagerDetail({ managerId }: { managerId: string }) {
           <div className="grid min-h-0 grid-cols-1 gap-px bg-hairline lg:grid-cols-3">
             <PerformancePanel summary={summary} equity={equity} d={d} />
             <Panel
-              title="Open positions"
-              code="mark-priced"
+              title="Open Positions"
+              code="Mark-priced"
               bodyClassName="flex flex-col overflow-hidden p-0"
               right={
                 <span className="label-micro text-text-faint">
@@ -157,7 +157,7 @@ export function ManagerDetail({ managerId }: { managerId: string }) {
             </Panel>
             <Panel
               title="Activity"
-              code="trade tape"
+              code="Trade tape"
               bodyClassName="flex flex-col overflow-hidden p-0"
               right={
                 <span className="label-micro text-text-faint">
@@ -242,7 +242,7 @@ function HeroBand({
               {signedUsd(total)}
             </MonoValue>
             <span className="text-val tabular text-text-dim">
-              realized{" "}
+              Realized{" "}
               <span className={sign(summary.realized_pnl)}>
                 {signedUsd(summary.realized_pnl)}
               </span>{" "}
@@ -341,7 +341,7 @@ function PerformancePanel({
   return (
     <Panel
       title="Performance"
-      code="equity · balances"
+      code="Equity · balances"
       bodyClassName="flex flex-col gap-3 overflow-hidden"
     >
       <div className="shrink-0">

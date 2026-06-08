@@ -42,7 +42,7 @@ export function LimiterPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Withdrawal limiter"
+      title="Withdrawal Limiter"
       code="LP exit capacity"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"

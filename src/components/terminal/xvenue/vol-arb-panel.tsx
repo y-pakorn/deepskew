@@ -73,7 +73,7 @@ export function VolArbPanel({ className }: { className?: string }) {
             <span className="label-micro">Tenor</span>
             <span className="label-micro text-right">ATM</span>
             <LabelTip k="vol-arb" className="label-micro">
-              cheap ◂ Predict − Deribit ▸ rich
+              Cheap ◂ Predict − Deribit ▸ rich
             </LabelTip>
             <span className="label-micro text-right">Spread</span>
           </div>

@@ -128,11 +128,25 @@ Body base = **14px** (unclassed text never falls to the 16px UA default).
 - **Value-led stacked** (a tiny caption *above* a number: StatTile 18, vol matrix, hero 32): the
   value is intentionally much larger; the stacked structure makes the jump read as one unit.
 
-**Casing = Sentence case.** Stat/section/pill/prose labels capitalize the first word only
-("Forward", "Expiry", "Vault value", "Active", "Arb-free"). Domain abbreviations & tickers stay
-canonical (ATM, IV, SVI, PLP, LP, OI, BTC, USD, MtM, RR, UTC, APY, 24h); math symbols (`a b m ρ σ`)
-and number-led labels stay as-is. **No forced lowercase, no shouty all-caps.** UPPERCASE is reserved
-only for a rare tracked micro-eyebrow above a hero number.
+**Casing.** Three tiers, applied consistently across every component:
+
+1. **Panel titles → Title Case.** The `<Panel title>` and any equivalent section header: capitalize
+   every principal word; keep short connectors lowercase (`vs`, `of`, `to`, `by`, `per`, `the`, `a`,
+   `and`). Separators (`·`, `/`, `&`) stay. E.g. "Vault · PLP Risk", "Digital Edge Tape",
+   "Implied vs Realized", "Per-Oracle Risk", "Risk-Neutral Density", "Skew & Term Structure".
+2. **Everything else human-facing → Sentence case** (capitalize the first word only). Panel `code`
+   subtitles, Stat/StatTile/Hero labels, pill text, section labels, annotations and Hero `sub` prose:
+   "Live flow · settle", "Optimal utilization", "At 90% optimal util", "Borrow dUSDC", "Vault value".
+3. **Proper nouns are always capitalized** wherever they appear, in titles or prose: DeepBook,
+   Predict, Sui, Deribit, Binance, Suiscan, Walrus, Pyth, Breeden–Litzenberger. DeepBook's three
+   primitive names — Spot, Margin, Predict — are capitalized when naming the products (e.g. the
+   "Predict × Margin × Spot" subtitle), but stay lowercase as generic words ("spot price", "margin").
+
+Domain abbreviations & tickers stay canonical (ATM, IV, SVI, PLP, LP, OI, BTC, USD, dUSDC, MtM, RR,
+UTC, APY, APR, DVOL, VRP, CLOB, N(d₂), 25Δ, 24h, 7d, ±5σ); math symbols (`a b m ρ σ`) and number-led
+strings stay as-is. **No shouty all-caps** (UPPERCASE is reserved only for a rare tracked
+micro-eyebrow above a hero number). **The only lowercase-brand exception is the `deepskew` wordmark
+itself** (§13); everything else follows the tiers above.
 
 ---
 

@@ -26,9 +26,24 @@ export function DeskShell({ children }: { children: React.ReactNode }) {
   );
 
   if (!mounted) {
+    // Branded boot skeleton that mirrors the desk silhouette (command strip,
+    // nav, body, status bar) so the hydration flash reads as the terminal
+    // loading, not a blank/broken screen, even if the data path is slow.
     return (
-      <div className="flex h-dvh items-center justify-center bg-canvas">
-        <span className="label-micro animate-pulse">Booting desk…</span>
+      <div className="flex h-dvh flex-col bg-canvas">
+        <div className="flex h-12 shrink-0 items-center gap-2 border-b border-hairline px-4">
+          <span className="size-2 animate-pulse rounded-full bg-accent-brand" />
+          <span className="text-md font-semibold tracking-tight text-text-sec">
+            deepskew
+          </span>
+        </div>
+        <div className="h-9 shrink-0 border-b border-hairline" />
+        <div className="flex flex-1 items-center justify-center">
+          <span className="label-micro animate-pulse text-text-faint">
+            Booting terminal…
+          </span>
+        </div>
+        <div className="h-6 shrink-0 border-t border-hairline" />
       </div>
     );
   }

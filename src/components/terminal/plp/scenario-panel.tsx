@@ -72,8 +72,8 @@ export function ScenarioPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="±5σ scenario"
-      code="book-wide reprice"
+      title="±5σ Scenario"
+      code="Book-wide reprice"
       className={className}
       bodyClassName="lg:overflow-hidden"
     >

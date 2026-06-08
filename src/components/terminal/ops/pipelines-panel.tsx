@@ -19,8 +19,8 @@ export function PipelinesPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Indexer pipelines"
-      code="lag behind chain head"
+      title="Indexer Pipelines"
+      code="Lag behind chain head"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
       right={

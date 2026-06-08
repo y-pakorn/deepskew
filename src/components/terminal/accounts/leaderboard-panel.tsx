@@ -99,8 +99,8 @@ export function LeaderboardPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Manager leaderboard"
-      code="ranked by volume · click a desk"
+      title="Manager Leaderboard"
+      code="Ranked by volume · click a desk"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
       right={

@@ -45,14 +45,14 @@ export function AttributionPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Per-oracle risk"
+      title="Per-Oracle Risk"
       code="MtM by expiry"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
       right={
         truncated ? (
           <Pill tone="warn" tip="book-truncated">
-            partial book
+            Partial book
           </Pill>
         ) : null
       }

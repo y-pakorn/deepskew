@@ -50,7 +50,7 @@ export function MarketSelector() {
         className="max-h-[60vh] w-44 overflow-auto"
       >
         <DropdownMenuLabel className="label-micro">
-          BTC · active expiries
+          BTC · Active expiries
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {activeOracles.map((o) => {

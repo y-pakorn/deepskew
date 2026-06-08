@@ -47,7 +47,7 @@ export function SkewTermPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Skew & term structure"
+      title="Skew & Term Structure"
       code="25Δ · ATM term"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"

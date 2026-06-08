@@ -54,7 +54,7 @@ export function SmileIvPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Vol smile"
+      title="Vol Smile"
       code="IV vs moneyness"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
@@ -75,7 +75,7 @@ export function SmileIvPanel({ className }: { className?: string }) {
             value={fmtPctValue(model.atm)}
             sub={
               <>
-                put −10% {fmtPctValue(model.put)} · call +10%{" "}
+                Put −10% {fmtPctValue(model.put)} · call +10%{" "}
                 {fmtPctValue(model.call)} · skew {fmtSigned(model.skew, 1)}
               </>
             }

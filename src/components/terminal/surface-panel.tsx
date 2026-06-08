@@ -36,7 +36,7 @@ export function SurfacePanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="IV surface"
+      title="IV Surface"
       code="BTC · SVI"
       className={className}
       right={

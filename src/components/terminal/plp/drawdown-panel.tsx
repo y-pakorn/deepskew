@@ -67,7 +67,7 @@ export function DrawdownPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Drawdown replay"
+      title="Drawdown Replay"
       code="PLP underwater"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
@@ -106,7 +106,7 @@ export function DrawdownPanel({ className }: { className?: string }) {
             value={`${m.maxDD.toFixed(1)}%`}
             sub={
               <>
-                over {range} · APY{" "}
+                Over {range} · APY{" "}
                 {m.apy != null ? fmtPctValue(m.apy * 100) : "—"} · TVL{" "}
                 {fmtUsdCompact(fromUnits(m.tvl, DUSDC_DECIMALS))}
               </>

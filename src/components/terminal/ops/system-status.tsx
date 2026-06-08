@@ -76,28 +76,28 @@ export function SystemStatus() {
           k="feed-staleness"
           label="Oracle feeds"
           value={`${feeds.fresh}/${feeds.total || "—"}`}
-          sub="fresh · 30s window"
+          sub="Fresh · 30s window"
           tone={feeds.bad > 0 ? "warn" : "safe"}
         />
         <Card
           k="lag"
           label="Indexer lag"
           value={lag != null ? `${lag}s` : "—"}
-          sub={ok ? "caught up to chain" : "syncing"}
+          sub={ok ? "Caught up to chain" : "Syncing"}
           tone={ok ? "safe" : "warn"}
         />
         <Card
           k="kill-switch"
           label="Trading"
           value={paused ? "Paused" : "Live"}
-          sub="kill-switch"
+          sub="Kill-switch"
           tone={paused ? "breach" : "safe"}
         />
         <Card
           k="checkpoint"
           label="Checkpoint"
           value={status ? fmtCompact(status.latest_onchain_checkpoint) : "—"}
-          sub="chain head"
+          sub="Chain head"
           tone="default"
         />
       </div>

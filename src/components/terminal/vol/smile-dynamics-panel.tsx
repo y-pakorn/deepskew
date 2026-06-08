@@ -70,7 +70,7 @@ export function SmileDynamicsPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Smile dynamics"
+      title="Smile Dynamics"
       code="SVI trajectory"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"

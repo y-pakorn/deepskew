@@ -39,14 +39,14 @@ export function VrpPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Implied vs realized"
-      code="vol-risk-premium · 7d hourly"
+      title="Implied vs Realized"
+      code="Vol-risk-premium · 7d hourly"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
       right={
         <span className="label-micro text-text-faint">
-          <span className="text-warn">implied</span> ·{" "}
-          <span className="text-accent-brand">realized</span>
+          <span className="text-warn">Implied</span> ·{" "}
+          <span className="text-accent-brand">Realized</span>
         </span>
       }
     >
@@ -65,7 +65,7 @@ export function VrpPanel({ className }: { className?: string }) {
             value={fmtSigned(vrp, 1)}
             sub={
               <>
-                implied {impliedLast?.toFixed(0)}% − realized{" "}
+                Implied {impliedLast?.toFixed(0)}% − realized{" "}
                 {realizedLast?.toFixed(0)}% ·{" "}
                 {vrp >= 0 ? "sell vol · LP edge" : "buy vol"}
               </>

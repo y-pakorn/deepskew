@@ -63,9 +63,9 @@ export function VaultStress({
         }
         sub={
           buffer >= 1 ? (
-            <>survives {sigmaLabel}σ · payouts capped</>
+            <>Survives {sigmaLabel}σ · payouts capped</>
           ) : (
-            <>breach at {sigmaLabel}σ</>
+            <>Breach at {sigmaLabel}σ</>
           )
         }
       />

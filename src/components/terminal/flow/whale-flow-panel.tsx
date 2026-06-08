@@ -11,6 +11,7 @@ import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
+import { TxRow } from "../tx-row";
 
 /** Whale flow + mint/redeem momentum, weighted by NOTIONAL (not count, the way
  *  the count-based OI histogram under-weights size). Leads with net directional
@@ -39,8 +40,8 @@ export function WhaleFlowPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Whale flow"
-      code="notional · momentum"
+      title="Whale Flow"
+      code="Notional · momentum"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
       right={
@@ -73,7 +74,7 @@ export function WhaleFlowPanel({ className }: { className?: string }) {
               )} ${m.net >= 0 ? "UP" : "DN"}`}
               sub={
                 <>
-                  notional-weighted ·{" "}
+                  Notional-weighted ·{" "}
                   {m.mintPrem >= m.redeemPay ? "risk opening" : "unwinding"} ·{" "}
                   {m.upPct.toFixed(0)}% UP
                 </>
@@ -129,8 +130,9 @@ export function WhaleFlowPanel({ className }: { className?: string }) {
               const mny =
                 mark && mark.forward > 0 ? w.strike / mark.forward - 1 : null;
               return (
-                <div
+                <TxRow
                   key={`${w.digest}:${i}`}
+                  digest={w.digest}
                   className={cn(
                     "grid grid-cols-[2.6rem_1fr_3.5rem_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-data tabular",
                     account && account.address === w.trader && "bg-accent-brand/10",
@@ -155,7 +157,7 @@ export function WhaleFlowPanel({ className }: { className?: string }) {
                   <span className="text-right text-text-dim">
                     {fmtUsdCompact(fromUnits(w.cost, DUSDC_DECIMALS))}
                   </span>
-                </div>
+                </TxRow>
               );
             })}
           </ScrollArea>

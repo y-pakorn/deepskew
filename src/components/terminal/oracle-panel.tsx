@@ -63,7 +63,7 @@ export function OraclePanel() {
 
   return (
     <Panel
-      title="Oracle state"
+      title="Oracle State"
       code="SVI params"
       right={oracle ? <StatusChip status={oracle.status} /> : null}
     >

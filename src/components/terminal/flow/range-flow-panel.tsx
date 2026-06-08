@@ -11,6 +11,7 @@ import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
+import { TxRow } from "../tx-row";
 
 /** Range (vertical-spread) instruments — an entire product line the binary-only
  *  desk ignores. Leads with traded premium, shows where bands cluster, and the
@@ -42,8 +43,8 @@ export function RangeFlowPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Range flow"
-      code="vertical spreads"
+      title="Range Flow"
+      code="Vertical spreads"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
       right={
@@ -129,7 +130,8 @@ function RangeRow({ it, mine }: { it: RangeFlowItem; mine: boolean }) {
   const amt = fromUnits(it.amount, DUSDC_DECIMALS);
   const isRedeem = it.kind === "redeem";
   return (
-    <div
+    <TxRow
+      digest={it.digest}
       className={cn(
         "grid grid-cols-[2.6rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-data tabular",
         mine && "bg-accent-brand/10",
@@ -157,7 +159,7 @@ function RangeRow({ it, mine }: { it: RangeFlowItem; mine: boolean }) {
             : "$0"
           : `−${fmtUsdCompact(amt)}`}
       </span>
-    </div>
+    </TxRow>
   );
 }
 

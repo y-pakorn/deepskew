@@ -35,8 +35,8 @@ export function HealthPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Oracle feeds"
-      code="price / SVI · per expiry"
+      title="Oracle Feeds"
+      code="Price / SVI · per expiry"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
       right={

@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { LabelTip } from "./label-tip";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
+import { TxRow } from "./tx-row";
 
 export function DeskPanel({ className }: { className?: string }) {
   const account = useCurrentAccount();
@@ -28,7 +29,7 @@ export function DeskPanel({ className }: { className?: string }) {
   return (
     <Panel
       title="Desk"
-      code="live flow · settle"
+      code="Live flow · settle"
       className={className}
       right={
         <span className="label-micro text-text-faint">
@@ -137,7 +138,8 @@ function FlowRow({ it, mine }: { it: FlowItem; mine: boolean }) {
   const amt = fromUnits(it.amount, DUSDC_DECIMALS);
   const isRedeem = it.kind === "redeem";
   return (
-    <div
+    <TxRow
+      digest={it.digest}
       className={cn(
         "grid grid-cols-[3.9rem_2rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-data tabular",
         mine && "bg-accent-brand/10",
@@ -164,6 +166,6 @@ function FlowRow({ it, mine }: { it: FlowItem; mine: boolean }) {
             : "$0.00"
           : `−$${amt.toFixed(2)}`}
       </span>
-    </div>
+    </TxRow>
   );
 }

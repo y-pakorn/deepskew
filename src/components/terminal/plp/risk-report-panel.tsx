@@ -85,7 +85,7 @@ export function RiskReportPanel({ className }: { className?: string }) {
 
   return (
     <Panel
-      title="Risk report"
+      title="Risk Report"
       code="LP grade · export"
       className={className}
       bodyClassName="p-0"
@@ -122,7 +122,7 @@ export function RiskReportPanel({ className }: { className?: string }) {
               value={grade.label}
               sub={
                 <>
-                  utilization {fmtPct(vault.utilization)} · top expiry{" "}
+                  Utilization {fmtPct(vault.utilization)} · top expiry{" "}
                   {(attr.topShare * 100).toFixed(0)}%
                 </>
               }
