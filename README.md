@@ -8,7 +8,7 @@
 
 DeepBook Predict puts options-style volatility trading on-chain. An oracle publishes a volatility surface, a liquidity vault underwrites every position, and traders mint and redeem against it block by block. It all settles on Sui in the open. The problem is that none of it is readable. A raw SVI parameter set tells you nothing about whether the surface admits arbitrage. A vault balance tells you nothing about whether it survives a sharp move in BTC. The information is on-chain. The meaning is not.
 
-deepskew is the legibility layer. It reads the live surface, the vault, and the settlement flow straight from the chain and turns each one into a single clear read with the numbers that back it underneath. It is the screen a desk would keep open while the market is live.
+deepskew is the legibility layer. It reads the live surface, the vault, and the settlement flow straight from the chain and turns each one into a single clear read with the numbers that back it underneath. It is the screen a desk would keep open while the market is live. And it closes the loop: where a read leads to an action, you supply or withdraw the PLP vault on-chain without leaving the verdict.
 
 ## Why it exists
 
@@ -34,7 +34,7 @@ Where the vault's edge is made or lost. Every fill is scored against its model-f
 
 ### PLP Risk (`/risk`)
 
-The vault is the counterparty to every position, so its solvency is the market's solvency. This view reconstructs the open book from flow, marks every leg at fair value, and answers the LP's real questions: which expiry it is most concentrated in (HHI), at what BTC move it breaches (a full repricing out to five sigma sized by live ATM vol), the worst drawdown LPs have lived through, whether they can actually exit (limiter budget against free liquidity), and one GREEN, AMBER or RED grade that sums it up, exportable as a one-pager.
+The vault is the counterparty to every position, so its solvency is the market's solvency. This view reconstructs the open book from flow, marks every leg at fair value, and answers the LP's real questions: which expiry it is most concentrated in (HHI), at what BTC move it breaches (a full repricing out to five sigma sized by live ATM vol), the worst drawdown LPs have lived through, whether they can actually exit (limiter budget against free liquidity), and one GREEN, AMBER or RED grade that sums it up, exportable as a one-pager. When the verdict says the vault is safe to back, you act on it in place: a connect-gated panel supplies or withdraws dUSDC with a real `predict::supply` or `predict::withdraw`, clamped to the live withdrawal-limiter budget and free liquidity.
 
 ### Managers (`/managers`)
 
@@ -46,7 +46,7 @@ One read on whether the market is trustworthy right now. Per-feed oracle freshne
 
 ### Cross-Venue (`/cross-venue`)
 
-On-chain volatility in context. Predict's ATM vol against Deribit's DVOL index per tenor (where Predict is rich or cheap), and the volatility-risk-premium as Deribit implied vol minus Binance realized vol, the spread that tells an LP whether selling vol carries an edge.
+On-chain volatility in context. Predict's ATM vol against Deribit's DVOL index per tenor (where Predict is rich or cheap), and the volatility-risk-premium as Deribit implied vol minus Binance realized vol, the spread that tells an LP whether selling vol carries an edge. Alongside it, the DeepBook stack itself: a composability read that frames the borrow-and-supply loop across Predict, `deepbook_margin` and DeepBook spot, pricing the live margin borrow rate against the PLP supply yield.
 
 ## How it reads
 
@@ -54,7 +54,7 @@ An instrument, not a dashboard. Every panel answers one question and leads with 
 
 ## Built on live state
 
-Every figure on screen is computed from current on-chain state. The surface comes from the oracle's published SVI parameters, the risk numbers from the vault's real reserves and exposure, the tape from settlement events as they land, the cross-venue references from Deribit and Binance directly. Nothing is sampled, mocked, or backfilled with placeholder data. If the chain has not produced it yet, deepskew does not show it.
+Every figure on screen is computed from current on-chain state. The surface comes from the oracle's published SVI parameters, the risk numbers from the vault's real reserves and exposure, the tape from settlement events as they land, the cross-venue references from Deribit and Binance directly. Nothing is sampled, mocked, or backfilled with placeholder data. If the chain has not produced it yet, deepskew does not show it. And it stays checkable: every fill and settlement row links to its transaction on Suiscan, and the status bar points straight at the package and source objects the desk reads.
 
 ## The math
 
@@ -71,14 +71,14 @@ All of it is pure and lives in `src/lib`, computed in the browser from decoded o
 ## Tech
 
 - **Next 16** (App Router, Turbopack) and **React 19**, TypeScript, Tailwind v4 with a CSS-first token theme, and shadcn/ui.
-- **Sui** via the new `@mysten/dapp-kit-react` 2.0 on a gRPC client (testnet), with Enoki for wallet onboarding.
+- **Sui** via the new `@mysten/dapp-kit-react` 2.0 on a gRPC client (testnet): reads go through `client.core`, and writes (PLP supply and withdraw) are built with the `@mysten/sui` Transaction builder and signed through the dApp Kit.
 - **TanStack Query** over a typed indexer client for all live data (`src/lib/indexer`).
 - **three** with React Three Fiber and Drei for the 3D surface, **lightweight-charts** for time series, hand-rolled SVG for smiles, sparklines and ladders, and **KaTeX** for the math glossary.
 - **motion** for the live-state transitions, scoped to data changes only.
 
 ## Status
 
-Running on Sui testnet today. It redeploys to mainnet on day one.
+Reads and transacts on Sui testnet today. It redeploys to mainnet on day one.
 
 ## Run it locally
 
@@ -100,8 +100,9 @@ src/
     svi.ts             the SVI + arbitrage + density math
     analytics.ts       open-book reconstruction, edge, scenario engine
     cross-venue.ts     Deribit and Binance references
+    deepbook.ts        DeepBook v3 spot + margin (composability reads)
     indexer/           typed indexer client + React Query hooks
     og/                the social-card renderer (per-route, live snapshot)
-    sui/               dapp-kit instance, constants, network config
+    sui/               dapp-kit instance, constants, network config, tx builders
 DESIGN.md              the Tatem design system (source of truth)
 ```
