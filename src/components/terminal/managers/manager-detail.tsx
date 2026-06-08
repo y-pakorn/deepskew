@@ -28,6 +28,7 @@ import { Curve } from "../chart/curve";
 import { LabelTip } from "../label-tip";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
+import { TxRow } from "../tx-row";
 import { Pill, type PillTone } from "../pill";
 import { MonoValue, Stat, StatTile, TileGrid } from "../stat";
 
@@ -448,7 +449,10 @@ function TradeRow({ t }: { t: FlowItem }) {
   const amt = fromUnits(t.amount, DUSDC_DECIMALS);
   const isRedeem = t.kind === "redeem";
   return (
-    <div className="grid grid-cols-[3.4rem_2.4rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-data tabular">
+    <TxRow
+      digest={t.digest}
+      className="grid grid-cols-[3.4rem_2.4rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-3 py-1 text-data tabular"
+    >
       <span className="text-text-faint">{utcClock(new Date(t.ts))}</span>
       <span className={t.isUp ? "text-safe" : "text-breach"}>
         {t.isUp ? "UP▲" : "DN▼"}
@@ -466,6 +470,6 @@ function TradeRow({ t }: { t: FlowItem }) {
             : "$0.00"
           : `−$${amt.toFixed(2)}`}
       </span>
-    </div>
+    </TxRow>
   );
 }

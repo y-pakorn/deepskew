@@ -181,7 +181,7 @@ export function SupplyPanel({ className }: { className?: string }) {
       ) : isLoading || !vault || !grade ? (
         <PanelState kind="empty">Loading vault…</PanelState>
       ) : (
-        <div className="flex h-full flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <Verdict tone={grade.tone} tip="risk-grade">
             Vault {grade.label}
             <span className="ml-1 font-normal text-text-dim">
@@ -287,7 +287,7 @@ export function SupplyPanel({ className }: { className?: string }) {
             />
           </div>
 
-          <div className="mt-auto">
+          <div className="mt-1">
             <button
               type="button"
               onClick={submit}

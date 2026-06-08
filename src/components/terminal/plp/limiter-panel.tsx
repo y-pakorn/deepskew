@@ -9,6 +9,7 @@ import { Hero } from "../stat";
 import { LabelTip } from "../label-tip";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
+import { TxRow } from "../tx-row";
 
 const u = (n: number) => fromUnits(n, DUSDC_DECIMALS);
 
@@ -114,8 +115,9 @@ export function LimiterPanel({ className }: { className?: string }) {
             {lp.events.length ? (
               <ScrollArea className="min-h-0 flex-1 [mask-image:linear-gradient(to_bottom,#000_calc(100%-1.25rem),transparent)]">
                 {lp.events.map((e, i) => (
-                  <div
+                  <TxRow
                     key={`${e.actor}-${e.ts}-${i}`}
+                    digest={e.digest}
                     className="grid grid-cols-[3.4rem_2.6rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-0.5 py-1 text-data tabular"
                   >
                     <span className="text-text-faint">
@@ -140,7 +142,7 @@ export function LimiterPanel({ className }: { className?: string }) {
                       {e.type === "supply" ? "+" : "−"}
                       {fmtUsdCompact(u(e.amount))}
                     </span>
-                  </div>
+                  </TxRow>
                 ))}
               </ScrollArea>
             ) : (

@@ -76,7 +76,7 @@ export function SmilePanel({ className }: { className?: string }) {
     <Panel
       title="Smile / Skew"
       className={className}
-      bodyClassName="overflow-visible lg:overflow-hidden"
+      bodyClassName="overflow-y-auto"
       code={isLive ? "Live" : "Replay"}
       right={
         model ? (
@@ -121,10 +121,10 @@ export function SmilePanel({ className }: { className?: string }) {
           <ArbVerdict bf={model.bf} />
         </div>
       ) : (
-        <div className="flex h-full flex-col gap-2 2xl:gap-3">
-          {/* The chart (flex-1) absorbs the slack so the readouts and verdict
-              sit at natural size — the panel fits with no inner scroll region,
-              so there's no stray scrollbar even when it's exactly full. */}
+        <div className="flex min-h-full flex-col gap-2 2xl:gap-3">
+          {/* The chart (flex-1) absorbs slack so on a tall cell everything fits
+              with no scrollbar; on a short laptop cell the body scrolls (the
+              chart holds its min-height) so the arb verdict is never clipped. */}
           <SmileChart pts={model.pts} />
           {showOi ? (
             <div className="shrink-0">

@@ -197,6 +197,7 @@ export interface LpEvent {
   type: "supply" | "withdraw";
   amount: number; // 1e6
   actor: string;
+  digest: string;
 }
 
 export interface LpFlow {
@@ -246,12 +247,14 @@ export function useLpFlow(): LpFlow {
         type: "supply" as const,
         amount: s.amount,
         actor: s.supplier,
+        digest: s.digest,
       })),
       ...(wd.data ?? []).map((w) => ({
         ts: w.checkpoint_timestamp_ms,
         type: "withdraw" as const,
         amount: w.amount,
         actor: w.withdrawer,
+        digest: w.digest,
       })),
     ].sort((a, b) => b.ts - a.ts);
     return {
