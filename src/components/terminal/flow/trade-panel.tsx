@@ -236,7 +236,10 @@ export function TradePanel({ className }: { className?: string }) {
   }
 
   async function buy() {
-    if (!owner || !managerId || !quote || !selectedOracle || !selectedOracleId) return;
+    // Note: no `quote` guard — the mint is built from strike/expiry/side/size and
+    // the cost is computed on-chain, so a missing pricing feed must not block it
+    // (the button is enabled without a quote, so the handler must run too).
+    if (!owner || !managerId || !selectedOracle || !selectedOracleId) return;
     if (payout <= 0 || pending) return;
     setPending(true);
     try {
