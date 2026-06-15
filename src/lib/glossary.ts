@@ -423,6 +423,14 @@ export const GLOSSARY: Record<string, TipEntry> = {
       "Green if $<120\\text{s}$, warn otherwise.",
     ],
   },
+  "feed-expired": {
+    title: "Expired, not settled",
+    body: "This expiry has passed but the oracle isn't settled on-chain yet, so its price/SVI feed is frozen and the binary stays un-mintable until settlement clears it.",
+    points: [
+      "The label shows how long ago it expired.",
+      "Drops out of the feed list once the oracle settles.",
+    ],
+  },
   "oracle-status": {
     title: "Oracle status",
     body: "Whether this expiry is still trading, has settled, or was just created.",
@@ -1278,6 +1286,6 @@ export const GLOSSARY_GROUPS: { title: string; keys: string[] }[] = [
   { title: "Flow & Edge", keys: ["edge-bps", "vol-risk-premium", "overpay-rate", "edge-fills", "edge-scatter", "settlement-outcomes", "calibration", "pending-settlement", "net-flow", "notional-positioning", "mint-redeem-momentum", "whale-flow", "range-flow", "range-band"] },
   { title: "Vault Risk", keys: ["mtm-concentration", "marked-liability", "mtm-tieout", "book-truncated", "breach-sigma", "scenario-curve", "scenario-ladder", "withdrawal-limiter", "exit-capacity", "solvency-floor", "max-drawdown", "drawdown-replay", "lp-vol", "risk-grade", "house-rules", "exposure-ceiling", "lp-economics"] },
   { title: "Accounts", keys: ["leaderboard", "equity-curve", "account-blotter", "manager-market", "account-value", "open-exposure", "redeemable"] },
-  { title: "Ops / Health", keys: ["feed-staleness", "pipeline-lag", "kill-switch"] },
+  { title: "Ops / Health", keys: ["feed-staleness", "feed-expired", "pipeline-lag", "kill-switch"] },
   { title: "Cross-Venue", keys: ["vol-arb", "dvol", "vrp", "realized-vol", "implied-vs-realized"] },
 ];

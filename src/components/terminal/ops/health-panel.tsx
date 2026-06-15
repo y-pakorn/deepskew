@@ -13,6 +13,16 @@ const STALE_MS = 30_000; // quote/mint reverts past the contract staleness windo
 
 type FeedState = "active" | "stale" | "pending";
 
+/** Coarse single-unit time since a timestamp ("2d", "5h", "9m"), kept short for
+ *  the narrow expiry cell so an expired-but-unsettled feed reads "2d ago". */
+function sinceExpiry(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.floor(s / 60)}m`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h`;
+  return `${Math.floor(s / 86400)}d`;
+}
+
 /** Per-oracle feed freshness — one row per live BTC expiry, with a bar showing
  *  how close it is to the 30s stale window and how long since its last update.
  *  A stale or expired-unsettled feed is un-mintable. */
@@ -74,7 +84,9 @@ export function HealthPanel({ className }: { className?: string }) {
               <FeedRow
                 key={r.oracleId}
                 expiryLabel={
-                  r.expiry > now ? fmtDuration(r.expiry - now) : "expired"
+                  r.expiry > now
+                    ? fmtDuration(r.expiry - now)
+                    : `${sinceExpiry(now - r.expiry)} ago`
                 }
                 age={r.age}
                 state={r.state}
@@ -119,7 +131,17 @@ function FeedRow({
           : "bg-breach";
   return (
     <div className="grid min-h-[2.25rem] flex-1 grid-cols-[5rem_1fr_4.5rem] items-center gap-3 border-b border-hairline/40 px-3 text-data tabular">
-      <span className="text-val text-text-sec">{expiryLabel}</span>
+      {state === "pending" ? (
+        <LabelTip
+          k="feed-expired"
+          side="right"
+          className="text-val text-breach"
+        >
+          {expiryLabel}
+        </LabelTip>
+      ) : (
+        <span className="text-val text-text-sec">{expiryLabel}</span>
+      )}
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-panel-elev">
         <div
           className={cn("h-full rounded-full transition-[width]", bar)}
