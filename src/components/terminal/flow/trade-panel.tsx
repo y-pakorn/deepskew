@@ -27,7 +27,7 @@ import {
   useVaultSummary,
 } from "@/lib/indexer/hooks";
 import { useMarket } from "../market-context";
-import { binaryQuote, decodeSvi } from "@/lib/svi";
+import { binaryQuote, decodeSvi, digitalProb } from "@/lib/svi";
 import {
   DUSDC_DECIMALS,
   explorerTx,
@@ -137,6 +137,16 @@ export function TradePanel({ className }: { className?: string }) {
   const k = forward > 0 && strikeF > 0 ? Math.log(strikeF / forward) : 0;
 
   const pc = config?.pricing ?? null;
+
+  // Model-fair (N(d₂)) needs only the live SVI, so it always renders. The ask /
+  // bid (fair ± vault spread) additionally need the pricing-config feed; when
+  // the indexer has not published it (pricing is null on testnet today), the
+  // premium is shown as the fair-value floor and the contract applies the real
+  // spread on-chain at mint.
+  const fair = useMemo(
+    () => (svi && forward > 0 && strikeF > 0 ? digitalProb(k, svi, side) : null),
+    [svi, forward, strikeF, k, side],
+  );
   const quote = useMemo(() => {
     if (!svi || !pc || forward <= 0) return null;
     return binaryQuote(k, svi, side, {
@@ -148,9 +158,9 @@ export function TradePanel({ className }: { className?: string }) {
     });
   }, [svi, pc, k, side, vault, forward]);
 
-  // Mintable band: the side ask must sit within the resolved ask bounds, i.e.
-  // the global pricing-config clamp intersected with any per-oracle override
-  // (predict::assert_mintable_ask via resolve_ask_bounds).
+  // Mintable band: the side ask must sit within the resolved ask bounds (the
+  // global pricing-config clamp intersected with any per-oracle override).
+  // Only checkable when both the quote and the bounds are published.
   const bounds = useMemo(() => {
     if (!pc) return null;
     let lo = pc.min_ask_price / 1e9;
@@ -165,13 +175,22 @@ export function TradePanel({ className }: { className?: string }) {
     !!quote && !!bounds && (quote.ask < bounds.lo - 1e-9 || quote.ask > bounds.hi + 1e-9);
 
   const payout = Number(payoutInput) || 0; // dUSDC max payout (notional)
-  const costHuman = quote ? quote.ask * payout : 0;
+  const quantityBase = Math.round(payout * 1e6);
+  // Premium estimate: exact when the ask is known, else the fair-value floor.
+  const priceForCost = quote ? quote.ask : fair ?? 0;
+  const costHuman = priceForCost * payout;
   const costBase = Math.round(costHuman * 1e6);
   const edgeBps = quote ? (quote.ask - quote.fair) * 10_000 : 0;
+  // Fund so the manager covers the cost. cost ≤ 1 × notional, so when the ask is
+  // unknown we target the full notional; when known, the cost plus a small
+  // buffer for the trade's own utilization impact, capped at the notional.
+  const fundTargetBase = quote
+    ? Math.min(quantityBase, Math.ceil(costBase * 1.03))
+    : quantityBase;
 
   const tradingPaused = config?.trading_paused === true;
   const oracleLive = selectedOracle?.status === "active";
-  const marketReady = !!svi && !!pc && forward > 0 && !!selectedOracle;
+  const marketReady = !!svi && forward > 0 && !!selectedOracle;
 
   const openPositions = useMemo(
     () => positions.filter((p) => p.open_quantity > 0),
@@ -214,11 +233,10 @@ export function TradePanel({ className }: { className?: string }) {
     if (payout <= 0 || pending) return;
     setPending(true);
     try {
-      const quantity = BigInt(Math.round(payout * 1e6));
+      const quantity = BigInt(quantityBase);
       if (quantity <= BigInt(0)) throw new Error("Enter a position size");
-      // Fund the shortfall (3% buffer covers the self-impact of the trade on the
-      // post-trade ask) in the same PTB, so a buy is one signature.
-      const need = Math.ceil(costBase * 1.03) - mgrBalBase;
+      // Fund any shortfall in the same PTB so a buy is one signature.
+      const need = fundTargetBase - mgrBalBase;
       let fund: { coins: CoinRef[]; amount: bigint } | undefined;
       if (need > 0) {
         const coins = await listAllCoins(client, owner, quoteType);
@@ -349,12 +367,12 @@ export function TradePanel({ className }: { className?: string }) {
               <Hero
                 label={`Model-fair · ${side ? "Up" : "Dn"} @ ${fmtNum(strikeF, 0)}`}
                 tip="edge-bps"
-                value={quote ? fmtPct(quote.fair, 1) : "—"}
+                value={fair != null ? fmtPct(fair, 1) : "—"}
                 tone="default"
                 sub={
                   quote
                     ? `Pay ${fmtPct(quote.ask, 1)} ask · cross ${fmtNum(edgeBps, 0)} bps to the vault`
-                    : "Pricing not published"
+                    : "Premium = fair + vault spread, priced on-chain"
                 }
               />
 
@@ -424,7 +442,15 @@ export function TradePanel({ className }: { className?: string }) {
               </div>
 
               <div className="rounded-md border border-hairline px-3 py-1">
-                <Stat label="Cost (premium)" value={`${fmtNum(costHuman, 2)} dUSDC`} tone="accent" />
+                <Stat
+                  label="Cost (premium)"
+                  value={
+                    quote
+                      ? `${fmtNum(costHuman, 2)} dUSDC`
+                      : `≈ ${fmtNum(costHuman, 2)}+ dUSDC`
+                  }
+                  tone="accent"
+                />
                 <Stat label="Pays if it hits" value={`${fmtNum(payout, 2)} dUSDC`} />
                 <Stat label="Bid (sell back)" value={quote ? fmtPct(quote.bid, 1) : "—"} />
                 <Stat label="Account balance" value={`${fmtNum(mgrBalHuman, 2)} dUSDC`} />
@@ -435,7 +461,6 @@ export function TradePanel({ className }: { className?: string }) {
                 hasManager={!!managerId}
                 pending={pending}
                 disabled={
-                  !quote ||
                   payout <= 0 ||
                   askOutOfBounds ||
                   tradingPaused ||
