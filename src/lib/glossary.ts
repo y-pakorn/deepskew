@@ -819,7 +819,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
     body: "Connect a Sui wallet – once connected the pill is your account and gates the on-chain write actions.",
     points: [
       "Connected pill shows SuiNS name or truncateAddr (6/4) with a green dot; Testnet.",
-      "The write path for the PLP vault: predict::supply / predict::withdraw.",
+      "The write path for the vault (supply / withdraw) and trading (mint / redeem).",
     ],
   },
   "market-selector": {

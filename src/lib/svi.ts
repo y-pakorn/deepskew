@@ -226,6 +226,62 @@ export function digitalProb(k: number, p: SviParams, isUp: boolean): number {
   return isUp ? up : 1 - up;
 }
 
+/** Live vault inputs to the spread, all as fractions of 1 (raw 1e9 / 1e9). */
+export interface SpreadConfig {
+  baseSpread: number;
+  minSpread: number;
+  utilMultiplier: number;
+  /** Vault marked liability and quote balance; only their ratio is used. */
+  liability: number;
+  balance: number;
+}
+
+export interface BinaryQuote {
+  /** Mid (fair) probability the chosen side finishes in the money, N(d₂). */
+  fair: number;
+  /** Per-unit ask a buyer pays, and bid a seller receives (fractions of 1). */
+  ask: number;
+  bid: number;
+  /** Half-spread applied to the UP fair price (fraction). */
+  spread: number;
+}
+
+/**
+ * Reproduce the on-chain quote for a binary at log-moneyness `k`, mirroring
+ * `predict::trade_prices` + `pricing_config::quote_spread_from_fair_price`
+ * (predict-testnet-4-16) so the desk's preview matches what the contract charges:
+ *   spread = max(base·√(p(1−p)), min) + base·mult·util²,  util = liability/balance
+ *   up_ask = min(p + spread, 1),  up_bid = max(p − spread, 0)
+ * with the DOWN side the complement of UP. `p` is the UP fair price `digitalUpProb`
+ * (identical to the chain's `compute_nd2`). Multiply ask/bid by the position
+ * quantity (in dUSDC) for the premium / payout.
+ */
+export function binaryQuote(
+  k: number,
+  p: SviParams,
+  isUp: boolean,
+  cfg: SpreadConfig,
+): BinaryQuote {
+  const up = digitalUpProb(k, p); // = on-chain compute_nd2 (UP fair price)
+  const bernoulli = Math.sqrt(Math.max(0, up * (1 - up)));
+  const util =
+    cfg.balance > 0 && cfg.liability > 0
+      ? Math.min(1, cfg.liability / cfg.balance)
+      : 0;
+  const spread =
+    Math.max(cfg.baseSpread * bernoulli, cfg.minSpread) +
+    cfg.baseSpread * cfg.utilMultiplier * util * util;
+
+  const upAsk = Math.min(up + spread, 1);
+  const upBid = Math.max(up - spread, 0);
+  return {
+    fair: isUp ? up : 1 - up,
+    ask: isUp ? upAsk : 1 - upBid,
+    bid: isUp ? upBid : 1 - upAsk,
+    spread,
+  };
+}
+
 /** Black-Scholes-style call delta N(d₁) under the smile's local variance. */
 export function callDelta(k: number, p: SviParams): number {
   const w = totalVariance(k, p);
