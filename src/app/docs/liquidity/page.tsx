@@ -25,7 +25,7 @@ export default function ProvideLiquidity() {
           The PLP vault is the counterparty to every Predict position, and it is
           the one place deepskew writes to the chain. Supplying mints LP shares
           against the vault; withdrawing burns them back to dUSDC. This is the
-          full path: connect, fund, read the risk, and act.
+          full path: connect, fund, read the Vault grade, and act.
         </>
       }
     >
@@ -44,7 +44,7 @@ export default function ProvideLiquidity() {
           the same wallet to pay for gas.
         </Step>
 
-        <Step n={3} title="Read the risk grade first">
+        <Step n={3} title="Read the Vault grade first">
           Open <DocLink href="/risk">Vault</DocLink>. The Provide liquidity
           panel leads with the live solvency verdict, a <Code>Green</Code> /{" "}
           <Code>Amber</Code> / <Code>Red</Code> grade off the vault’s utilization,

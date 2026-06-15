@@ -32,7 +32,7 @@ The volatility desk in depth. The smile across log-moneyness, the skew and term 
 
 Where the vault's edge is made or lost. Every fill is scored against its model-fair price (the digital N(d2) from the live surface) to show the vol-risk-premium captured fill by fill, in basis points and in dollars. Alongside it: settlement calibration (priced probability against realized outcome), whale flow ranked by notional rather than count, and the range (vertical-spread) product flow.
 
-### PLP Risk (`/risk`)
+### Vault (`/risk`)
 
 The vault is the counterparty to every position, so its solvency is the market's solvency. This view reconstructs the open book from flow, marks every leg at fair value, and answers the LP's real questions: which expiry it is most concentrated in (HHI), at what BTC move it breaches (a full repricing out to five sigma sized by live ATM vol), the worst drawdown LPs have lived through, whether they can actually exit (limiter budget against free liquidity), and one GREEN, AMBER or RED grade that sums it up, exportable as a one-pager. When the verdict says the vault is safe to back, you act on it in place: a connect-gated panel supplies or withdraws dUSDC with a real `predict::supply` or `predict::withdraw`, clamped to the live withdrawal-limiter budget and free liquidity.
 

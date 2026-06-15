@@ -197,7 +197,7 @@ export default function DocsMath() {
         </Formula>
       </DocSection>
 
-      <DocSection title="Vault Risk">
+      <DocSection title="Vault">
         <P>
           The PLP vault is the counterparty to every position. The open book is
           reconstructed per (oracle, strike, side) from minted minus redeemed

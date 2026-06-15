@@ -56,7 +56,7 @@ export default function DocsOverview() {
           deepskew closes that gap. It does the decoding, the math, and the
           reconstruction for you, refuses to show a number without showing what
           it means, and where a read leads to an action it closes the loop:
-          supply or withdraw the PLP vault on-chain straight from the risk
+          supply or withdraw the PLP vault on-chain straight from the Vault
           verdict.
         </P>
       </DocSection>
@@ -96,9 +96,10 @@ export default function DocsOverview() {
             calendar arbitrage verdict, and the risk-neutral density it prices.
           </LI>
           <LI>
-            <strong className="text-text-sec">Read the risk.</strong> The PLP
+            <strong className="text-text-sec">Read the vault.</strong> The PLP
             vault repriced out to five sigma, per-expiry concentration, exit
-            capacity against the withdrawal limiter, and one graded verdict.
+            capacity against the withdrawal limiter, and one graded verdict on
+            the Vault view.
           </LI>
           <LI>
             <strong className="text-text-sec">Act on it.</strong> Supply or

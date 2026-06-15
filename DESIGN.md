@@ -132,7 +132,7 @@ Body base = **14px** (unclassed text never falls to the 16px UA default).
 
 1. **Panel titles → Title Case.** The `<Panel title>` and any equivalent section header: capitalize
    every principal word; keep short connectors lowercase (`vs`, `of`, `to`, `by`, `per`, `the`, `a`,
-   `and`). Separators (`·`, `/`, `&`) stay. E.g. "Vault · PLP Risk", "Digital Edge Tape",
+   `and`). Separators (`·`, `/`, `&`) stay. E.g. "Vault", "Digital Edge Tape",
    "Implied vs Realized", "Per-Oracle Risk", "Risk-Neutral Density", "Skew & Term Structure".
 2. **Everything else human-facing → Sentence case** (capitalize the first word only). Panel `code`
    subtitles, Stat/StatTile/Hero labels, pill text, section labels, annotations and Hero `sub` prose:
@@ -245,7 +245,7 @@ Snippets are namespaced `t-*` (transitions-dev) and every one ships a `prefers-r
 │  + tenor strip + arb     │  chart + OI   │  spot(hero) + vol matrix     │
 │  + heat legend           │  + readouts   │  + term structure + SVI      │
 ├──────────────────────────┴───────┬───────┴──────────────────────────────┤
-│ VAULT · PLP RISK                  │ DESK · flow · settle                 │
+│ VAULT                             │ DESK · flow · settle                 │
 │  ±5σ + ladder | perf+LP | gauges  │  positioning + settlement + tape     │
 └ status bar ── indexer · checkpoint · network · links ─────────────────────┘
 ```

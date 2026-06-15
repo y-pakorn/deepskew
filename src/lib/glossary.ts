@@ -1063,7 +1063,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
     body: "Where range positions cluster: each top band drawn from its lower to upper strike, brighter for more notional.",
     points: ["Bands aggregated by (lower, higher) strike pair."],
   },
-  // — Vault risk tab —
+  // — Vault view —
   "mtm-concentration": {
     title: "MtM concentration",
     body: "How much of the vault's open risk rides on a single expiry — concentrated books blow up faster on one bad settlement.",
@@ -1279,12 +1279,12 @@ export const GLOSSARY_GROUPS: { title: string; keys: string[] }[] = [
   { title: "IV Surface", keys: ["arb-free", "atm-term-overlay", "butterfly-arb", "calendar-arb", "iv-heat-legend", "iv-surface-panel", "moneyness-readout", "surface-iv-readout", "svi-model", "real-vs-interp-ribs", "strike-axis-hint", "surface-height", "tenor-countdown", "tick-pulse", "drag-to-orbit", "n-tenors", "surface-resolving", "tenor-axis"] },
   { title: "Smile / Skew", keys: ["atm-iv", "call-wing", "fly", "put-wing", "skew-rr", "histogram-axis", "histogram-hover", "live-replay", "oi-by-strike", "smile-hover", "smile-panel", "smile-x-ticks", "smile-y-tick", "time-travel", "up-dn-legend", "jump-to-live", "smile-states"] },
   { title: "Oracle State · SVI Params", keys: ["atm-var", "checkpoint", "expiry", "forward", "oracle-panel", "strike-matrix-ticks", "svi-a", "svi-b", "svi-m", "svi-rho", "svi-sigma", "term-structure", "feed-age", "oracle-status", "vol-by-strike", "oracle-id", "spot", "spot-sparkline"] },
-  { title: "Vault", keys: ["apy", "available-liq", "lp-net-flow", "max-payout", "max-payout-util", "modeled-payout", "plp-share-price", "plp-supply", "sigma-move", "stress-ladder", "stress-sigma", "stress-verdict", "stressed-spot", "total-mtm", "utilization", "vault-value", "dusdc", "net-deposits", "sparkline", "stress-available", "stress-slider", "supplied", "vault-panel", "withdrawn", "perf-chart"] },
+  { title: "Desk · Vault", keys: ["apy", "available-liq", "lp-net-flow", "max-payout", "max-payout-util", "modeled-payout", "plp-share-price", "plp-supply", "sigma-move", "stress-ladder", "stress-sigma", "stress-verdict", "stressed-spot", "total-mtm", "utilization", "vault-value", "dusdc", "net-deposits", "sparkline", "stress-available", "stress-slider", "supplied", "vault-panel", "withdrawn", "perf-chart"] },
   { title: "Desk · Live Flow & Settle", keys: ["flow-amount", "flow-columns", "taker-win", "up-dn-bar", "updn-win-split", "flow-side-glyph", "payouts", "positioning", "row-mine", "settlement-count", "vol-premium", "desk-panel", "flow-event-count", "flow-unreachable"] },
   { title: "Command Strip, Status Bar & Selectors", keys: ["indexer-status", "lag", "live-pill", "connect-wallet", "market-selector", "utc-clock", "cmdk", "footer-links", "market-symbol", "network", "pill-tones", "wordmark"] },
   { title: "Vol Analytics", keys: ["rnd", "rnd-tail", "rnd-mode", "rnd-range", "rnd-pup", "density-nonneg", "rr25", "bf25", "implied-move", "forward-vol", "atm-term-curve", "skew-rotation"] },
   { title: "Flow & Edge", keys: ["edge-bps", "vol-risk-premium", "overpay-rate", "edge-fills", "edge-scatter", "settlement-outcomes", "calibration", "pending-settlement", "net-flow", "notional-positioning", "mint-redeem-momentum", "whale-flow", "range-flow", "range-band"] },
-  { title: "Vault Risk", keys: ["mtm-concentration", "marked-liability", "mtm-tieout", "book-truncated", "breach-sigma", "scenario-curve", "scenario-ladder", "withdrawal-limiter", "exit-capacity", "solvency-floor", "max-drawdown", "drawdown-replay", "lp-vol", "risk-grade", "house-rules", "exposure-ceiling", "lp-economics"] },
+  { title: "Vault", keys: ["mtm-concentration", "marked-liability", "mtm-tieout", "book-truncated", "breach-sigma", "scenario-curve", "scenario-ladder", "withdrawal-limiter", "exit-capacity", "solvency-floor", "max-drawdown", "drawdown-replay", "lp-vol", "risk-grade", "house-rules", "exposure-ceiling", "lp-economics"] },
   { title: "Accounts", keys: ["leaderboard", "equity-curve", "account-blotter", "manager-market", "account-value", "open-exposure", "redeemable"] },
   { title: "Ops / Health", keys: ["feed-staleness", "feed-expired", "pipeline-lag", "kill-switch"] },
   { title: "Cross-Venue", keys: ["vol-arb", "dvol", "vrp", "realized-vol", "implied-vs-realized"] },
