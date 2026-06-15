@@ -192,8 +192,6 @@ export function TradePanel({ className }: { className?: string }) {
   const expiryMs = selectedOracle?.expiry ?? 0;
   const ttx = expiryMs > 0 ? Math.max(0, expiryMs - now) : 0;
   const expired = expiryMs > 0 && now >= expiryMs;
-  const expiryUtc =
-    expiryMs > 0 ? new Date(expiryMs).toISOString().slice(11, 16) : "--:--";
   const tradingPaused = config?.trading_paused === true;
   const oracleLive = selectedOracle?.status === "active" && !expired;
   const marketReady = !!svi && forward > 0 && !!selectedOracle;
@@ -463,9 +461,9 @@ export function TradePanel({ className }: { className?: string }) {
                 </div>
                 <p className="mb-2 text-data text-text-dim">
                   {side ? "Up" : "Dn"} · BTC {side ? "above" : "below"}{" "}
-                  {fmtNum(strikeF, 0)} at {expiryUtc} UTC ·{" "}
+                  {fmtNum(strikeF, 0)}{" "}
                   <span className={expired ? "text-warn" : undefined}>
-                    {expired ? "expired" : `in ${fmtDuration(ttx)}`}
+                    {expired ? "· expired" : `in ${fmtDuration(ttx)}`}
                   </span>
                 </p>
                 <Stat
