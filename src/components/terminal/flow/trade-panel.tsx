@@ -34,7 +34,8 @@ import {
   PRICE_FIXED_POINT,
 } from "@/lib/sui/constants";
 import type { ManagerPositionSummary } from "@/lib/indexer/types";
-import { fmtNum, fmtPct, fmtUsdCompact, fromUnits } from "@/lib/format";
+import { fmtDuration, fmtNum, fmtPct, fmtUsdCompact, fromUnits } from "@/lib/format";
+import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
@@ -65,6 +66,7 @@ export function TradePanel({ className }: { className?: string }) {
   const client = useCurrentClient();
   const owner = account?.address ?? null;
   const qc = useQueryClient();
+  const now = useNow();
 
   const { selectedOracleId, selectedOracle } = useMarket();
   const { data: state } = useOracleState(selectedOracleId);
@@ -188,8 +190,13 @@ export function TradePanel({ className }: { className?: string }) {
     ? Math.min(quantityBase, Math.ceil(costBase * 1.03))
     : quantityBase;
 
+  const expiryMs = selectedOracle?.expiry ?? 0;
+  const ttx = expiryMs > 0 ? Math.max(0, expiryMs - now) : 0;
+  const expired = expiryMs > 0 && now >= expiryMs;
+  const expiryUtc =
+    expiryMs > 0 ? new Date(expiryMs).toISOString().slice(11, 16) : "--:--";
   const tradingPaused = config?.trading_paused === true;
-  const oracleLive = selectedOracle?.status === "active";
+  const oracleLive = selectedOracle?.status === "active" && !expired;
   const marketReady = !!svi && forward > 0 && !!selectedOracle;
 
   const openPositions = useMemo(
@@ -369,6 +376,11 @@ export function TradePanel({ className }: { className?: string }) {
                 tip="edge-bps"
                 value={fair != null ? fmtPct(fair, 1) : "—"}
                 tone="default"
+                accessory={
+                  <Pill tone={expired ? "warn" : "neutral"}>
+                    {expired ? "Expired" : `exp ${fmtDuration(ttx)}`}
+                  </Pill>
+                }
                 sub={
                   quote
                     ? `Pay ${fmtPct(quote.ask, 1)} ask · cross ${fmtNum(edgeBps, 0)} bps to the vault`
@@ -425,8 +437,8 @@ export function TradePanel({ className }: { className?: string }) {
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <span className="label-micro">Max payout (dUSDC)</span>
-                  <span className="text-data tabular text-text-faint">
-                    Wallet {fmtNum(walletHuman, 2)}
+                  <span className="text-data text-text-faint">
+                    what you win if it hits
                   </span>
                 </div>
                 <input
@@ -451,8 +463,13 @@ export function TradePanel({ className }: { className?: string }) {
                   }
                   tone="accent"
                 />
-                <Stat label="Pays if it hits" value={`${fmtNum(payout, 2)} dUSDC`} />
+                <Stat
+                  label="Expires"
+                  value={`${expiryUtc} UTC · ${fmtDuration(ttx)}`}
+                  tone={expired ? "warn" : "default"}
+                />
                 <Stat label="Bid (sell back)" value={quote ? fmtPct(quote.bid, 1) : "—"} />
+                <Stat label="Wallet" value={`${fmtNum(walletHuman, 2)} dUSDC`} />
                 <Stat label="Account balance" value={`${fmtNum(mgrBalHuman, 2)} dUSDC`} />
               </div>
 
@@ -469,11 +486,15 @@ export function TradePanel({ className }: { className?: string }) {
                 reason={
                   tradingPaused
                     ? "Trading paused"
-                    : !oracleLive
-                      ? "Market not live"
-                      : askOutOfBounds
-                        ? "Outside mintable band"
-                        : null
+                    : expired
+                      ? "Market expired"
+                      : !oracleLive
+                        ? "Market not live"
+                        : askOutOfBounds
+                          ? "Outside mintable band"
+                          : payout <= 0
+                            ? "Enter a size"
+                            : null
                 }
                 side={side}
                 onCreate={createAccount}
