@@ -92,7 +92,7 @@ export function StatusBar() {
         >
           DeepBook
         </a>
-        <span className="hidden 2xl:inline">Redeploys Mainnet day one</span>
+        <span className="hidden 2xl:inline">Mainnet when Predict ships</span>
       </span>
     </footer>
   );

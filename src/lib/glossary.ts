@@ -816,10 +816,10 @@ export const GLOSSARY: Record<string, TipEntry> = {
   },
   "connect-wallet": {
     title: "Connect wallet",
-    body: "Connect a Sui wallet – once connected the pill is your account and signs on-chain claims.",
+    body: "Connect a Sui wallet – once connected the pill is your account and gates the on-chain write actions.",
     points: [
       "Connected pill shows SuiNS name or truncateAddr (6/4) with a green dot; Testnet.",
-      "The write path for redeem_permissionless.",
+      "The write path for the PLP vault: predict::supply / predict::withdraw.",
     ],
   },
   "market-selector": {
@@ -848,10 +848,10 @@ export const GLOSSARY: Record<string, TipEntry> = {
   },
   "footer-links": {
     title: "Footer links",
-    body: "Footer chrome – external links plus a submission-credibility note, not metrics.",
+    body: "Footer chrome – external links plus a network note, not metrics.",
     points: [
       "Links to DeepBook Predict docs and the DeepBook X account.",
-      "'Redeploys Mainnet day one' note signals submission credibility.",
+      "'Mainnet when Predict ships' notes that deepskew follows Predict to Mainnet.",
     ],
   },
   "market-symbol": {
@@ -867,7 +867,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
     body: "Which Sui network the terminal reads – Testnet during the hackathon.",
     points: [
       "SUI_NETWORK constant.",
-      "Predict is Testnet-only and redeploys to Mainnet at launch.",
+      "Predict is Testnet-only today; deepskew follows it to Mainnet at launch.",
     ],
   },
   "pill-tones": {

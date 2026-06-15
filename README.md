@@ -78,7 +78,7 @@ All of it is pure and lives in `src/lib`, computed in the browser from decoded o
 
 ## Status
 
-Reads and transacts on Sui testnet today. It redeploys to mainnet on day one.
+Reads and transacts on Sui testnet today, where DeepBook Predict currently lives. The read and write logic is network-agnostic, so deepskew follows Predict to mainnet at launch: point it at the mainnet network and resolve the live markets at runtime (mainnet will list several, not the single testnet market).
 
 ## Run it locally
 

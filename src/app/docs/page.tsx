@@ -114,7 +114,11 @@ export default function DocsOverview() {
       <DocSection title="Roadmap">
         <UL>
           <LI>Reads and transacts on Sui Testnet today.</LI>
-          <LI>Redeploys to Mainnet on day one of the Predict Mainnet launch.</LI>
+          <LI>
+            Follows Predict to Mainnet at launch: the read and write logic is
+            network-agnostic, so it is a network and market-resolution change,
+            not a rewrite.
+          </LI>
           <LI>
             Read-only to read-write is done: the desk now calls the contract, not
             just reads it.
