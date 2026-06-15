@@ -92,7 +92,7 @@ export default function DocsVerify() {
 
       <DocSection title="Sources">
         <P>
-          These are the exact testnet identifiers the desk reads from. Each one
+          These are the exact Testnet identifiers the desk reads from. Each one
           opens its object on Suiscan.
         </P>
         <div>

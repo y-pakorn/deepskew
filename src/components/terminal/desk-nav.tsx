@@ -8,7 +8,7 @@ const NAV = [
   { href: "/", label: "Desk" },
   { href: "/vol", label: "Vol Analytics" },
   { href: "/flow", label: "Flow & Edge" },
-  { href: "/risk", label: "PLP Risk" },
+  { href: "/risk", label: "Vault" },
   { href: "/managers", label: "Managers" },
   { href: "/ops", label: "Ops / Health" },
   { href: "/cross-venue", label: "Cross-Venue" },

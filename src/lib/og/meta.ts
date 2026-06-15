@@ -42,8 +42,8 @@ export const OG_ROUTES: Record<OgRouteKey, OgRouteMeta> = {
       "Every fill scored against fair value. The vol-risk-premium the vault captures, settlement calibration, whale flow by notional, and range-product flow.",
   },
   risk: {
-    nav: "PLP Risk",
-    title: "PLP Risk",
+    nav: "Vault",
+    title: "Vault",
     description:
       "The PLP vault underwrites every position, so its solvency is the market's. Concentration, the breach point out to five sigma, drawdown replay, exit capacity, and one GREEN, AMBER or RED grade for LPs.",
   },

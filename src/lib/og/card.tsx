@@ -497,7 +497,7 @@ function Card({ route, snap }: { route: OgRouteKey; snap: OgSnapshot }) {
   const statusBits: string[] = [snap.live ? "Indexer OK" : "Indexer idle"];
   if (snap.live && snap.lagSeconds != null) statusBits.push(`Lag ${snap.lagSeconds}s`);
   if (snap.checkpoint != null) statusBits.push(`Ckpt ${snap.checkpoint.toLocaleString("en-US")}`);
-  statusBits.push("Sui", "testnet");
+  statusBits.push("Sui", "Testnet");
 
   return (
     <div

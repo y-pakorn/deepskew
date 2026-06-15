@@ -50,11 +50,11 @@ export default function IntegrationDoc() {
       <DocSection title="The Objects">
         <P>
           Everything deepskew touches resolves to one of four on-chain
-          identifiers. These are testnet values on the{" "}
+          identifiers. These are Testnet values on the{" "}
           <Code>predict-testnet-4-16</Code> branch. The package id and quote
           asset should be re-resolved from the indexer&rsquo;s <Code>/config</Code>{" "}
-          at runtime, and on mainnet the single market id becomes a runtime list,
-          but on testnet they are stable enough to treat as constants.
+          at runtime, and on Mainnet the single market id becomes a runtime list,
+          but on Testnet they are stable enough to treat as constants.
         </P>
         <div className="rounded-lg border border-hairline bg-panel px-4 py-2">
           <KeyVal k="Predict package">
@@ -69,7 +69,7 @@ export default function IntegrationDoc() {
             <DocLink href={explorerObject(PREDICT_ID)}>
               <span className="font-mono">{truncate(PREDICT_ID)}</span>
             </DocLink>{" "}
-            is the shared market object. On testnet there is exactly one, so all
+            is the shared market object. On Testnet there is exactly one, so all
             3.6k+ oracles report this single <Code>predict_id</Code>, and it is
             the first argument to both vault calls.
           </KeyVal>
@@ -86,12 +86,12 @@ export default function IntegrationDoc() {
                 {truncate(QUOTE_ASSET_DUSDC.split("::")[0])}::dusdc::DUSDC
               </span>
             </DocLink>{" "}
-            is the accepted quote asset. It is dUSDC, the Predict testnet token,
-            not the official testnet USDC.
+            is the accepted quote asset. It is dUSDC, the Predict Testnet token,
+            not the official Testnet USDC.
           </KeyVal>
         </div>
         <Callout title="Verify any of these" tone="accent">
-          Every value above links to Suiscan testnet through{" "}
+          Every value above links to Suiscan Testnet through{" "}
           <Code>explorerObject(id)</Code>. The link text is truncated, but the
           link target carries the full id, so you can open the real object and
           confirm it yourself.
@@ -197,7 +197,7 @@ export default function IntegrationDoc() {
           </LI>
         </UL>
         <P>
-          Both DeepBook indexers share the same testnet host with open CORS, so
+          Both DeepBook indexers share the same Testnet host with open CORS, so
           they are called straight from the browser exactly like the Predict
           indexer. Together they close the loop: borrow dUSDC on margin, supply
           it to the PLP vault, and earn the vault&rsquo;s edge against the borrow

@@ -56,7 +56,7 @@ export function StatusBar() {
         </LabelTip>
       ) : null}
       <span className="hidden shrink-0 whitespace-nowrap sm:inline">
-        Sui · {SUI_NETWORK}
+        Sui · {SUI_NETWORK[0].toUpperCase() + SUI_NETWORK.slice(1)}
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-4">
         <DropdownMenu>
@@ -92,7 +92,7 @@ export function StatusBar() {
         >
           DeepBook
         </a>
-        <span className="hidden 2xl:inline">Redeploys mainnet day one</span>
+        <span className="hidden 2xl:inline">Redeploys Mainnet day one</span>
       </span>
     </footer>
   );

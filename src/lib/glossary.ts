@@ -416,10 +416,10 @@ export const GLOSSARY: Record<string, TipEntry> = {
   },
   "feed-age": {
     title: "Feed age",
-    body: "How many seconds ago the oracle last updated – the panel's freshness verdict.",
-    math: "\\text{ageS}=\\operatorname{round}\\!\\big((\\text{now}-\\text{checkpoint\\_ts})/1000\\big)",
+    body: "How long ago the oracle last updated – the panel's freshness verdict.",
+    math: "\\text{age}=\\text{now}-\\text{checkpoint\\_ts}",
     points: [
-      "Rendered '↑ Ns ago'.",
+      "Rendered compact: 's / m / h / d h' (a dead feed reads '4d 19h', not raw seconds).",
       "Green if $<120\\text{s}$, warn otherwise.",
     ],
   },
@@ -465,7 +465,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
       "Shown $\\text{fmtSigned}$ to 2 dp.",
     ],
   },
-  // — Vault / PLP risk —
+  // — Vault —
   "apy": {
     title: "APY",
     body: "The vault's annualized LP return over its recorded history, projected to a full year — the headline yield for liquidity providers.",
@@ -600,7 +600,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
   },
   "dusdc": {
     title: "dUSDC",
-    body: "Predict's testnet-only quote stablecoin — not official testnet USDC — in which every vault USD figure is denominated.",
+    body: "Predict's Testnet-only quote stablecoin — not official Testnet USDC — in which every vault USD figure is denominated.",
     points: [
       "All vault amounts are dUSDC scaled by $1e6$.",
     ],
@@ -810,7 +810,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
     title: "Connect wallet",
     body: "Connect a Sui wallet – once connected the pill is your account and signs on-chain claims.",
     points: [
-      "Connected pill shows SuiNS name or truncateAddr (6/4) with a green dot; testnet.",
+      "Connected pill shows SuiNS name or truncateAddr (6/4) with a green dot; Testnet.",
       "The write path for redeem_permissionless.",
     ],
   },
@@ -843,23 +843,23 @@ export const GLOSSARY: Record<string, TipEntry> = {
     body: "Footer chrome – external links plus a submission-credibility note, not metrics.",
     points: [
       "Links to DeepBook Predict docs and the DeepBook X account.",
-      "'Redeploys mainnet day one' note signals submission credibility.",
+      "'Redeploys Mainnet day one' note signals submission credibility.",
     ],
   },
   "market-symbol": {
     title: "Market symbol",
     body: "The underlying asset of the market you're viewing, currently always Bitcoin.",
     points: [
-      "Predict's testnet lists only BTC rolling expiries.",
+      "Predict's Testnet lists only BTC rolling expiries.",
       "Symbol is fixed while the expiry varies.",
     ],
   },
   "network": {
     title: "Network",
-    body: "Which Sui network the terminal reads – testnet during the hackathon.",
+    body: "Which Sui network the terminal reads – Testnet during the hackathon.",
     points: [
       "SUI_NETWORK constant.",
-      "Predict is testnet-only and redeploys to mainnet at launch.",
+      "Predict is Testnet-only and redeploys to Mainnet at launch.",
     ],
   },
   "pill-tones": {
@@ -1055,7 +1055,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
     body: "Where range positions cluster: each top band drawn from its lower to upper strike, brighter for more notional.",
     points: ["Bands aggregated by (lower, higher) strike pair."],
   },
-  // — PLP risk tab —
+  // — Vault risk tab —
   "mtm-concentration": {
     title: "MtM concentration",
     body: "How much of the vault's open risk rides on a single expiry — concentrated books blow up faster on one bad settlement.",
@@ -1271,12 +1271,12 @@ export const GLOSSARY_GROUPS: { title: string; keys: string[] }[] = [
   { title: "IV Surface", keys: ["arb-free", "atm-term-overlay", "butterfly-arb", "calendar-arb", "iv-heat-legend", "iv-surface-panel", "moneyness-readout", "surface-iv-readout", "svi-model", "real-vs-interp-ribs", "strike-axis-hint", "surface-height", "tenor-countdown", "tick-pulse", "drag-to-orbit", "n-tenors", "surface-resolving", "tenor-axis"] },
   { title: "Smile / Skew", keys: ["atm-iv", "call-wing", "fly", "put-wing", "skew-rr", "histogram-axis", "histogram-hover", "live-replay", "oi-by-strike", "smile-hover", "smile-panel", "smile-x-ticks", "smile-y-tick", "time-travel", "up-dn-legend", "jump-to-live", "smile-states"] },
   { title: "Oracle State · SVI Params", keys: ["atm-var", "checkpoint", "expiry", "forward", "oracle-panel", "strike-matrix-ticks", "svi-a", "svi-b", "svi-m", "svi-rho", "svi-sigma", "term-structure", "feed-age", "oracle-status", "vol-by-strike", "oracle-id", "spot", "spot-sparkline"] },
-  { title: "Vault / PLP Risk", keys: ["apy", "available-liq", "lp-net-flow", "max-payout", "max-payout-util", "modeled-payout", "plp-share-price", "plp-supply", "sigma-move", "stress-ladder", "stress-sigma", "stress-verdict", "stressed-spot", "total-mtm", "utilization", "vault-value", "dusdc", "net-deposits", "sparkline", "stress-available", "stress-slider", "supplied", "vault-panel", "withdrawn", "perf-chart"] },
+  { title: "Vault", keys: ["apy", "available-liq", "lp-net-flow", "max-payout", "max-payout-util", "modeled-payout", "plp-share-price", "plp-supply", "sigma-move", "stress-ladder", "stress-sigma", "stress-verdict", "stressed-spot", "total-mtm", "utilization", "vault-value", "dusdc", "net-deposits", "sparkline", "stress-available", "stress-slider", "supplied", "vault-panel", "withdrawn", "perf-chart"] },
   { title: "Desk · Live Flow & Settle", keys: ["flow-amount", "flow-columns", "taker-win", "up-dn-bar", "updn-win-split", "flow-side-glyph", "payouts", "positioning", "row-mine", "settlement-count", "vol-premium", "desk-panel", "flow-event-count", "flow-unreachable"] },
   { title: "Command Strip, Status Bar & Selectors", keys: ["indexer-status", "lag", "live-pill", "connect-wallet", "market-selector", "utc-clock", "cmdk", "footer-links", "market-symbol", "network", "pill-tones", "wordmark"] },
   { title: "Vol Analytics", keys: ["rnd", "rnd-tail", "rnd-mode", "rnd-range", "rnd-pup", "density-nonneg", "rr25", "bf25", "implied-move", "forward-vol", "atm-term-curve", "skew-rotation"] },
   { title: "Flow & Edge", keys: ["edge-bps", "vol-risk-premium", "overpay-rate", "edge-fills", "edge-scatter", "settlement-outcomes", "calibration", "pending-settlement", "net-flow", "notional-positioning", "mint-redeem-momentum", "whale-flow", "range-flow", "range-band"] },
-  { title: "PLP Risk", keys: ["mtm-concentration", "marked-liability", "mtm-tieout", "book-truncated", "breach-sigma", "scenario-curve", "scenario-ladder", "withdrawal-limiter", "exit-capacity", "solvency-floor", "max-drawdown", "drawdown-replay", "lp-vol", "risk-grade", "house-rules", "exposure-ceiling", "lp-economics"] },
+  { title: "Vault Risk", keys: ["mtm-concentration", "marked-liability", "mtm-tieout", "book-truncated", "breach-sigma", "scenario-curve", "scenario-ladder", "withdrawal-limiter", "exit-capacity", "solvency-floor", "max-drawdown", "drawdown-replay", "lp-vol", "risk-grade", "house-rules", "exposure-ceiling", "lp-economics"] },
   { title: "Accounts", keys: ["leaderboard", "equity-curve", "account-blotter", "manager-market", "account-value", "open-exposure", "redeemable"] },
   { title: "Ops / Health", keys: ["feed-staleness", "pipeline-lag", "kill-switch"] },
   { title: "Cross-Venue", keys: ["vol-arb", "dvol", "vrp", "realized-vol", "implied-vs-realized"] },

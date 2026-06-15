@@ -175,7 +175,7 @@ export function ComposabilityPanel({ className }: { className?: string }) {
                   </>
                 ) : (
                   <span className="label-micro text-text-faint">
-                    No margin pool on testnet yet
+                    No margin pool on Testnet yet
                   </span>
                 )}
               </div>
@@ -211,7 +211,7 @@ export function ComposabilityPanel({ className }: { className?: string }) {
                   </>
                 ) : (
                   <span className="label-micro text-text-faint">
-                    No BTC spot pool on testnet yet
+                    No BTC spot pool on Testnet yet
                   </span>
                 )}
               </div>

@@ -5,7 +5,7 @@ import { RiskReportPanel } from "../plp/risk-report-panel";
 import { ScenarioPanel } from "../plp/scenario-panel";
 import { SupplyPanel } from "../plp/supply-panel";
 
-/** PLP Risk: the decomposition the single global vault number can't give —
+/** Vault: the decomposition the single global vault number can't give —
  *  per-expiry exposure, a book-wide ±σ stress, LP exit capacity, the drawdown
  *  record, a graded exportable one-pager, and the funnel that turns the verdict
  *  into a real on-chain supply/withdraw. */

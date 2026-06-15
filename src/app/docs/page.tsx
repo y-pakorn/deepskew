@@ -21,7 +21,7 @@ const VIEWS = [
   { title: "Desk", route: "/", anchor: "desk", blurb: "The single-viewport instrument: the 3D vol surface, the smile with its arbitrage verdict, oracle state, the vault, and a live tape of mints and redeems." },
   { title: "Vol Analytics", route: "/vol", anchor: "vol-analytics", blurb: "The volatility desk in depth: the smile across log-moneyness, skew and term structure, the risk-neutral density, and smile dynamics over time." },
   { title: "Flow & Edge", route: "/flow", anchor: "flow-edge", blurb: "Where the vault's edge is made or lost: every fill scored against its model-fair price, settlement calibration, whale flow, and range-product flow." },
-  { title: "PLP Risk", route: "/risk", anchor: "plp-risk", blurb: "The vault is the counterparty to every position. Per-expiry exposure, a 5-sigma breach point, exit capacity, a GREEN/AMBER/RED grade, and the supply/withdraw funnel." },
+  { title: "Vault", route: "/risk", anchor: "vault", blurb: "The vault is the counterparty to every position. Per-expiry exposure, a 5-sigma breach point, exit capacity, a GREEN/AMBER/RED grade, and the supply/withdraw funnel." },
   { title: "Managers", route: "/managers", anchor: "managers", blurb: "The desk leaderboard: every trading account ranked by volume with realized and unrealized PnL, drill-through to a per-desk page." },
   { title: "Ops / Health", route: "/ops", anchor: "ops-health", blurb: "One read on whether the market is trustworthy right now: oracle-feed freshness and indexer lag against the chain head." },
   { title: "Cross-Venue", route: "/cross-venue", anchor: "cross-venue", blurb: "On-chain volatility in context: Predict vs Deribit DVOL, the vol-risk-premium, and the DeepBook stack composability loop." },
@@ -112,8 +112,8 @@ export default function DocsOverview() {
 
       <DocSection title="Roadmap">
         <UL>
-          <LI>Reads and transacts on Sui testnet today.</LI>
-          <LI>Redeploys to mainnet on day one of the Predict mainnet launch.</LI>
+          <LI>Reads and transacts on Sui Testnet today.</LI>
+          <LI>Redeploys to Mainnet on day one of the Predict Mainnet launch.</LI>
           <LI>
             Read-only to read-write is done: the desk now calls the contract, not
             just reads it.

@@ -310,7 +310,7 @@ export function SupplyPanel({ className }: { className?: string }) {
             </button>
             {owner ? (
               <p className="label-micro mt-1.5 text-center text-text-faint">
-                Signs a real {mode === "deposit" ? "predict::supply" : "predict::withdraw"} on testnet
+                Signs a real {mode === "deposit" ? "predict::supply" : "predict::withdraw"} on Testnet
               </p>
             ) : null}
           </div>

@@ -9,7 +9,7 @@ import {
 export const metadata: Metadata = {
   title: "Docs · The Desk Views",
   description:
-    "How to read each of deepskew's seven routed views: the Desk, Vol Analytics, Flow & Edge, PLP Risk, Managers, Ops / Health, and Cross-Venue. What question each one answers, its lead verdict, and how to read its panels.",
+    "How to read each of deepskew's seven routed views: the Desk, Vol Analytics, Flow & Edge, Vault, Managers, Ops / Health, and Cross-Venue. What question each one answers, its lead verdict, and how to read its panels.",
   alternates: { canonical: "/docs/views" },
 };
 
@@ -98,7 +98,7 @@ export default function DeskViewsDocs() {
         <DocLink href="/flow">Open Flow & Edge ↗</DocLink>
       </DocSection>
 
-      <DocSection title="PLP Risk">
+      <DocSection title="Vault">
         <P>
           The vault is the counterparty to every position, so its solvency is
           the market’s solvency. This view reconstructs the open book from flow,
@@ -122,7 +122,7 @@ export default function DeskViewsDocs() {
           with a real predict::supply or predict::withdraw, clamped to the live
           limiter budget and free liquidity.
         </P>
-        <DocLink href="/risk">Open PLP Risk ↗</DocLink>
+        <DocLink href="/risk">Open Vault ↗</DocLink>
       </DocSection>
 
       <DocSection title="Managers">

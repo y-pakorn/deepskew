@@ -87,6 +87,18 @@ export function fmtDuration(ms: number): string {
   return `${s}s`;
 }
 
+/** Elapsed-since-now (ms) → compact "ago"-style age: "0s", "42s", "9m", "3h",
+ *  "4d 19h". Always non-negative (a checkpoint just ahead of our clock reads
+ *  "0s"); sub-minute keeps seconds since the freshness window is tight, then
+ *  rolls up so a dead feed reads "4d 19h", not "414888s". */
+export function fmtAge(ms: number): string {
+  const total = Number.isFinite(ms) ? Math.max(0, Math.floor(ms / 1000)) : 0;
+  if (total < 60) return `${total}s`;
+  if (total < 3600) return `${Math.floor(total / 60)}m`;
+  if (total < 86400) return `${Math.floor(total / 3600)}h`;
+  return `${Math.floor(total / 86400)}d ${Math.floor((total % 86400) / 3600)}h`;
+}
+
 /** A short UTC HH:MM:SS clock string. */
 export function utcClock(d: Date): string {
   return d.toISOString().slice(11, 19);

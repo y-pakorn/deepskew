@@ -5,6 +5,7 @@ import { useActiveOracles } from "@/lib/indexer/hooks";
 import { useLiveEvents } from "@/lib/indexer/use-live-events";
 import type { OracleInfo } from "@/lib/indexer/types";
 import type { StreamStatus } from "@/lib/sui/events";
+import { useNow } from "@/lib/use-now";
 
 interface MarketContextValue {
   activeOracles: OracleInfo[];
@@ -20,14 +21,30 @@ interface MarketContextValue {
 const MarketContext = createContext<MarketContextValue | null>(null);
 
 export function MarketProvider({ children }: { children: React.ReactNode }) {
-  const { data: activeOracles = [], isLoading, isError } = useActiveOracles();
+  const { data: oracles = [], isLoading, isError } = useActiveOracles();
   const [picked, setPicked] = useState<string | null>(null);
   // Mount the live on-chain checkpoint stream once for the whole terminal; it
   // merges events into the shared query cache (no parallel store).
   const liveStatus = useLiveEvents();
+  const now = useNow();
+  // Coarse minute boundary: the live-vs-expired cut only needs to roll once a
+  // minute (oracles turn over ~every 15 min), so the value stays referentially
+  // stable between ticks and never re-renders the desk every second.
+  const minute = Math.floor(now / 60_000);
+
+  // The indexer's "active" set keeps oracles past their expiry that are still
+  // awaiting on-chain settlement (status stays "active" until settled), and they
+  // sort to the front by nearest expiry, so a naive activeOracles[0] default
+  // lands on an already-expired oracle. Keep only the still-live expiries here;
+  // fall back to the full set if none are live so the desk is never empty.
+  const activeOracles = useMemo(() => {
+    const nowMs = minute * 60_000;
+    const live = oracles.filter((o) => o.expiry > nowMs);
+    return live.length ? live : oracles;
+  }, [oracles, minute]);
 
   // Derive the effective selection (no setState-in-effect): honor the user's
-  // pick while it's still active, else fall back to the nearest-expiry oracle.
+  // pick while it's still live, else fall back to the nearest-expiry oracle.
   const selectedOracleId = useMemo(() => {
     if (picked && activeOracles.some((o) => o.oracle_id === picked)) {
       return picked;

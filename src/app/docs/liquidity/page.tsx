@@ -11,7 +11,7 @@ import {
 export const metadata: Metadata = {
   title: "Docs · Provide Liquidity",
   description:
-    "Connect a wallet, fund it with testnet dUSDC, read the PLP vault's risk grade, then supply or withdraw on-chain. Supply signs predict::supply and returns Coin<PLP>; withdraw burns PLP for dUSDC, clamped to the live withdrawable budget.",
+    "Connect a wallet, fund it with Testnet dUSDC, read the PLP vault's risk grade, then supply or withdraw on-chain. Supply signs predict::supply and returns Coin<PLP>; withdraw burns PLP for dUSDC, clamped to the live withdrawable budget.",
   alternates: { canonical: "/docs/liquidity" },
 };
 
@@ -36,16 +36,16 @@ export default function ProvideLiquidity() {
           nothing in this flow works until an account is attached.
         </Step>
 
-        <Step n={2} title="Request testnet dUSDC">
+        <Step n={2} title="Request Testnet dUSDC">
           The faucet is a{" "}
           <DocLink href="https://tally.so/r/Xx102L">Tally form</DocLink>. Note
-          that dUSDC is the vault’s quote asset, not the official Sui testnet
+          that dUSDC is the vault’s quote asset, not the official Sui Testnet
           USDC, so the two are not interchangeable. You also need a little SUI in
           the same wallet to pay for gas.
         </Step>
 
         <Step n={3} title="Read the risk grade first">
-          Open <DocLink href="/risk">PLP Risk</DocLink>. The Provide liquidity
+          Open <DocLink href="/risk">Vault</DocLink>. The Provide liquidity
           panel leads with the live solvency verdict, a <Code>Green</Code> /{" "}
           <Code>Amber</Code> / <Code>Red</Code> grade off the vault’s utilization,
           max-payout utilization, and exit ratio. Read the verdict before you
@@ -83,7 +83,7 @@ export default function ProvideLiquidity() {
         current budget is rejected. The panel shows that budget live and clamps
         the input to it. If the budget reads “Off”, the limiter is disabled and
         available liquidity is the only bind. See{" "}
-        <DocLink href="/risk">PLP Risk</DocLink> for the exit-capacity read and{" "}
+        <DocLink href="/risk">Vault</DocLink> for the exit-capacity read and{" "}
         <DocLink href="/docs/integration">On-Chain Integration</DocLink> for the
         write path.
       </Callout>

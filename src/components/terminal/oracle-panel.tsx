@@ -7,6 +7,7 @@ import {
   useTermStructure,
 } from "@/lib/indexer/hooks";
 import {
+  fmtAge,
   fmtCompact,
   fmtDuration,
   fmtPctValue,
@@ -214,7 +215,7 @@ export function OraclePanel() {
             <Stat
               label="Feed"
               tip="feed-age"
-              value={ageS != null ? `▲ ${ageS}s ago` : "—"}
+              value={ageS != null ? `▲ ${fmtAge(ageS * 1000)} ago` : "—"}
               tone={ageS != null && ageS < 120 ? "safe" : "warn"}
             />
           </div>

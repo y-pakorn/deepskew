@@ -236,7 +236,7 @@ export default function DocsMath() {
           client&rsquo;s <InlineMath tex="\Phi(d_2)" />, while the contract uses
           its cached matrix MtM. The two should track, but the reconstruction is
           an estimate bounded by the flow window. See{" "}
-          <DocLink href="/docs/views#plp-risk">PLP Risk</DocLink>.
+          <DocLink href="/docs/views#vault">Vault</DocLink>.
         </Callout>
       </DocSection>
 

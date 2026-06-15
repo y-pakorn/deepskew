@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useActiveOracleMarks } from "@/lib/indexer/hooks";
-import { fmtDuration } from "@/lib/format";
+import { fmtAge, fmtDuration } from "@/lib/format";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "../label-tip";
@@ -17,7 +17,7 @@ type FeedState = "active" | "stale" | "pending";
  *  how close it is to the 30s stale window and how long since its last update.
  *  A stale or expired-unsettled feed is un-mintable. */
 export function HealthPanel({ className }: { className?: string }) {
-  const { marks, total } = useActiveOracleMarks();
+  const { marks } = useActiveOracleMarks();
   const now = useNow();
 
   const rows = useMemo(
@@ -33,6 +33,11 @@ export function HealthPanel({ className }: { className?: string }) {
     [marks, now],
   );
 
+  // Lead with the verdict, not the raw oracle count: of the active set, how many
+  // feeds are actually fresh/mintable vs stale-or-expired (un-mintable).
+  const live = rows.filter((r) => r.state === "active").length;
+  const degraded = rows.length - live;
+
   return (
     <Panel
       title="Oracle Feeds"
@@ -41,7 +46,13 @@ export function HealthPanel({ className }: { className?: string }) {
       bodyClassName="flex flex-col overflow-hidden p-0"
       right={
         <span className="label-micro text-text-faint">
-          <span className="tabular">{total}</span> live
+          <span className="tabular text-safe">{live}</span> live
+          {degraded > 0 && (
+            <>
+              {" · "}
+              <span className="tabular text-warn">{degraded}</span> stale
+            </>
+          )}
         </span>
       }
     >
@@ -119,7 +130,7 @@ function FeedRow({
         {state === "pending"
           ? "pending"
           : ageS != null
-            ? `${ageS}s ago`
+            ? `${fmtAge(age)} ago`
             : "no data"}
       </span>
     </div>
