@@ -15,7 +15,6 @@ import {
   listAllCoins,
   normalizeType,
   totalBalance,
-  type CoinRef,
 } from "@/lib/sui/tx";
 import type { Transaction } from "@mysten/sui/transactions";
 import {
@@ -37,6 +36,7 @@ import type { ManagerPositionSummary } from "@/lib/indexer/types";
 import { fmtDuration, fmtNum, fmtPct, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
+import { LabelTip } from "../label-tip";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { Pill } from "../pill";
@@ -176,19 +176,18 @@ export function TradePanel({ className }: { className?: string }) {
   const askOutOfBounds =
     !!quote && !!bounds && (quote.ask < bounds.lo - 1e-9 || quote.ask > bounds.hi + 1e-9);
 
-  const payout = Number(payoutInput) || 0; // dUSDC max payout (notional)
+  const payout = Number(payoutInput) || 0; // dUSDC max payout (the position size)
   const quantityBase = Math.round(payout * 1e6);
-  // Premium estimate: exact when the ask is known, else the fair-value floor.
+  // Premium = what you pay now. Exact when the ask is published, else estimated
+  // from the model-fair (the on-chain spread makes the real premium a little more).
   const priceForCost = quote ? quote.ask : fair ?? 0;
   const costHuman = priceForCost * payout;
-  const costBase = Math.round(costHuman * 1e6);
   const edgeBps = quote ? (quote.ask - quote.fair) * 10_000 : 0;
-  // Fund so the manager covers the cost. cost ≤ 1 × notional, so when the ask is
-  // unknown we target the full notional; when known, the cost plus a small
-  // buffer for the trade's own utilization impact, capped at the notional.
-  const fundTargetBase = quote
-    ? Math.min(quantityBase, Math.ceil(costBase * 1.03))
-    : quantityBase;
+  // Buying spends from the trading account (funded from the wallet in the Account
+  // tab), so the deduction is unambiguous: the premium leaves the account and
+  // nothing else moves.
+  const accountAfter = mgrBalHuman - costHuman;
+  const canAfford = payout > 0 && mgrBalHuman + 1e-9 >= costHuman;
 
   const expiryMs = selectedOracle?.expiry ?? 0;
   const ttx = expiryMs > 0 ? Math.max(0, expiryMs - now) : 0;
@@ -245,17 +244,8 @@ export function TradePanel({ className }: { className?: string }) {
     try {
       const quantity = BigInt(quantityBase);
       if (quantity <= BigInt(0)) throw new Error("Enter a position size");
-      // Fund any shortfall in the same PTB so a buy is one signature.
-      const need = fundTargetBase - mgrBalBase;
-      let fund: { coins: CoinRef[]; amount: bigint } | undefined;
-      if (need > 0) {
-        const coins = await listAllCoins(client, owner, quoteType);
-        const amount = BigInt(Math.ceil(need));
-        if (totalBalance(coins) < amount) {
-          throw new Error("Insufficient dUSDC to fund this trade");
-        }
-        fund = { coins, amount };
-      }
+      // The premium is debited from the trading account on-chain; fund it first
+      // in the Account tab. No coins are pulled from the wallet here.
       const tx = buildMintTx({
         managerId,
         oracleId: selectedOracleId,
@@ -264,7 +254,6 @@ export function TradePanel({ className }: { className?: string }) {
         isUp: side,
         quantity,
         quoteType,
-        fund,
       });
       await sign(
         tx,
@@ -391,31 +380,40 @@ export function TradePanel({ className }: { className?: string }) {
                 }
               />
 
-              {/* Up / Dn */}
-              <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
-                {[true, false].map((up) => (
-                  <button
-                    key={String(up)}
-                    type="button"
-                    onClick={() => setSide(up)}
-                    className={cn(
-                      "py-1.5 text-data font-medium transition-colors",
-                      side === up
-                        ? up
-                          ? "bg-safe/15 text-safe"
-                          : "bg-breach/15 text-breach"
-                        : "bg-panel text-text-dim hover:text-text-sec",
-                    )}
-                  >
-                    {up ? "▲ Up" : "▼ Dn"}
-                  </button>
-                ))}
+              {/* Direction */}
+              <div>
+                <div className="mb-1">
+                  <LabelTip k="trade-side" className="label-micro">
+                    Direction
+                  </LabelTip>
+                </div>
+                <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
+                  {[true, false].map((up) => (
+                    <button
+                      key={String(up)}
+                      type="button"
+                      onClick={() => setSide(up)}
+                      className={cn(
+                        "py-1.5 text-data font-medium transition-colors",
+                        side === up
+                          ? up
+                            ? "bg-safe/15 text-safe"
+                            : "bg-breach/15 text-breach"
+                          : "bg-panel text-text-dim hover:text-text-sec",
+                      )}
+                    >
+                      {up ? "▲ Up" : "▼ Dn"}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Strike */}
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="label-micro">Strike (USD)</span>
+                  <LabelTip k="trade-strike" className="label-micro">
+                    Strike (USD)
+                  </LabelTip>
                   <button
                     type="button"
                     onClick={() => setStrikeInput("")}
@@ -439,7 +437,9 @@ export function TradePanel({ className }: { className?: string }) {
               {/* Payout / size */}
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="label-micro">Max payout (dUSDC)</span>
+                  <LabelTip k="trade-payout" className="label-micro">
+                    Max payout (dUSDC)
+                  </LabelTip>
                   <span className="text-data text-text-faint">
                     what you win if it hits
                   </span>
@@ -456,24 +456,41 @@ export function TradePanel({ className }: { className?: string }) {
                 />
               </div>
 
-              <div className="rounded-md border border-hairline px-3 py-1">
+              {/* Order summary — exactly what the trade does and deducts */}
+              <div className="rounded-md border border-hairline bg-panel-elev/40 px-3 py-2">
+                <div className="label-micro mb-1.5 text-text-sec">
+                  Order · what happens
+                </div>
+                <p className="mb-2 text-data text-text-dim">
+                  {side ? "Up" : "Dn"} · BTC {side ? "above" : "below"}{" "}
+                  {fmtNum(strikeF, 0)} at {expiryUtc} UTC ·{" "}
+                  <span className={expired ? "text-warn" : undefined}>
+                    {expired ? "expired" : `in ${fmtDuration(ttx)}`}
+                  </span>
+                </p>
                 <Stat
-                  label="Cost (premium)"
-                  value={
-                    quote
-                      ? `${fmtNum(costHuman, 2)} dUSDC`
-                      : `≈ ${fmtNum(costHuman, 2)}+ dUSDC`
-                  }
+                  label="You pay (premium)"
+                  tip="trade-premium"
+                  value={`${quote ? "" : "≈ "}${fmtNum(costHuman, 2)} dUSDC`}
                   tone="accent"
                 />
                 <Stat
-                  label="Expires"
-                  value={`${expiryUtc} UTC · ${fmtDuration(ttx)}`}
-                  tone={expired ? "warn" : "default"}
+                  label="From account"
+                  tip="trade-account"
+                  value={`${fmtNum(mgrBalHuman, 2)} → ${fmtNum(Math.max(0, accountAfter), 2)} dUSDC`}
                 />
-                <Stat label="Bid (sell back)" value={quote ? fmtPct(quote.bid, 1) : "—"} />
-                <Stat label="Wallet" value={`${fmtNum(walletHuman, 2)} dUSDC`} />
-                <Stat label="Account balance" value={`${fmtNum(mgrBalHuman, 2)} dUSDC`} />
+                <Stat
+                  label="Win if it hits"
+                  tip="trade-payout"
+                  value={`${fmtNum(payout, 2)} dUSDC`}
+                  tone="safe"
+                />
+                <Stat
+                  label="Max loss (if it misses)"
+                  tip="trade-premium"
+                  value={`${quote ? "" : "≈ "}${fmtNum(costHuman, 2)} dUSDC`}
+                  tone="breach"
+                />
               </div>
 
               <BuyButton
@@ -484,7 +501,8 @@ export function TradePanel({ className }: { className?: string }) {
                   payout <= 0 ||
                   askOutOfBounds ||
                   tradingPaused ||
-                  !oracleLive
+                  !oracleLive ||
+                  !canAfford
                 }
                 reason={
                   tradingPaused
@@ -497,7 +515,9 @@ export function TradePanel({ className }: { className?: string }) {
                           ? "Outside mintable band"
                           : payout <= 0
                             ? "Enter a size"
-                            : null
+                            : !canAfford
+                              ? "Add dUSDC in Account tab"
+                              : null
                 }
                 side={side}
                 onCreate={createAccount}
@@ -577,7 +597,7 @@ function BuyButton({
       disabled={disabled || pending}
       onClick={onBuy}
       tone={side ? "up" : "down"}
-      note="Signs a real predict::mint on Testnet · auto-funds from wallet if needed"
+      note="Signs a real predict::mint on Testnet · premium debited from your account"
     />
   );
 }
@@ -644,10 +664,11 @@ function SellTab({
       {pos ? (
         <>
           <div className="rounded-md border border-hairline px-3 py-1">
-            <Stat label="Open size" value={`${fmtNum(openHuman, 2)} dUSDC`} />
-            <Stat label="Mark value" value={`${fmtNum(markHuman, 2)} dUSDC`} tone="accent" />
+            <Stat label="Open size" tip="trade-payout" value={`${fmtNum(openHuman, 2)} dUSDC`} />
+            <Stat label="Mark value" tip="trade-mark" value={`${fmtNum(markHuman, 2)} dUSDC`} tone="accent" />
             <Stat
               label="Unrealized PnL"
+              tip="trade-mark"
               value={fmtSignedUsd(pos.unrealized_pnl / 1e6)}
               tone={pos.unrealized_pnl >= 0 ? "safe" : "breach"}
             />
@@ -785,7 +806,7 @@ function AccountTab({
       </div>
       <div className="rounded-md border border-hairline px-3 py-1">
         <Stat label="Wallet" value={`${fmtNum(walletHuman, 2)} dUSDC`} />
-        <Stat label="Account balance" value={`${fmtNum(mgrBalHuman, 2)} dUSDC`} tone="accent" />
+        <Stat label="Account balance" tip="trade-account" value={`${fmtNum(mgrBalHuman, 2)} dUSDC`} tone="accent" />
       </div>
       <ActionButton
         label={

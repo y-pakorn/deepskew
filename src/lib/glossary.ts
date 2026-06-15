@@ -822,6 +822,62 @@ export const GLOSSARY: Record<string, TipEntry> = {
       "The write path for the vault (supply / withdraw) and trading (mint / redeem).",
     ],
   },
+  "trade-side": {
+    title: "Up / Dn",
+    body: "Which way you are betting: Up pays if BTC finishes above the strike at expiry, Dn if below.",
+    points: [
+      "A Dn binary is the exact complement of Up: price(Dn) = 1 − price(Up).",
+      "On-chain this is the MarketKey direction passed to predict::mint.",
+    ],
+  },
+  "trade-strike": {
+    title: "Strike",
+    body: "The price level the bet settles against; Up wins if BTC is above it at expiry.",
+    points: [
+      "Snapped to the oracle's on-chain strike grid (min_strike + n·tick).",
+      "At the money ≈ the forward; further out is cheaper with lower odds.",
+    ],
+  },
+  "trade-payout": {
+    title: "Max payout",
+    body: "The position size: what you receive if the bet finishes in the money.",
+    points: [
+      "On-chain quantity (1e6 dUSDC); a winning binary pays $1 per contract.",
+      "You pay the premium now; this is what you collect if it hits.",
+    ],
+  },
+  "trade-premium": {
+    title: "Premium",
+    body: "What you pay now to open the position, debited from your trading account.",
+    points: [
+      "Premium = ask × max payout; you lose it if the bet misses.",
+      "While the pricing feed is unpublished it is estimated from the model-fair; the contract charges the exact ask on-chain.",
+    ],
+  },
+  "trade-expiry": {
+    title: "Expiry",
+    body: "When the bet settles; afterwards positions redeem at $1 (in the money) or $0.",
+    points: [
+      "The oracle's on-chain expiry; the MarketKey must match it exactly.",
+      "You can sell (redeem) before expiry at the live bid.",
+    ],
+  },
+  "trade-account": {
+    title: "Trading account",
+    body: "Your PredictManager: an on-chain account holding the dUSDC your positions are bought from and paid into.",
+    points: [
+      "Fund it from your wallet (and withdraw back) in the Account tab.",
+      "Buying debits the premium here; selling and settlement credit it.",
+    ],
+  },
+  "trade-mark": {
+    title: "Mark value",
+    body: "What an open position is worth right now, marked at the live bid (or $1/$0 once settled).",
+    points: [
+      "Server-side mark from the indexer; redeeming pays out close to this.",
+      "Unrealized PnL = mark value − cost basis.",
+    ],
+  },
   "market-selector": {
     title: "Market selector",
     body: "Picker of BTC markets still open for trading.",
