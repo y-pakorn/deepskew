@@ -113,7 +113,9 @@ export function SupplyPanel({ className }: { className?: string }) {
   }, [vault]);
 
   const setPct = (pct: number) => {
-    if (maxAmount > 0) setAmount(String(+(maxAmount * pct).toFixed(6)));
+    // Floor to 6 dp so the "Max" fill (pct=1) never rounds *above* the live cap,
+    // which would trip the overCap guard and disable the submit button.
+    if (maxAmount > 0) setAmount(String(Math.floor(maxAmount * pct * 1e6) / 1e6));
   };
 
   async function submit() {
@@ -129,7 +131,15 @@ export function SupplyPanel({ className }: { className?: string }) {
       } else {
         const coins = await listAllCoins(client, owner, PLP_TYPE);
         const have = totalBalance(coins);
-        let shares = BigInt(Math.round((amountNum / sharePrice) * 1e6));
+        // Full-position exit (Max, when the whole stake is withdrawable and not
+        // vault-capped): burn *every* share. Going dUSDC→shares round-trips
+        // through float and loses a base unit, which otherwise strands ~0.000001
+        // PLP behind. Otherwise convert the requested dUSDC to shares as usual.
+        const fullExit =
+          plpValue <= withdrawCap + 1e-9 && amountNum >= maxWithdraw - 1e-6;
+        let shares = fullExit
+          ? have
+          : BigInt(Math.round((amountNum / sharePrice) * 1e6));
         if (shares > have) shares = have; // never burn more PLP than held
         if (shares <= BigInt(0)) throw new Error("No PLP shares to withdraw");
         tx = buildWithdrawTx({ shares, plpCoins: coins, sender: owner, quoteType });
@@ -258,6 +268,13 @@ export function SupplyPanel({ className }: { className?: string }) {
 
           {/* Quote */}
           <div className="rounded-md border border-hairline px-3 py-1">
+            {owner ? (
+              <Stat
+                label="Your position"
+                value={`${fmtNum(plpValue, 2)} dUSDC · ${fmtNum(plpHuman, 4)} PLP`}
+                tone="accent"
+              />
+            ) : null}
             <Stat
               label="PLP share price"
               tip="plp-share-price"
