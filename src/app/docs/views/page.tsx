@@ -95,6 +95,13 @@ export default function DeskViewsDocs() {
           the range panel breaks out the vertical-spread product line that pays
           inside a strike band.
         </P>
+        <P>
+          It is also where you trade. A connect-gated ticket leads with the same
+          model-fair N(d_2), then mints or redeems a binary against your own
+          on-chain PredictManager, with the premium debited from your trading
+          account. The order summary spells out what you pay, what you win, and
+          the max loss before you sign.
+        </P>
         <DocLink href="/flow">Open Flow & Edge ↗</DocLink>
       </DocSection>
 

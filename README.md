@@ -8,7 +8,7 @@
 
 DeepBook Predict puts options-style volatility trading on-chain. An oracle publishes a volatility surface, a liquidity vault underwrites every position, and traders mint and redeem against it block by block. It all settles on Sui in the open. The problem is that none of it is readable. A raw SVI parameter set tells you nothing about whether the surface admits arbitrage. A vault balance tells you nothing about whether it survives a sharp move in BTC. The information is on-chain. The meaning is not.
 
-deepskew is the legibility layer. It reads the live surface, the vault, and the settlement flow straight from the chain and turns each one into a single clear read with the numbers that back it underneath. It is the screen a desk would keep open while the market is live. And it closes the loop: where a read leads to an action, you supply or withdraw the PLP vault on-chain without leaving the verdict.
+deepskew is the legibility layer. It reads the live surface, the vault, and the settlement flow straight from the chain and turns each one into a single clear read with the numbers that back it underneath. It is the screen a desk would keep open while the market is live. And it closes the loop: where a read leads to an action, you act on-chain without leaving the verdict. Trade the surface you just read by minting and redeeming binary positions against your own PredictManager, each priced off the model-fair N(d2) the desk scores every fill against, and supply or withdraw the PLP vault you just stress-tested.
 
 ## Why it exists
 
@@ -30,7 +30,7 @@ The volatility desk in depth. The smile across log-moneyness, the skew and term 
 
 ### Flow & Edge (`/flow`)
 
-Where the vault's edge is made or lost. Every fill is scored against its model-fair price (the digital N(d2) from the live surface) to show the vol-risk-premium captured fill by fill, in basis points and in dollars. Alongside it: settlement calibration (priced probability against realized outcome), whale flow ranked by notional rather than count, and the range (vertical-spread) product flow.
+Where the vault's edge is made or lost. Every fill is scored against its model-fair price (the digital N(d2) from the live surface) to show the vol-risk-premium captured fill by fill, in basis points and in dollars. Alongside it: settlement calibration (priced probability against realized outcome), whale flow ranked by notional rather than count, and the range (vertical-spread) product flow. And it is where you trade: a connect-gated ticket leads with the model-fair N(d2), then mints or redeems a binary position against your own PredictManager with a real `predict::mint` or `predict::redeem`.
 
 ### Vault (`/risk`)
 
@@ -71,7 +71,7 @@ All of it is pure and lives in `src/lib`, computed in the browser from decoded o
 ## Tech
 
 - **Next 16** (App Router, Turbopack) and **React 19**, TypeScript, Tailwind v4 with a CSS-first token theme, and shadcn/ui.
-- **Sui** via the new `@mysten/dapp-kit-react` 2.0 on a gRPC client (testnet): reads go through `client.core`, and writes (PLP supply and withdraw) are built with the `@mysten/sui` Transaction builder and signed through the dApp Kit.
+- **Sui** via the new `@mysten/dapp-kit-react` 2.0 on a gRPC client (testnet): reads go through `client.core`, and writes (the binary trade loop of `predict::mint` and `predict::redeem` through a per-user `PredictManager`, plus PLP vault `predict::supply` and `predict::withdraw`) are built with the `@mysten/sui` Transaction builder and signed through the dApp Kit.
 - **TanStack Query** over a typed indexer client for all live data (`src/lib/indexer`).
 - **three** with React Three Fiber and Drei for the 3D surface, **lightweight-charts** for time series, hand-rolled SVG for smiles, sparklines and ladders, and **KaTeX** for the math glossary.
 - **motion** for the live-state transitions, scoped to data changes only.

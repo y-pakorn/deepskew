@@ -8,6 +8,7 @@ const DOCS_PATHS = [
   "/docs/views",
   "/docs/math",
   "/docs/integration",
+  "/docs/trade",
   "/docs/liquidity",
   "/docs/verify",
   "/docs/glossary",

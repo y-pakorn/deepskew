@@ -22,7 +22,7 @@ import {
 export const metadata: Metadata = {
   title: "Docs · On-Chain Integration",
   description:
-    "The objects, the read path, and the write path behind deepskew: the Predict package and market, the dUSDC quote, a three-tier read (REST indexer, event stream, gRPC core), and predict::supply / predict::withdraw signed through the dApp Kit.",
+    "The objects, the read path, and the write paths behind deepskew: the Predict package and market, the dUSDC quote, a three-tier read (REST indexer, event stream, gRPC core), and two write paths (a binary trade loop of mint / redeem via a per-user PredictManager, plus the PLP vault supply / withdraw) signed through the dApp Kit.",
   alternates: { canonical: "/docs/integration" },
 };
 
@@ -41,9 +41,10 @@ export default function IntegrationDoc() {
         <>
           deepskew binds to a small set of on-chain identifiers, reads them
           through three tiers (a public REST indexer, an event stream, and direct
-          gRPC), and writes back through exactly two contract calls. This page is
-          the map: the objects, the read path, the write path, and where Predict
-          sits in the wider DeepBook stack.
+          gRPC), and writes back along two paths: a binary trade loop (mint and
+          redeem a position against a per-user PredictManager) and the PLP vault
+          (supply and withdraw). This page is the map: the objects, the read path,
+          the write paths, and where Predict sits in the wider DeepBook stack.
         </>
       }
     >
@@ -62,16 +63,21 @@ export default function IntegrationDoc() {
               <span className="font-mono">{truncate(PREDICT_PACKAGE_ID)}</span>
             </DocLink>{" "}
             is the Predict Move package. Every call target (
-            <Code>predict::supply</Code>, <Code>predict::withdraw</Code>,{" "}
-            <Code>oracle::*</Code> events) lives under it.
+            <Code>predict::mint</Code>, <Code>predict::redeem</Code>,{" "}
+            <Code>predict::create_manager</Code>,{" "}
+            <Code>predict_manager::deposit</Code> /{" "}
+            <Code>withdraw</Code>, <Code>predict::supply</Code>,{" "}
+            <Code>predict::withdraw</Code>, <Code>oracle::*</Code> events) lives
+            under it. deepskew ships no Move package of its own; it composes this
+            deployed one.
           </KeyVal>
           <KeyVal k="Predict market">
             <DocLink href={explorerObject(PREDICT_ID)}>
               <span className="font-mono">{truncate(PREDICT_ID)}</span>
             </DocLink>{" "}
-            is the shared market object. On Testnet there is exactly one, so all
-            3.6k+ oracles report this single <Code>predict_id</Code>, and it is
-            the first argument to both vault calls.
+            is the shared market object. On Testnet there is one, so all 3.6k+
+            oracles report this single <Code>predict_id</Code>, and it is the
+            first argument to the trade and vault calls.
           </KeyVal>
           <KeyVal k="Default oracle">
             <DocLink href={explorerObject(DEFAULT_ORACLE_ID)}>
@@ -142,9 +148,47 @@ export default function IntegrationDoc() {
 
       <DocSection title="The Write Path">
         <P>
-          deepskew calls the contract in exactly one place: the PLP vault. Two
-          targets cover it, both generic over the quote type and both taking the
-          shared <Code>Clock</Code> (<Code>0x6</Code>) as their last argument.
+          deepskew writes along two paths, both built as a single{" "}
+          <Code>Transaction</Code> (coins consolidated, then split to the exact
+          amount) and signed through the dApp Kit&rsquo;s{" "}
+          <Code>signAndExecuteTransaction</Code>, both generic over the quote
+          type. Every target is on Mysten&rsquo;s deployed Predict package;
+          deepskew ships no Move package of its own.
+        </P>
+        <P>
+          <strong className="text-text-sec">Trade.</strong> A connect-gated ticket
+          on the <DocLink href="/flow">Flow &amp; Edge</DocLink> view that leads
+          with the model-fair <Code>N(d2)</Code> and runs the binary lifecycle
+          through a per-user <Code>PredictManager</Code>, the on-chain account that
+          holds the dUSDC positions are bought from and paid into.
+        </P>
+        <UL>
+          <LI>
+            <Code>predict::create_manager(ctx)</Code> creates and shares the
+            caller&rsquo;s PredictManager (a one-time setup), and{" "}
+            <Code>predict_manager::deposit</Code> /{" "}
+            <Code>withdraw&lt;Quote&gt;</Code> move dUSDC between the wallet and
+            that account.
+          </LI>
+          <LI>
+            <Code>predict::mint&lt;Quote&gt;(predict, manager, oracle, key, qty, clock)</Code>{" "}
+            opens a position: it debits the premium (the post-trade ask times the
+            quantity) from the manager balance. The <Code>MarketKey</Code> is
+            built on-chain with{" "}
+            <Code>market_key::new(oracle_id, expiry, strike, is_up)</Code>.
+          </LI>
+          <LI>
+            <Code>predict::redeem&lt;Quote&gt;(predict, manager, oracle, key, qty, clock)</Code>{" "}
+            closes a position: it credits the payout (the bid before settlement,
+            or $1 per contract once settled in the money) back to the manager
+            balance.
+          </LI>
+        </UL>
+        <P>
+          <strong className="text-text-sec">Vault.</strong> The LP side, on the{" "}
+          <DocLink href="/risk">Vault</DocLink> view: two targets taking the
+          shared <Code>Clock</Code> (<Code>0x6</Code>) as their last argument, with
+          the market id as the first.
         </P>
         <UL>
           <LI>
@@ -158,12 +202,6 @@ export default function IntegrationDoc() {
             <Code>Coin&lt;Quote&gt;</Code> to the sender.
           </LI>
         </UL>
-        <P>
-          Both are built as a single <Code>Transaction</Code> (coins
-          consolidated, then split to the exact amount) and signed through the
-          dApp Kit&rsquo;s <Code>signAndExecuteTransaction</Code>. The market id
-          is the first argument; the package id is the call target.
-        </P>
         <Callout title="The withdrawal limiter is a throughput cap, not a lock" tone="warn">
           Withdrawals are bounded on-chain by two things at once. There is a
           solvency floor (<Code>balance − max_payout</Code>) and a token-bucket

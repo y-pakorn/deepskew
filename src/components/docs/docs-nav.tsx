@@ -9,6 +9,7 @@ export const DOCS_NAV = [
   { href: "/docs/views", label: "The Desk Views" },
   { href: "/docs/math", label: "Methodology" },
   { href: "/docs/integration", label: "On-Chain Integration" },
+  { href: "/docs/trade", label: "Trade Binaries" },
   { href: "/docs/liquidity", label: "Provide Liquidity" },
   { href: "/docs/verify", label: "Verify It's Real" },
   { href: "/docs/glossary", label: "Glossary" },

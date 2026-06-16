@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 const VIEWS = [
   { title: "Desk", route: "/", anchor: "desk", blurb: "The single-viewport instrument: the 3D vol surface, the smile with its arbitrage verdict, oracle state, the vault, and a live tape of mints and redeems." },
   { title: "Vol Analytics", route: "/vol", anchor: "vol-analytics", blurb: "The volatility desk in depth: the smile across log-moneyness, skew and term structure, the risk-neutral density, and smile dynamics over time." },
-  { title: "Flow & Edge", route: "/flow", anchor: "flow-edge", blurb: "Where the vault's edge is made or lost: every fill scored against its model-fair price, settlement calibration, whale flow, and range-product flow." },
+  { title: "Flow & Edge", route: "/flow", anchor: "flow-edge", blurb: "Where the vault's edge is made or lost: every fill scored against its model-fair price, settlement calibration, whale flow, range-product flow, and a connect-gated ticket to mint and redeem binaries on-chain." },
   { title: "Vault", route: "/risk", anchor: "vault", blurb: "The vault is the counterparty to every position. Per-expiry exposure, a 5-sigma breach point, exit capacity, a GREEN/AMBER/RED grade, and the supply/withdraw funnel." },
   { title: "Managers", route: "/managers", anchor: "managers", blurb: "The desk leaderboard: every trading account ranked by volume with realized and unrealized PnL, drill-through to a per-desk page." },
   { title: "Ops / Health", route: "/ops", anchor: "ops-health", blurb: "One read on whether the market is trustworthy right now: oracle-feed freshness and indexer lag against the chain head." },
@@ -55,9 +55,10 @@ export default function DocsOverview() {
         <P>
           deepskew closes that gap. It does the decoding, the math, and the
           reconstruction for you, refuses to show a number without showing what
-          it means, and where a read leads to an action it closes the loop:
-          supply or withdraw the PLP vault on-chain straight from the Vault
-          verdict.
+          it means, and where a read leads to an action it closes the loop
+          on-chain: trade the surface you just read (mint and redeem binaries
+          against your own PredictManager) and supply or withdraw the PLP vault
+          you just stress-tested.
         </P>
       </DocSection>
 
@@ -102,7 +103,15 @@ export default function DocsOverview() {
             the Vault view.
           </LI>
           <LI>
-            <strong className="text-text-sec">Act on it.</strong> Supply or
+            <strong className="text-text-sec">Trade it.</strong> Mint and redeem
+            binary positions against your own on-chain PredictManager from a
+            connect-gated ticket that leads with the model-fair{" "}
+            <code className="font-mono text-text-sec">N(d2)</code>, with a real{" "}
+            <code className="font-mono text-text-sec">predict::mint</code> /{" "}
+            <code className="font-mono text-text-sec">predict::redeem</code>.
+          </LI>
+          <LI>
+            <strong className="text-text-sec">Supply the vault.</strong> Supply or
             withdraw dUSDC to the PLP vault on-chain, with a real{" "}
             <code className="font-mono text-text-sec">predict::supply</code> /{" "}
             <code className="font-mono text-text-sec">predict::withdraw</code>,

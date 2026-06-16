@@ -22,8 +22,9 @@ export default function ProvideLiquidity() {
       title="Provide Liquidity"
       lead={
         <>
-          The PLP vault is the counterparty to every Predict position, and it is
-          the one place deepskew writes to the chain. Supplying mints LP shares
+          The PLP vault is the counterparty to every Predict position, and
+          supplying it is one of the two ways deepskew writes to the chain (the
+          other is trading binaries on Flow &amp; Edge). Supplying mints LP shares
           against the vault; withdrawing burns them back to dUSDC. This is the
           full path: connect, fund, read the Vault grade, and act.
         </>
