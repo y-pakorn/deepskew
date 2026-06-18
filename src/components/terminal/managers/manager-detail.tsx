@@ -26,6 +26,14 @@ import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { Curve } from "../chart/curve";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { TxRow } from "../tx-row";
@@ -119,7 +127,12 @@ export function ManagerDetail({ managerId }: { managerId: string }) {
         <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr]">
           <HeroBand summary={summary} d={d} rangeCount={rangeCount} />
           <div className="grid min-h-0 grid-cols-1 gap-px bg-hairline lg:grid-cols-3">
-            <PerformancePanel summary={summary} equity={equity} d={d} />
+            <PerformancePanel
+              summary={summary}
+              equity={equity}
+              d={d}
+              isError={isError}
+            />
             <Panel
               title="Open Positions"
               code="Mark-priced"
@@ -128,6 +141,74 @@ export function ManagerDetail({ managerId }: { managerId: string }) {
                 <span className="label-micro text-text-faint">
                   <span className="tabular">{d.open.length}</span> open
                 </span>
+              }
+              light={
+                !isError && d.open.length ? (
+                  <div className="p-3">
+                    <LightCard>
+                      <LightLede>
+                        This desk has{" "}
+                        <Num>{d.open.length}</Num> live{" "}
+                        {d.open.length === 1 ? "bet" : "bets"} still running, and
+                        they are currently{" "}
+                        {summary.unrealized_pnl >= 0 ? "up" : "down"}{" "}
+                        <Num
+                          tone={summary.unrealized_pnl >= 0 ? "safe" : "breach"}
+                        >
+                          {signedUsd(summary.unrealized_pnl)}
+                        </Num>{" "}
+                        before they settle.
+                      </LightLede>
+                      <div className="shrink-0">
+                        <LightSubLabel tip="total-mtm">
+                          The live bets right now
+                        </LightSubLabel>
+                        <div className="mt-1.5 overflow-hidden rounded border border-hairline">
+                          <div className="grid grid-cols-[2.8rem_2.4rem_1fr_3.2rem_3.4rem_auto] items-center gap-x-2 border-b border-hairline px-3 py-1.5">
+                            <span className="label-micro">Expiry</span>
+                            <span className="label-micro">Side</span>
+                            <span className="label-micro">Strike</span>
+                            <span className="label-micro text-right">Value</span>
+                            <span className="label-micro text-right">Profit</span>
+                            <span className="label-micro text-right">Status</span>
+                          </div>
+                          {d.open.slice(0, 6).map((p, i) => (
+                            <PositionRow
+                              key={`light-${p.oracle_id}-${p.strike}-${p.is_up}-${i}`}
+                              p={p}
+                              now={now}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <LightFigures
+                        items={[
+                          {
+                            label: "Live bets",
+                            value: String(d.open.length),
+                          },
+                          {
+                            label: "Profit so far",
+                            value: signedUsd(summary.unrealized_pnl),
+                            tone:
+                              summary.unrealized_pnl >= 0 ? "safe" : "breach",
+                            tip: "total-mtm",
+                          },
+                          {
+                            label: "Exposure",
+                            value: fmtUsdCompact(u(summary.open_exposure)),
+                            tip: "open-exposure",
+                          },
+                        ]}
+                      />
+                      <LightNote>
+                        Each row is one open bet: &ldquo;Value&rdquo; is its
+                        current value if closed now, and &ldquo;Profit&rdquo; is
+                        how far ahead or behind it sits before expiry.
+                      </LightNote>
+                    </LightCard>
+                  </div>
+                ) : null
               }
             >
               {d.open.length ? (
@@ -176,6 +257,66 @@ export function ManagerDetail({ managerId }: { managerId: string }) {
                     </>
                   ) : null}
                 </span>
+              }
+              light={
+                !isError && trades.length ? (
+                  <div className="p-3">
+                    <LightCard>
+                      <LightLede>
+                        This desk has placed{" "}
+                        <Num>{trades.length}</Num> recent{" "}
+                        {trades.length === 1 ? "trade" : "trades"}
+                        {rangeCount ? (
+                          <>
+                            {" "}
+                            across <Num>{rangeCount}</Num> price{" "}
+                            {rangeCount === 1 ? "range" : "ranges"}
+                          </>
+                        ) : null}
+                        , shown newest first below.
+                      </LightLede>
+                      <div className="shrink-0">
+                        <LightSubLabel tip="flow-columns">
+                          Its most recent trades
+                        </LightSubLabel>
+                        <div className="mt-1.5 overflow-hidden rounded border border-hairline">
+                          <div className="grid grid-cols-[3.4rem_2.4rem_1fr_auto] items-center gap-x-2 border-b border-hairline px-3 py-1.5">
+                            <span className="label-micro">Time</span>
+                            <span className="label-micro">Side</span>
+                            <span className="label-micro">Strike</span>
+                            <span className="label-micro text-right">
+                              Paid/won
+                            </span>
+                          </div>
+                          {trades.slice(0, 6).map((t, i) => (
+                            <TradeRow
+                              key={`light-${t.digest}-${t.kind}-${i}`}
+                              t={t}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <LightFigures
+                        items={[
+                          { label: "Trades", value: String(trades.length) },
+                          {
+                            label: "Price ranges",
+                            value: rangeCount ? String(rangeCount) : "—",
+                          },
+                          {
+                            label: "Open bets",
+                            value: String(d.open.length),
+                          },
+                        ]}
+                      />
+                      <LightNote>
+                        Green &uarr; is a bet that prices rise, red &darr; that
+                        prices fall; the last column is what the desk paid to
+                        enter, or won when a bet settled.
+                      </LightNote>
+                    </LightCard>
+                  </div>
+                ) : null
               }
             >
               {trades.length ? (
@@ -334,16 +475,84 @@ function PerformancePanel({
   summary,
   equity,
   d,
+  isError,
 }: {
   summary: ManagerSummary;
   equity: { x: number; y: number }[];
   d: Derived;
+  isError: boolean;
 }) {
+  const realized = summary.realized_pnl;
   return (
     <Panel
       title="Performance"
       code="Equity · balances"
       bodyClassName="flex flex-col gap-3 overflow-hidden"
+      light={
+        !isError && equity.length >= 2 ? (
+          <LightCard fill>
+            <LightLede>
+              This desk has banked{" "}
+              <Num tone={realized >= 0 ? "safe" : "breach"}>
+                {signedUsd(realized)}
+              </Num>{" "}
+              across <Num>{d.settled.length}</Num> settled{" "}
+              {d.settled.length === 1 ? "bet" : "bets"}
+              {d.winRate != null ? (
+                <>
+                  , winning{" "}
+                  <Num tone={d.winRate >= 50 ? "safe" : "warn"}>
+                    {d.winRate.toFixed(0)}%
+                  </Num>{" "}
+                  of them
+                </>
+              ) : null}
+              .
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <LightSubLabel tip="equity-curve">
+                Money banked over time
+              </LightSubLabel>
+              <Curve
+                className="mt-1 min-h-0 flex-1"
+                baseline={0}
+                data={equity}
+                hoverFormat={(p) => `$${p.y.toFixed(2)}`}
+              />
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Banked",
+                  value: signedUsd(realized),
+                  tone: realized >= 0 ? "safe" : "breach",
+                  tip: "equity-curve",
+                },
+                {
+                  label: "Win rate",
+                  value:
+                    d.winRate != null ? `${d.winRate.toFixed(0)}%` : "—",
+                  tone:
+                    d.winRate == null
+                      ? undefined
+                      : d.winRate >= 50
+                        ? "safe"
+                        : "warn",
+                  tip: "taker-win",
+                },
+                {
+                  label: "Settled",
+                  value: String(d.settled.length),
+                },
+              ]}
+            />
+            <LightNote>
+              The line is realized profit adding up as each bet settles; it
+              climbs on a win and dips on a loss.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       <div className="shrink-0">
         <LabelTip k="equity-curve" className="label-micro">

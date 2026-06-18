@@ -13,6 +13,14 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { Pill } from "../pill";
@@ -54,6 +62,83 @@ export function AttributionPanel({ className }: { className?: string }) {
           <Pill tone="warn" tip="book-truncated">
             Partial book
           </Pill>
+        ) : null
+      }
+      light={
+        !isError && priced !== 0 && attr.rows.length ? (
+          <LightCard>
+            <LightLede>
+              Risk is spread{" "}
+              {conc.tone === "warn" ? "unevenly" : "fairly evenly"} across expiry
+              dates, and the single biggest one carries{" "}
+              <Num tone={conc.tone === "warn" ? "warn" : undefined}>
+                {(attr.topShare * 100).toFixed(0)}%
+              </Num>{" "}
+              of the open bets.
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="marked-liability">
+                Risk carried by each expiry date
+              </LightSubLabel>
+              <div className="mt-1.5">
+                {attr.rows.slice(0, 6).map((r) => (
+                  <div
+                    key={r.oracleId}
+                    className="grid grid-cols-[3.2rem_1fr_2.6rem] items-center gap-x-2 py-1 text-data tabular"
+                  >
+                    <span className="text-text-faint">
+                      {fmtDuration(r.expiry - now)}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-panel-elev">
+                        <div
+                          className={cn(
+                            "h-full rounded-full",
+                            r.netDir >= 0 ? "bg-safe" : "bg-breach",
+                          )}
+                          style={{
+                            width: `${maxShare > 0 ? (r.share / maxShare) * 100 : 0}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="shrink-0 text-text-sec">
+                        {fmtUsdCompact(fromUnits(r.share * mtm, DUSDC_DECIMALS))}
+                      </span>
+                    </div>
+                    <span className="text-right text-text-dim">
+                      {(r.share * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Biggest expiry",
+                  value: `${(attr.topShare * 100).toFixed(0)}%`,
+                  tone: conc.tone === "warn" ? "warn" : undefined,
+                  tip: "mtm-concentration",
+                },
+                {
+                  label: "Top 3 combined",
+                  value: `${(attr.top3Share * 100).toFixed(0)}%`,
+                  tip: "mtm-concentration",
+                },
+                {
+                  label: "Spread score",
+                  value: attr.hhi.toFixed(2),
+                  tip: "mtm-concentration",
+                },
+              ]}
+            />
+            <LightNote>
+              Each bar is one expiry date and how much of the open risk sits on
+              it. {conc.tone === "warn"
+                ? "Right now the risk is piled onto one date, so that expiry matters most."
+                : "Risk is split across many dates, so no single expiry can sink the vault."}
+            </LightNote>
+          </LightCard>
         ) : null
       }
     >

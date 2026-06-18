@@ -6,8 +6,10 @@ import { fmtAge, fmtDuration } from "@/lib/format";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "../label-tip";
+import { LightCard, LightFigures, LightNote, LightSubLabel } from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
+import { Verdict } from "../stat";
 
 const STALE_MS = 30_000; // quote/mint reverts past the contract staleness window
 
@@ -48,6 +50,16 @@ export function HealthPanel({ className }: { className?: string }) {
   const live = rows.filter((r) => r.state === "active").length;
   const degraded = rows.length - live;
 
+  // Oldest still-reporting feed: the largest finite age across feeds that have
+  // data, so the verdict can name how stale the worst live price is.
+  const oldestAge = rows.reduce(
+    (max, r) =>
+      r.state !== "pending" && Number.isFinite(r.age) && r.age > max
+        ? r.age
+        : max,
+    0,
+  );
+
   return (
     <Panel
       title="Oracle Feeds"
@@ -64,6 +76,60 @@ export function HealthPanel({ className }: { className?: string }) {
             </>
           )}
         </span>
+      }
+      light={
+        rows.length ? (
+          <LightCard>
+            <Verdict
+              tone={degraded > 0 ? "warn" : "safe"}
+              wrap
+              tip="feed-staleness"
+            >
+              {degraded > 0
+                ? `${degraded} of ${rows.length} price feeds are out of date.`
+                : "All price feeds are fresh."}
+            </Verdict>
+            <div className="shrink-0">
+              <LightSubLabel tip="feed-age">
+                How fresh each price is
+              </LightSubLabel>
+              <div className="mt-1.5 flex flex-col">
+                {rows.slice(0, 6).map((r) => (
+                  <FeedRow
+                    key={r.oracleId}
+                    expiryLabel={
+                      r.expiry > now
+                        ? fmtDuration(r.expiry - now)
+                        : `${sinceExpiry(now - r.expiry)} ago`
+                    }
+                    age={r.age}
+                    state={r.state}
+                  />
+                ))}
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                { label: "Live feeds", value: String(live), tone: "safe" },
+                {
+                  label: "Out of date",
+                  value: String(degraded),
+                  tone: degraded > 0 ? "warn" : "safe",
+                  tip: "feed-expired",
+                },
+                {
+                  label: "Oldest update",
+                  value: oldestAge > 0 ? `${fmtAge(oldestAge)} ago` : "now",
+                  tip: "feed-age",
+                },
+              ]}
+            />
+            <LightNote>
+              Each bar fills as a feed ages toward the 30s cutoff; green means
+              every price the desk uses to settle bets is still up to date.
+            </LightNote>
+          </LightCard>
+        ) : null
       }
     >
       {!rows.length ? (

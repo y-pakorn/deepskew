@@ -15,6 +15,7 @@ import { fmtNum, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { cn } from "@/lib/utils";
 import { Curve } from "../chart/curve";
+import { LightCard, LightFigures, LightLede, LightNote, LightSubLabel, Num } from "../light";
 import { Hero } from "../stat";
 import { LabelTip } from "../label-tip";
 import { Panel } from "../panel";
@@ -76,6 +77,80 @@ export function ScenarioPanel({ className }: { className?: string }) {
       code="Book-wide reprice"
       className={className}
       bodyClassName="lg:overflow-hidden"
+      light={
+        !isError && !isLoading && model && priced !== 0 ? (
+          <LightCard fill>
+            <LightLede>
+              {worst == null ? (
+                <>
+                  Even a rare, violent market swing leaves the pool solvent, with
+                  a <Num tone="safe">{(minBuffer * 100).toFixed(0)}%</Num> cushion
+                  left in the worst case.
+                </>
+              ) : (
+                <>
+                  A{" "}
+                  <Num tone={worst >= 3 ? "warn" : "breach"}>
+                    {breachDown ? "−" : "+"}
+                    {worst.toFixed(1)}σ
+                  </Num>{" "}
+                  swing would wipe out the providers who back this pool.
+                </>
+              )}
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <LightSubLabel tip="scenario-curve">
+                Pool value as the market moves
+              </LightSubLabel>
+              <Curve
+                className="mt-1.5 min-h-0 flex-1"
+                baseline={0}
+                color="var(--accent-brand)"
+                data={model.curve.map((p) => ({
+                  x: p.n,
+                  y: fromUnits(p.vaultValue, DUSDC_DECIMALS),
+                }))}
+                markers={[{ x: 0, label: "now", dashed: true }]}
+                hoverFormat={(p) => `${p.x >= 0 ? "+" : ""}${p.x.toFixed(1)}σ`}
+              />
+            </div>
+            <LightFigures
+              items={[
+                worst == null
+                  ? {
+                      label: "Worst-case cushion",
+                      value: `${(minBuffer * 100).toFixed(0)}%`,
+                      tone: "safe",
+                      tip: "stress-verdict",
+                    }
+                  : {
+                      label: "Wipeout swing",
+                      value: `${breachDown ? "−" : "+"}${worst.toFixed(1)}σ`,
+                      tone: worst >= 3 ? "warn" : "breach",
+                      tip: "stress-verdict",
+                    },
+                {
+                  label: "Survives up to",
+                  value: worst == null ? "±5σ" : `${worst.toFixed(1)}σ`,
+                  tip: "stress-sigma",
+                },
+                {
+                  label: "Pool value",
+                  value: fmtUsdCompact(
+                    fromUnits(vault!.vault_value, DUSDC_DECIMALS),
+                  ),
+                  tip: "available-liq",
+                },
+              ]}
+            />
+            <LightNote>
+              A stress test: the blue line is the pool&apos;s value if the market
+              jumps, measured in standard moves (σ). Even a rare, violent swing
+              keeps it above zero, so the pool can still pay what it owes.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       {isError ? (
         <PanelState kind="error">Scenario feed unreachable</PanelState>

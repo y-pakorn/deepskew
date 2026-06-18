@@ -9,6 +9,14 @@ import {
 } from "@/lib/cross-venue";
 import { fmtPctValue, fmtSigned } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Hero, StatTile, TileGrid } from "../stat";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
@@ -43,6 +51,62 @@ export function VrpPanel({ className }: { className?: string }) {
       code="Vol-risk-premium · 7d hourly"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
+      light={
+        !isError && vrp != null && impliedLast != null && realizedLast != null ? (
+          <LightCard fill>
+            <LightLede>
+              {vrp >= 0 ? (
+                <>
+                  The market is bracing for more movement than actually shows up,
+                  so the vault earns about <Num tone="safe">{fmtSigned(vrp, 1)} pts</Num> by
+                  selling that fear.
+                </>
+              ) : (
+                <>
+                  Real moves have been bigger than the market priced, so buying
+                  volatility pays about <Num tone="breach">{fmtSigned(vrp, 1)} pts</Num> right
+                  now.
+                </>
+              )}
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <LightSubLabel tip="vrp">Priced fear vs real moves · 7d</LightSubLabel>
+              <div className="mt-1.5 min-h-0 flex-1">
+                <DualLine
+                  a={implied}
+                  b={realized}
+                  className="h-full min-h-[120px]"
+                />
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Priced · Deribit",
+                  value: fmtPctValue(impliedLast),
+                  tip: "dvol",
+                },
+                {
+                  label: "Actual · Binance",
+                  value: fmtPctValue(realizedLast),
+                  tip: "realized-vol",
+                },
+                {
+                  label: "Edge",
+                  value: `${fmtSigned(vrp, 1)} pts`,
+                  tone: vrp >= 0 ? "safe" : "breach",
+                  tip: "vrp",
+                },
+              ]}
+            />
+            <LightNote>
+              The yellow line is what the market is pricing, the blue line is how
+              much price actually moved; the gap between them is the vault&apos;s
+              edge.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         <span className="label-micro text-text-faint">
           <span className="text-warn">Implied</span> ·{" "}

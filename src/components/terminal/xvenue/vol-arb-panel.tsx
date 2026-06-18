@@ -8,6 +8,14 @@ import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 
@@ -42,6 +50,66 @@ export function VolArbPanel({ className }: { className?: string }) {
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
       right={<span className="label-micro text-text-faint">DVOL · BTC</span>}
+      light={
+        !isError && predictAtm != null ? (
+          <LightCard>
+            <LightLede>
+              {spread != null ? (
+                <>
+                  Our prices are running a bit{" "}
+                  {spread >= 0 ? "richer" : "cheaper"} than the rest of the
+                  market, about{" "}
+                  <Num tone={spread >= 0 ? "safe" : "warn"}>
+                    {fmtSigned(spread, 1)}
+                  </Num>{" "}
+                  vol points {spread >= 0 ? "above" : "below"} Deribit.
+                </>
+              ) : (
+                <>We are pricing volatility, but the Deribit reference is unavailable right now.</>
+              )}
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="dvol">
+                Where our prices sit vs the market, by expiry
+              </LightSubLabel>
+              <div className="mt-1.5">
+                {tenors.slice(0, 5).map((t, i) => (
+                  <SpreadRow key={i} {...t} max={maxSpread} />
+                ))}
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Our annual vol",
+                  value: fmtPctValue(predictAtm),
+                  tip: "atm-iv",
+                },
+                {
+                  label: "Market · Deribit",
+                  value: deribit != null ? fmtPctValue(deribit) : "—",
+                  tip: "dvol",
+                },
+                {
+                  label: "Difference",
+                  value: spread != null ? fmtSigned(spread, 1) : "—",
+                  tone:
+                    spread == null
+                      ? undefined
+                      : spread >= 0
+                        ? "safe"
+                        : "warn",
+                },
+              ]}
+            />
+            <LightNote>
+              Each bar is one expiry: green means our price is above the market
+              reference, red means below. Pricing above Deribit means the vault
+              is selling volatility at a premium.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       {isError ? (
         <PanelState kind="error">Deribit DVOL unreachable</PanelState>

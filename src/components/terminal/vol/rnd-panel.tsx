@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { Curve, type CurveMarker } from "../chart/curve";
 import { Hero } from "../stat";
 import { LabelTip } from "../label-tip";
+import { LightCard, LightFigures, LightLede, LightNote, Num } from "../light";
 import { useMarket } from "../market-context";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
@@ -69,6 +70,65 @@ export function RndPanel({ className }: { className?: string }) {
       code="Breeden–Litzenberger"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
+      light={
+        !isError && model && !model.settled && model.stats ? (
+          <LightCard fill>
+            <LightLede>
+              Most likely, BTC lands about{" "}
+              <Num>{fmtSigned(model.stats.modeMove * 100, 1)}%</Num> from here by
+              expiry, with a <Num>{fmtPctValue(model.stats.pUp * 100)}</Num>{" "}
+              chance of finishing higher.
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <Curve
+                className="min-h-0 flex-1"
+                data={model.pts.map((d) => ({ x: d.k, y: d.q }))}
+                baseline={0}
+                markers={[
+                  { x: 0, label: "F", dashed: true },
+                  {
+                    x: model.stats.modeK,
+                    label: "mode",
+                    color: "var(--accent-brand)",
+                    dashed: false,
+                  } satisfies CurveMarker,
+                ]}
+                hoverFormat={(pt) =>
+                  `${pt.x >= 0 ? "+" : ""}${movePct(pt.x).toFixed(1)}%`
+                }
+              />
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Chance higher",
+                  value: fmtPctValue(model.stats.pUp * 100),
+                  tip: "rnd-pup",
+                },
+                {
+                  label: "Likely range",
+                  value: `${fmtSigned(model.stats.q10 * 100, 0)}…${fmtSigned(
+                    model.stats.q90 * 100,
+                    0,
+                  )}%`,
+                  tip: "rnd-range",
+                },
+                {
+                  label: "Tail risk",
+                  value: (tail?.label ?? "Symmetric").replace(" tail", ""),
+                  tone: tail?.tone ?? "default",
+                  tip: "rnd-tail",
+                },
+              ]}
+            />
+            <LightNote>
+              The curve is the full range of outcomes the market is pricing, not
+              a single forecast: the peak is the most likely landing spot and the
+              wider it spreads, the less certain the move.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         model && !model.settled ? (
           <Pill tone={model.bf.minG >= 0 ? "up" : "down"} tip="density-nonneg">

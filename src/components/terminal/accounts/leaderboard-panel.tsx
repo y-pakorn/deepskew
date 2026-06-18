@@ -15,6 +15,14 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { cn } from "@/lib/utils";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 
 const u = (n: number) => fromUnits(n, DUSDC_DECIMALS);
 const signedUsd = (n: number) =>
@@ -97,12 +105,106 @@ export function LeaderboardPanel({ className }: { className?: string }) {
       s.key === key ? { key, dir: s.dir === -1 ? 1 : -1 } : { key, dir: -1 },
     );
 
+  // Light card: busiest desks first (cohort is volume-ranked), with whatever
+  // summaries this page has loaded. Top row = the most active desk overall.
+  const byVolume = [...rows].sort((a, b) => b.volume - a.volume);
+  const topDesks = byVolume.slice(0, 6);
+  const top = topDesks[0];
+  const topTotal =
+    top?.s != null ? top.s.realized_pnl + top.s.unrealized_pnl : undefined;
+
   return (
     <Panel
       title="Manager Leaderboard"
       code="Ranked by volume · click a desk"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
+      light={
+        cohort.length > 0 && top ? (
+          <LightCard>
+            <LightLede>
+              Of <Num>{cohort.length}</Num> trading desks, the busiest has
+              traded <Num>{fmtUsdCompact(u(top.volume))}</Num>
+              {topTotal != null ? (
+                <>
+                  {" "}
+                  and is currently{" "}
+                  {topTotal >= 0 ? "up" : "down"}{" "}
+                  <Num tone={topTotal >= 0 ? "safe" : "breach"}>
+                    {signedUsd(topTotal)}
+                  </Num>
+                  .
+                </>
+              ) : (
+                <>.</>
+              )}
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="leaderboard">Busiest desks</LightSubLabel>
+              <div className="mt-1.5 space-y-px">
+                {topDesks.map((r) => {
+                  const tot =
+                    r.s != null
+                      ? r.s.realized_pnl + r.s.unrealized_pnl
+                      : undefined;
+                  return (
+                    <Link
+                      key={r.managerId}
+                      href={`/managers/${r.managerId}`}
+                      className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto_auto] items-center gap-x-3 rounded px-2 py-1 text-data tabular transition-colors hover:bg-panel-elev/50"
+                    >
+                      <span className="text-text-faint">{r.rank}</span>
+                      <span className="truncate text-text-sec">
+                        {truncateAddr(r.owner)}
+                      </span>
+                      <span className="text-right text-text-dim">
+                        {fmtUsdCompact(u(r.volume))}
+                      </span>
+                      <span
+                        className={cn(
+                          "w-16 text-right",
+                          tot == null
+                            ? "text-text-faint"
+                            : tot >= 0
+                              ? "text-safe"
+                              : "text-breach",
+                        )}
+                      >
+                        {tot == null ? "·" : signedUsd(tot)}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                { label: "Active desks", value: String(cohort.length), tip: "leaderboard" },
+                {
+                  label: "Top volume",
+                  value: fmtUsdCompact(u(top.volume)),
+                  tip: "vol-premium",
+                },
+                {
+                  label: "Top desk's profit",
+                  value: topTotal == null ? "·" : signedUsd(topTotal),
+                  tone:
+                    topTotal == null
+                      ? undefined
+                      : topTotal >= 0
+                        ? "safe"
+                        : "breach",
+                },
+              ]}
+            />
+            <LightNote>
+              Desks are ranked by how much money they have traded (volume); the
+              figure on the right is each desk&apos;s profit so far. The full
+              sortable table is under Details.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         <span className="label-micro text-text-faint">
           {pageCohort.length ? (

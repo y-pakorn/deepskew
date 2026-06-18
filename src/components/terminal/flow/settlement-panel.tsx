@@ -8,6 +8,14 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { Pill } from "../pill";
@@ -64,6 +72,61 @@ export function SettlementPanel({ className }: { className?: string }) {
       code="Outcomes · honesty"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
+      light={
+        !isError && m.total ? (
+          <LightCard>
+            <LightLede>
+              Traders win about{" "}
+              <Num tone={m.winRate < 50 ? "safe" : "warn"}>
+                {m.winRate.toFixed(0)}%
+              </Num>{" "}
+              of their bets, so the house stays{" "}
+              {m.winRate < 50 ? "ahead" : "behind"}, and the prices closely
+              match how often each side actually wins.
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="settlement-outcomes">
+                Where recent bets landed
+              </LightSubLabel>
+              <OutcomeStrip rows={m.settled} className="mt-1.5" />
+            </div>
+            <div className="shrink-0">
+              <LightSubLabel tip="calibration">
+                Did the prices match reality?
+              </LightSubLabel>
+              <div className="mt-1.5 space-y-1.5">
+                <CalBar label="UP" priced={m.paidUp} realized={m.upWin} />
+                <CalBar label="DN" priced={m.paidDn} realized={m.dnWin} />
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Bettor win rate",
+                  value: `${m.winRate.toFixed(0)}%`,
+                  tone: m.winRate < 50 ? "safe" : "warn",
+                  tip: "taker-win",
+                },
+                {
+                  label: "Settled bets",
+                  value: String(m.total),
+                  tip: "settlement-count",
+                },
+                {
+                  label: "Paid to winners",
+                  value: fmtUsdCompact(fromUnits(m.payouts, DUSDC_DECIMALS)),
+                  tip: "payouts",
+                },
+              ]}
+            />
+            <LightNote>
+              Each dot is a settled bet over time (green = the trader won); the
+              bars below check whether the price charged matched the real win
+              rate.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         pending > 0 ? (
           <Pill tone="warn" tip="pending-settlement">

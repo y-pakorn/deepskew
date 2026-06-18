@@ -10,6 +10,7 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { cn } from "@/lib/utils";
 import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
+import { LightCard, LightFigures, LightLede, LightNote, Num } from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { TxRow } from "../tx-row";
@@ -43,6 +44,49 @@ export function EdgeTapePanel({ className }: { className?: string }) {
             "Live"
           )}
         </span>
+      }
+      light={
+        !isError && ready ? (
+          <LightCard fill>
+            <LightLede>
+              The house earns about{" "}
+              <Num tone={edge.meanEdgeBps >= 0 ? "safe" : "breach"}>
+                {fmtSigned(edge.meanEdgeBps, 0)} bps
+              </Num>{" "}
+              on every bet placed, and traders overpay{" "}
+              <Num>{(edge.overpayRate * 100).toFixed(0)}%</Num> of the time.
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <EdgeScatter rows={edge.rows} className="h-full" />
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Edge per bet",
+                  value: `${fmtSigned(edge.meanEdgeBps, 0)} bps`,
+                  tone: edge.meanEdgeBps >= 0 ? "safe" : "breach",
+                  tip: "edge-bps",
+                },
+                {
+                  label: "Overpay rate",
+                  value: `${(edge.overpayRate * 100).toFixed(0)}%`,
+                  tip: "overpay-rate",
+                },
+                {
+                  label: "Total collected",
+                  value: fmtUsdCompact(
+                    fromUnits(edge.cumDollar, DUSDC_DECIMALS),
+                  ),
+                  tip: "vol-risk-premium",
+                },
+              ]}
+            />
+            <LightNote>
+              Each dot is a fill; below the line means the trader overpaid, so the
+              vault collects the difference.
+            </LightNote>
+          </LightCard>
+        ) : null
       }
     >
       {isError ? (

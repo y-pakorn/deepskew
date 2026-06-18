@@ -30,6 +30,14 @@ import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
 import { Pill, type PillTone } from "./pill";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "./light";
 import { Sparkline } from "./sparkline";
 import { MonoValue, Stat, StatTile, TileGrid } from "./stat";
 import { TextSwap } from "./text-swap";
@@ -67,6 +75,69 @@ export function OraclePanel() {
       title="Oracle State"
       code="SVI params"
       right={oracle ? <StatusChip status={oracle.status} /> : null}
+      light={
+        !isError && data && oracle && price ? (
+          <LightCard>
+            <LightLede>
+              BTC is trading at <Num>{fmtPrice(price.spot)}</Num>
+              {spotChange != null ? (
+                <>
+                  {" "}
+                  (
+                  <Num tone={spotChange >= 0 ? "safe" : "breach"}>
+                    {fmtSigned(spotChange, 2)}%
+                  </Num>
+                  )
+                </>
+              ) : null}
+              {oracle.status === "settled" ? (
+                <>, and this market has settled.</>
+              ) : (
+                <>
+                  , and this market settles in{" "}
+                  <Num>{fmtDuration(toExp)}</Num>.
+                </>
+              )}
+            </LightLede>
+            {spots.length >= 2 ? (
+              <div className="shrink-0">
+                <LightSubLabel tip="spot-sparkline">
+                  Recent price trend
+                </LightSubLabel>
+                <div className="mt-1.5">
+                  <Sparkline values={spots} />
+                </div>
+              </div>
+            ) : null}
+            <LightFigures
+              items={[
+                {
+                  label: "Forward price",
+                  value: fmtPrice(price.forward),
+                  tip: "forward",
+                },
+                {
+                  label: "Settles in",
+                  value:
+                    oracle.status === "settled"
+                      ? "Settled"
+                      : fmtDuration(toExp),
+                  tip: "expiry",
+                },
+                {
+                  label: "Price feed",
+                  value: ageS != null ? `${fmtAge(ageS * 1000)} ago` : "—",
+                  tone: ageS != null && ageS < 120 ? "safe" : "warn",
+                  tip: "feed-age",
+                },
+              ]}
+            />
+            <LightNote>
+              This is the trusted on-chain price the market settles against.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       {!selectedOracleId ? (
         <PanelState kind="empty">No active market</PanelState>

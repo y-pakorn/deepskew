@@ -9,6 +9,14 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { cn } from "@/lib/utils";
 import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { TxRow } from "../tx-row";
@@ -47,6 +55,46 @@ export function RangeFlowPanel({ className }: { className?: string }) {
       code="Vertical spreads"
       className={className}
       bodyClassName="flex flex-col overflow-hidden p-0"
+      light={
+        !isError && items.length && m.bands.length ? (
+          <LightCard>
+            <LightLede>
+              Traders have staked{" "}
+              <Num>{fmtUsdCompact(fromUnits(m.premium, DUSDC_DECIMALS))}</Num>{" "}
+              betting the price lands inside a set price range.
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="range-band">
+                Where the price ranges sit
+              </LightSubLabel>
+              <BandLadder bands={m.bands} className="mt-1.5" />
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Total staked",
+                  value: fmtUsdCompact(fromUnits(m.premium, DUSDC_DECIMALS)),
+                  tip: "range-flow",
+                },
+                {
+                  label: "Distinct ranges",
+                  value: String(m.bands.length),
+                  tip: "range-band",
+                },
+                {
+                  label: "Bets",
+                  value: String(m.mintCount),
+                  tip: "flow-amount",
+                },
+              ]}
+            />
+            <LightNote>
+              Beyond simple up-or-down bets, traders here pick a price range: you
+              win if the price finishes between the two levels of a bar.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         <span className="label-micro text-text-faint">
           {items.length ? (

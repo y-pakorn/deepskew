@@ -12,6 +12,7 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { fmtPrice, fmtUsdCompact, fromUnits, utcClock } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "./label-tip";
+import { LightCard, LightFigures, LightLede, LightNote, LightSubLabel, Num } from "./light";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
 import { TxRow } from "./tx-row";
@@ -31,6 +32,60 @@ export function DeskPanel({ className }: { className?: string }) {
       title="Desk"
       code="Live flow · settle"
       className={className}
+      light={
+        !isError && mints.length && stats.total ? (
+          <LightCard>
+            <LightLede>
+              Recent bets run <Num>{upPct.toFixed(0)}%</Num> up vs{" "}
+              <Num>{(100 - upPct).toFixed(0)}%</Num> down, and bettors have won{" "}
+              <Num tone={stats.winRate < 50 ? "safe" : "warn"}>
+                {stats.winRate.toFixed(0)}%
+              </Num>{" "}
+              of settled bets, so the backing pool is{" "}
+              {stats.winRate < 50 ? "ahead" : "behind"}.
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="positioning">
+                Which way recent bets lean
+              </LightSubLabel>
+              <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-breach/30">
+                <div className="h-full bg-safe" style={{ width: `${upPct}%` }} />
+              </div>
+              <div className="mt-1 flex justify-between text-data tabular">
+                <span className="text-safe">{upPct.toFixed(0)}% UP</span>
+                <span className="text-breach">
+                  {(100 - upPct).toFixed(0)}% DN
+                </span>
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Up vs down",
+                  value: `${upPct.toFixed(0)}/${(100 - upPct).toFixed(0)}`,
+                  tip: "positioning",
+                },
+                {
+                  label: "Bettors win",
+                  value: `${stats.winRate.toFixed(0)}%`,
+                  tone: stats.winRate < 50 ? "safe" : "warn",
+                  tip: "taker-win",
+                },
+                {
+                  label: "Volume",
+                  value: fmtUsdCompact(fromUnits(volume, DUSDC_DECIMALS)),
+                  tip: "vol-premium",
+                },
+              ]}
+            />
+            <LightNote>
+              The bar splits recent bets into up (green) vs down (red); when
+              bettors win under 50% of settled bets, the backing pool comes out
+              ahead.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         <span className="label-micro text-text-faint">
           {items.length ? (

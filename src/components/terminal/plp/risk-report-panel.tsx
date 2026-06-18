@@ -12,9 +12,15 @@ import {
 import { fmtPct, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightNote,
+  LightSubLabel,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
-import { Hero, Stat } from "../stat";
+import { Hero, Meter, Stat, Verdict } from "../stat";
 
 const u = (n: number) => fromUnits(n, DUSDC_DECIMALS);
 
@@ -89,6 +95,69 @@ export function RiskReportPanel({ className }: { className?: string }) {
       code="LP grade · export"
       className={className}
       bodyClassName="p-0"
+      light={
+        !isError && vault && grade ? (
+          <LightCard>
+            <Verdict tone={grade.tone} wrap tip="risk-grade">
+              {grade.label === "Green"
+                ? "Pool health: Green, safe to provide liquidity."
+                : grade.label === "Amber"
+                  ? "Pool health: Amber, provide liquidity with caution."
+                  : "Pool health: Red, risky to provide liquidity right now."}
+            </Verdict>
+            <div className="space-y-2.5">
+              <div>
+                <LightSubLabel tip="utilization">
+                  How much of the pool is in use
+                </LightSubLabel>
+                <div className="mt-1.5">
+                  <Meter value={vault.utilization} tone="accent" />
+                </div>
+              </div>
+              <div>
+                <LightSubLabel tip="max-payout-util">
+                  How stretched the pool is at worst case
+                </LightSubLabel>
+                <div className="mt-1.5">
+                  <Meter value={vault.max_payout_utilization} tone="warn" />
+                </div>
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "In use",
+                  value: fmtPct(vault.utilization),
+                  tone: vault.utilization < 0.75 ? "safe" : "warn",
+                  tip: "utilization",
+                },
+                {
+                  label: "Biggest expiry",
+                  value: `${(attr.top3Share * 100).toFixed(0)}%`,
+                  tip: "mtm-concentration",
+                },
+                {
+                  label: "Can exit now",
+                  value: fmtUsdCompact(
+                    u(
+                      Math.min(
+                        vault.available_liquidity,
+                        vault.available_withdrawal,
+                      ),
+                    ),
+                  ),
+                  tip: "exit-capacity",
+                },
+              ]}
+            />
+            <LightNote>
+              One safety rating that combines how stretched the pool is (the two
+              bars), how much rides on a single expiry, and how easily money can
+              be pulled out. Green means all three look healthy.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         <div className="flex items-center gap-1.5">
           <button

@@ -12,6 +12,14 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { decodeSvi, impliedVol, yearsToExpiry } from "@/lib/svi";
 import { FlashValue } from "./flash-value";
 import { LabelTip } from "./label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "./light";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
@@ -79,6 +87,75 @@ export function VaultPanel({ className }: { className?: string }) {
           >
             PLP ${data.plp_share_price.toFixed(4)}
           </FlashValue>
+        ) : null
+      }
+      light={
+        !isError && data ? (
+          <LightCard fill>
+            <LightLede>
+              The pool that backs every trade holds{" "}
+              <Num>
+                {fmtUsdCompact(fromUnits(data.vault_value, DUSDC_DECIMALS))}
+              </Num>
+              {apy != null ? (
+                <>
+                  , has been earning{" "}
+                  <Num tone={apy >= 0 ? "safe" : "breach"}>
+                    {apy.toFixed(1)}% a year
+                  </Num>
+                </>
+              ) : null}
+              , and keeps{" "}
+              <Num tone={data.utilization < 0.5 ? "safe" : "warn"}>
+                {fmtPct(1 - data.utilization)}
+              </Num>{" "}
+              of its cash free to cover payouts.
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <LightSubLabel tip="perf-chart">
+                Pool value per share over time
+              </LightSubLabel>
+              <div className="mt-1.5 min-h-[120px] flex-1">
+                {perfData.length ? (
+                  <PerfChart data={perfData} />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <span className="label-micro text-text-dim">
+                      Loading history…
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Pool value",
+                  value: fmtUsdCompact(
+                    fromUnits(data.vault_value, DUSDC_DECIMALS),
+                  ),
+                  tip: "vault-value",
+                },
+                {
+                  label: "Yearly return",
+                  value: apy != null ? `${apy.toFixed(1)}%` : "—",
+                  tone: apy != null ? (apy >= 0 ? "safe" : "breach") : undefined,
+                  tip: "apy",
+                },
+                {
+                  label: "In use",
+                  value: fmtPct(data.utilization),
+                  tone: data.utilization < 0.5 ? "safe" : "warn",
+                  tip: "utilization",
+                },
+              ]}
+            />
+            <LightNote>
+              This pool takes the other side of every bet. A rising line means it
+              is making money for the people who funded it, and low usage with
+              plenty of free cash means it can always pay out winners.
+            </LightNote>
+          </LightCard>
         ) : null
       }
     >

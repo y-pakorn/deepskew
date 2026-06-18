@@ -13,12 +13,14 @@ import {
 import { fmtDuration } from "@/lib/format";
 import { explorerObject, PREDICT_ID } from "@/lib/sui/constants";
 import { useNow } from "@/lib/use-now";
+import { useComplexity } from "./complexity-context";
 import { useMarket } from "./market-context";
 
 /** ⌘K palette — switch market/expiry, jump to explorer/docs. */
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const { activeOracles, selectedOracleId, setSelectedOracleId } = useMarket();
+  const { mode, toggle } = useComplexity();
   const now = useNow();
 
   useEffect(() => {
@@ -79,6 +81,15 @@ export function CommandPalette() {
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Actions">
+          <CommandItem
+            value="toggle display density light pro mode"
+            onSelect={() => {
+              toggle();
+              setOpen(false);
+            }}
+          >
+            Switch to {mode === "pro" ? "Noob" : "Pro"} mode
+          </CommandItem>
           {selectedOracleId ? (
             <CommandItem
               value="view selected oracle on explorer"

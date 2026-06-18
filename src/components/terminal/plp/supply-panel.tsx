@@ -17,6 +17,7 @@ import { usePredictConfig, useVaultSummary } from "@/lib/indexer/hooks";
 import { DUSDC_DECIMALS, explorerTx } from "@/lib/sui/constants";
 import { fmtNum, fmtPct, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Num } from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { Pill } from "../pill";
@@ -185,6 +186,114 @@ export function SupplyPanel({ className }: { className?: string }) {
           <Pill tone="neutral">Not connected</Pill>
         )
       }
+      light={
+        !isError && !isLoading && vault && grade ? (
+          <div className="flex flex-col gap-3">
+            <Verdict tone={grade.tone} wrap tip="risk-grade">
+              This pool is{" "}
+              {grade.tone === "safe"
+                ? "safe to back"
+                : grade.tone === "warn"
+                  ? "okay to back, with caution"
+                  : "stressed, so back it carefully"}
+              .
+            </Verdict>
+
+            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
+              {(["deposit", "withdraw"] as Mode[]).map((mm) => (
+                <button
+                  key={mm}
+                  type="button"
+                  onClick={() => {
+                    setMode(mm);
+                    setAmount("");
+                  }}
+                  className={cn(
+                    "py-2 text-val font-medium transition-colors",
+                    mode === mm
+                      ? "bg-panel-elev text-foreground"
+                      : "bg-panel text-text-dim hover:text-text-sec",
+                  )}
+                >
+                  {mm === "deposit" ? "Add money" : "Take out"}
+                </button>
+              ))}
+            </div>
+
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="label-micro">
+                  {mode === "deposit"
+                    ? "How much to add (dUSDC)"
+                    : "How much to take out (dUSDC)"}
+                </span>
+                <span className="text-data tabular text-text-faint">
+                  {mode === "deposit"
+                    ? `You have ${fmtNum(dusdcHuman, 2)}`
+                    : `Up to ${fmtUsdCompact(maxAmount)}`}
+                </span>
+              </div>
+              <div
+                className={cn(
+                  "flex items-center gap-2 rounded-md border bg-panel-elev px-3 py-2 transition-colors",
+                  overCap
+                    ? "border-breach/60"
+                    : "border-hairline focus-within:border-accent-brand/60",
+                )}
+              >
+                <input
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === "" || /^\d*\.?\d*$/.test(v)) setAmount(v);
+                  }}
+                  disabled={!owner}
+                  className="tabular w-full bg-transparent text-md font-medium text-foreground outline-none placeholder:text-text-faint disabled:opacity-50"
+                />
+                <div className="flex shrink-0 gap-1">
+                  {[0.5, 1].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPct(p)}
+                      disabled={!owner || maxAmount <= 0}
+                      className="rounded border border-hairline px-1.5 py-0.5 text-data text-text-dim transition-colors hover:border-divider hover:text-foreground disabled:opacity-40"
+                    >
+                      {p === 1 ? "Max" : "Half"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-data leading-relaxed text-text-dim">
+              {mode === "deposit" ? (
+                <>
+                  You add <Num>{fmtNum(amountNum, 2)} dUSDC</Num> and receive
+                  about <Num>{fmtNum(estShares, 2)}</Num> pool shares, earning a
+                  cut of every trader loss.
+                </>
+              ) : (
+                <>
+                  You take out <Num>{fmtNum(amountNum, 2)} dUSDC</Num> by
+                  returning about <Num>{fmtNum(estShares, 2)}</Num> pool shares.
+                </>
+              )}
+            </p>
+
+            <SupplyButton
+              owner={owner}
+              pending={pending}
+              overCap={overCap}
+              amountNum={amountNum}
+              mode={mode}
+              onSubmit={submit}
+            />
+          </div>
+        ) : null
+      }
     >
       {isError ? (
         <PanelState kind="error">Vault feed unreachable</PanelState>
@@ -304,35 +413,66 @@ export function SupplyPanel({ className }: { className?: string }) {
             />
           </div>
 
-          <div className="mt-1">
-            <button
-              type="button"
-              onClick={submit}
-              disabled={!owner || amountNum <= 0 || overCap || pending}
-              className={cn(
-                "w-full rounded-md py-2 text-val font-medium transition-colors",
-                "bg-accent-brand text-white hover:bg-accent-brand/90",
-                "disabled:cursor-not-allowed disabled:bg-panel-elev disabled:text-text-faint",
-              )}
-            >
-              {!owner
-                ? "Connect a wallet to supply"
-                : pending
-                  ? "Confirming…"
-                  : overCap
-                    ? "Exceeds available"
-                    : mode === "deposit"
-                      ? "Supply dUSDC"
-                      : "Withdraw dUSDC"}
-            </button>
-            {owner ? (
-              <p className="label-micro mt-1.5 text-center text-text-faint">
-                Signs a real {mode === "deposit" ? "predict::supply" : "predict::withdraw"} on Testnet
-              </p>
-            ) : null}
-          </div>
+          <SupplyButton
+            owner={owner}
+            pending={pending}
+            overCap={overCap}
+            amountNum={amountNum}
+            mode={mode}
+            onSubmit={submit}
+          />
         </div>
       )}
     </Panel>
+  );
+}
+
+/** The supply/withdraw submit, shared by the Pro form and the Light form so the
+ *  on-chain action and its disabled/label logic live in one place. */
+function SupplyButton({
+  owner,
+  pending,
+  overCap,
+  amountNum,
+  mode,
+  onSubmit,
+}: {
+  owner: string | null;
+  pending: boolean;
+  overCap: boolean;
+  amountNum: number;
+  mode: Mode;
+  onSubmit: () => void;
+}) {
+  return (
+    <div className="mt-1">
+      <button
+        type="button"
+        onClick={onSubmit}
+        disabled={!owner || amountNum <= 0 || overCap || pending}
+        className={cn(
+          "w-full rounded-md py-2 text-val font-medium transition-colors",
+          "bg-accent-brand text-white hover:bg-accent-brand/90",
+          "disabled:cursor-not-allowed disabled:bg-panel-elev disabled:text-text-faint",
+        )}
+      >
+        {!owner
+          ? "Connect a wallet to supply"
+          : pending
+            ? "Confirming…"
+            : overCap
+              ? "Exceeds available"
+              : mode === "deposit"
+                ? "Supply dUSDC"
+                : "Withdraw dUSDC"}
+      </button>
+      {owner ? (
+        <p className="label-micro mt-1.5 text-center text-text-faint">
+          Signs a real{" "}
+          {mode === "deposit" ? "predict::supply" : "predict::withdraw"} on
+          Testnet
+        </p>
+      ) : null}
+    </div>
   );
 }

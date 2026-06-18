@@ -2,11 +2,20 @@
 
 import { useState } from "react";
 import { useTermStructure } from "@/lib/indexer/hooks";
-import { fmtDuration } from "@/lib/format";
+import { fmtDuration, fmtPctValue } from "@/lib/format";
 import { checkButterfly, checkCalendar } from "@/lib/svi";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
+import { Curve } from "./chart/curve";
 import { LabelTip } from "./label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "./light";
 import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { Pill } from "./pill";
@@ -39,6 +48,64 @@ export function SurfacePanel({ className }: { className?: string }) {
       title="IV Surface"
       code="BTC · SVI"
       className={className}
+      light={
+        ready && frontIV != null && backIV != null ? (
+          <LightCard fill>
+            <LightLede>
+              {arbOk ? (
+                <>
+                  Option prices line up across all <Num>{rows.length}</Num>{" "}
+                  expiries, with{" "}
+                  <Num tone="safe">no risk-free mispricing</Num> to exploit.
+                </>
+              ) : (
+                <>
+                  Option prices are{" "}
+                  <Num tone="breach">misaligned</Num> across expiries right now,
+                  a possible mispricing.
+                </>
+              )}
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <LightSubLabel tip="atm-term-curve">
+                Annual vol, nearest to farthest expiry
+              </LightSubLabel>
+              <div className="mt-1.5 flex min-h-0 flex-1 flex-col">
+                <Curve
+                  data={rows.map((r, i) => ({ x: i, y: r.atmIV * 100 }))}
+                  className="min-h-32 flex-1"
+                  hoverFormat={(p) => `${p.y.toFixed(0)}% vol`}
+                />
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Near-term vol",
+                  value: fmtPctValue(frontIV),
+                  tip: "atm-iv",
+                },
+                {
+                  label: "Long-dated vol",
+                  value: fmtPctValue(backIV),
+                  tip: "atm-term-curve",
+                },
+                {
+                  label: "Consistency",
+                  value: arbOk ? "Clean ✓" : "Flagged ✕",
+                  tone: arbOk ? "safe" : "breach",
+                  tip: "arb-free",
+                },
+              ]}
+            />
+            <LightNote>
+              The line shows the annual volatility the market expects from the
+              nearest expiry to the farthest; when it stays orderly there is no
+              arbitrage across expiries.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         <span className="flex items-center gap-2">
           {arb ? (

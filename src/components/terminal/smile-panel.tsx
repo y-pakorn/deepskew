@@ -21,6 +21,13 @@ import { useMarket } from "./market-context";
 import { Panel } from "./panel";
 import { PanelState } from "./panel-state";
 import { LabelTip } from "./label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  Num,
+} from "./light";
 import { Pill } from "./pill";
 import { SmileChart } from "./smile-chart";
 import { StrikeHistogram } from "./strike-histogram";
@@ -78,6 +85,53 @@ export function SmilePanel({ className }: { className?: string }) {
       className={className}
       bodyClassName="overflow-y-auto"
       code={isLive ? "Live" : "Replay"}
+      light={
+        !isError && model && !model.settled ? (
+          <LightCard fill>
+            <LightLede>
+              For this expiry, traders are paying up more for{" "}
+              {model.skew >= 0 ? "downside protection" : "upside bets"}, and the
+              prices{" "}
+              {model.bf.butterflyFree ? (
+                <>
+                  hold together with <Num tone="safe">no arbitrage</Num>.
+                </>
+              ) : (
+                <>
+                  show a <Num tone="breach">pricing inconsistency</Num>.
+                </>
+              )}
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <SmileChart pts={model.pts} />
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Crash protection",
+                  value: fmtPctValue(model.put),
+                  tip: "put-wing",
+                },
+                {
+                  label: "At-the-money",
+                  value: fmtPctValue(model.atm),
+                  tip: "atm-iv",
+                },
+                {
+                  label: "Rally bets",
+                  value: fmtPctValue(model.call),
+                  tip: "call-wing",
+                },
+              ]}
+            />
+            <LightNote>
+              The blue curve is the vol smile: it sits higher on the{" "}
+              {model.skew >= 0 ? "left (crash) side" : "right (rally) side"},
+              meaning that protection costs more.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         model ? (
           isLive ? (

@@ -18,6 +18,14 @@ import {
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Hero, MonoValue, Stat, toneClass, type Tone } from "../stat";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 
@@ -85,6 +93,86 @@ export function ComposabilityPanel({ className }: { className?: string }) {
       code="Predict × Margin × Spot"
       className={className}
       bodyClassName="flex flex-col gap-3 overflow-auto p-3"
+      light={
+        !bothErr && !booting && netCarry != null ? (
+          <LightCard>
+            <LightLede>
+              Borrow stablecoin on margin, supply it to the vault, and hedge: the
+              loop nets about{" "}
+              <Num tone={carryTone === "safe" ? "safe" : carryTone === "breach" ? "breach" : undefined}>
+                {fmtSigned(netCarry, 1)}%
+              </Num>{" "}
+              a year after the borrow cost.
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="dusdc">How the loop chains together</LightSubLabel>
+              <div className="mt-1.5 flex flex-col gap-1.5 lg:flex-row lg:items-stretch">
+                <LoopLeg
+                  n={1}
+                  primitive="DeepBook margin"
+                  action="Borrow dUSDC"
+                  value={borrowAtOpt != null ? fmtPctValue(borrowAtOpt) : "—"}
+                  unit="APR"
+                  tone="warn"
+                  note={optUtil != null ? `At ${(optUtil * 100).toFixed(0)}% in use` : undefined}
+                />
+                <Arrow />
+                <LoopLeg
+                  n={2}
+                  primitive="Predict PLP"
+                  action="Supply vault"
+                  value={plpApy != null ? fmtPctValue(plpApy) : "—"}
+                  unit="APY"
+                  tone="safe"
+                  note={sharePrice != null ? `$${sharePrice.toFixed(4)} / share` : undefined}
+                />
+                <Arrow />
+                <LoopLeg
+                  n={3}
+                  primitive="DeepBook spot"
+                  action="Hedge BTC/USDC"
+                  value={
+                    spotPrice && spotPrice > 0
+                      ? `$${fmtNum(spotPrice, spotPrice > 100 ? 0 : 4)}`
+                      : "—"
+                  }
+                  unit=""
+                  tone="accent"
+                  note={
+                    spotPrice && spotPrice > 0
+                      ? spot?.trading_pairs
+                      : "Live · awaiting trades"
+                  }
+                />
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Borrow cost",
+                  value: borrowAtOpt != null ? fmtPctValue(borrowAtOpt) : "—",
+                  tip: "utilization",
+                },
+                {
+                  label: "Vault yield",
+                  value: plpApy != null ? fmtPctValue(plpApy) : "—",
+                  tip: "apy",
+                },
+                {
+                  label: "Net per year",
+                  value: `${fmtSigned(netCarry, 1)}%`,
+                  tone: carryTone === "safe" ? "safe" : carryTone === "breach" ? "breach" : undefined,
+                },
+              ]}
+            />
+            <LightNote>
+              Three DeepBook pieces chain into one position: you borrow dUSDC,
+              supply it to the vault, and hedge on spot. The loop pays off when
+              the vault earns more than the borrow costs.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       {bothErr ? (
         <PanelState kind="error">DeepBook indexer unreachable</PanelState>

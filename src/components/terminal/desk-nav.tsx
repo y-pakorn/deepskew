@@ -1,22 +1,32 @@
 "use client";
 
+import {
+  Activity,
+  ArrowLeftRight,
+  Gauge,
+  Landmark,
+  Scale,
+  Server,
+  Trophy,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const NAV = [
-  { href: "/", label: "Desk" },
-  { href: "/vol", label: "Vol Analytics" },
-  { href: "/flow", label: "Flow & Edge" },
-  { href: "/risk", label: "Vault" },
-  { href: "/managers", label: "Managers" },
-  { href: "/ops", label: "Ops / Health" },
-  { href: "/cross-venue", label: "Cross-Venue" },
+export const NAV = [
+  { href: "/", label: "Desk", icon: Gauge },
+  { href: "/vol", label: "Vol Analytics", icon: Activity },
+  { href: "/flow", label: "Flow & Edge", icon: ArrowLeftRight },
+  { href: "/risk", label: "Vault", icon: Landmark },
+  { href: "/managers", label: "Managers", icon: Trophy },
+  { href: "/ops", label: "Ops / Health", icon: Server },
+  { href: "/cross-venue", label: "Cross-Venue", icon: Scale },
 ] as const;
 
 /** The desk's primary nav — real routes (not in-memory tabs). The market
  *  selection, wallet and query cache live in the persistent DeskShell layout, so
- *  navigating between routes keeps live data warm. */
+ *  navigating between routes keeps live data warm. Hidden on mobile (the page
+ *  list moves into the menu sheet). */
 export function DeskNav() {
   const pathname = usePathname();
   const isActive = (href: string) =>
@@ -25,20 +35,29 @@ export function DeskNav() {
   return (
     <nav
       aria-label="Desk views"
-      className="flex h-9 shrink-0 items-stretch gap-0.5 overflow-x-auto border-b border-hairline bg-canvas px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="hidden h-9 shrink-0 items-stretch gap-0.5 overflow-x-auto border-b border-hairline bg-canvas px-2 [scrollbar-width:none] md:flex [&::-webkit-scrollbar]:hidden"
     >
       {NAV.map((t) => {
         const on = isActive(t.href);
+        const Icon = t.icon;
         return (
           <Link
             key={t.href}
             href={t.href}
             aria-current={on ? "page" : undefined}
             className={cn(
-              "relative flex shrink-0 items-center px-2.5 text-val font-medium whitespace-nowrap outline-none transition-colors focus-visible:text-foreground",
+              "group relative flex shrink-0 items-center gap-1.5 px-2.5 text-val font-medium whitespace-nowrap outline-none transition-colors focus-visible:text-foreground",
               on ? "text-foreground" : "text-text-dim hover:text-text-sec",
             )}
           >
+            <Icon
+              className={cn(
+                "size-3.5 shrink-0 transition-colors",
+                on
+                  ? "text-accent-brand"
+                  : "text-text-faint group-hover:text-text-dim",
+              )}
+            />
             {t.label}
             <span
               className={cn(

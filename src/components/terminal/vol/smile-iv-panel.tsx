@@ -13,6 +13,13 @@ import {
 } from "@/lib/svi";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  Num,
+} from "../light";
 import { useMarket } from "../market-context";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
@@ -58,6 +65,44 @@ export function SmileIvPanel({ className }: { className?: string }) {
       code="IV vs moneyness"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
+      light={
+        !isError && model && !model.settled ? (
+          <LightCard fill>
+            <LightLede>
+              The market expects a roughly <Num>{model.atm.toFixed(0)}%</Num>{" "}
+              annual swing, and is paying up more for{" "}
+              {model.skew >= 0 ? "downside protection" : "upside bets"}.
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <SmileChart pts={model.pts} />
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Annual vol",
+                  value: fmtPctValue(model.atm),
+                  tip: "atm-iv",
+                },
+                {
+                  label: "Crash protection",
+                  value: fmtPctValue(model.put),
+                  tip: "put-wing",
+                },
+                {
+                  label: "Rally bets",
+                  value: fmtPctValue(model.call),
+                  tip: "call-wing",
+                },
+              ]}
+            />
+            <LightNote>
+              The blue curve is the vol smile; it sits higher on the{" "}
+              {model.skew >= 0 ? "left (crash) side" : "right (rally) side"},
+              meaning that protection costs more there.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       {!selectedOracleId ? (
         <PanelState kind="empty">No active market</PanelState>

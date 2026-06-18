@@ -7,6 +7,14 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { cn } from "@/lib/utils";
 import { Hero } from "../stat";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { TxRow } from "../tx-row";
@@ -47,6 +55,76 @@ export function LimiterPanel({ className }: { className?: string }) {
       code="LP exit capacity"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
+      light={
+        !isError && data && m ? (
+          <LightCard>
+            <LightLede>
+              {m.state.label === "Drained" ? (
+                <>
+                  Withdrawals are paused right now, so you{" "}
+                  <Num tone="breach">cannot</Num> pull money out of the pool
+                  today.
+                </>
+              ) : m.state.label === "Throttled" ? (
+                <>
+                  Withdrawals are throttled: about{" "}
+                  <Num>{fmtUsdCompact(u(m.binding))}</Num> can be pulled out
+                  right now, capped by a per-window limit rather than how much
+                  cash is on hand.
+                </>
+              ) : (
+                <>
+                  Withdrawals are open, about{" "}
+                  <Num>{fmtUsdCompact(u(m.binding))}</Num> can be pulled out of
+                  the pool right now.
+                </>
+              )}
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="exit-capacity">
+                What is capping your exit today
+              </LightSubLabel>
+              <div className="mt-1.5">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="label-micro">Per-window limit used</span>
+                  <span className="text-data tabular text-text-dim">
+                    {(m.fill * 100).toFixed(0)}%
+                  </span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-panel-elev">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-[width] duration-500",
+                      m.limiterBinds ? "bg-warn" : "bg-safe",
+                    )}
+                    style={{ width: `${m.fill * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Available now",
+                  value: fmtUsdCompact(u(m.binding)),
+                  tip: "exit-capacity",
+                },
+                { label: "Status", value: m.state.label, tone: m.state.tone },
+                {
+                  label: "Safety floor",
+                  value: fmtUsdCompact(u(m.solvencyFloor)),
+                  tip: "solvency-floor",
+                },
+              ]}
+            />
+            <LightNote>
+              The bar shows how close the pool is to its per-window withdrawal
+              cap; the safety floor is cash the pool keeps set aside, so this is
+              whether you could actually get your money out today.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       {isError ? (
         <PanelState kind="error">Vault feed unreachable</PanelState>

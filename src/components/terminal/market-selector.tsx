@@ -26,7 +26,7 @@ export function MarketSelector() {
         <button
           type="button"
           disabled={!activeOracles.length}
-          className="inline-flex items-center gap-1.5 rounded border border-hairline bg-panel px-2 py-1 text-data text-text-sec transition-colors hover:border-divider hover:text-foreground disabled:opacity-50"
+          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded border border-hairline bg-panel px-2 text-data whitespace-nowrap text-text-sec transition-colors hover:border-divider hover:text-foreground disabled:opacity-50"
           title="Select market / expiry"
         >
           {selectedOracle ? (

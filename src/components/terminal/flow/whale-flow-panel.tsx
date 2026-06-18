@@ -9,6 +9,14 @@ import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { cn } from "@/lib/utils";
 import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { TxRow } from "../tx-row";
@@ -54,6 +62,92 @@ export function WhaleFlowPanel({ className }: { className?: string }) {
             "Live"
           )}
         </span>
+      }
+      light={
+        !isError && !!mints.length && m.mintPrem > 0 ? (
+          <LightCard>
+            <LightLede>
+              Big money is leaning{" "}
+              {m.net >= 0 ? (
+                <Num tone="safe">up</Num>
+              ) : (
+                <Num tone="breach">down</Num>
+              )}{" "}
+              right now, with <Num>{m.upPct.toFixed(0)}%</Num> of fresh bets
+              going up and{" "}
+              {m.mintPrem >= m.redeemPay ? (
+                <>new bets being <Num>opened</Num></>
+              ) : (
+                <>old bets being <Num>closed</Num></>
+              )}
+              .
+            </LightLede>
+            <div className="shrink-0">
+              <LightSubLabel tip="notional-positioning">
+                Which way the big bets lean
+              </LightSubLabel>
+              <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-breach/30">
+                <div
+                  className="h-full bg-safe"
+                  style={{ width: `${m.upPct}%` }}
+                />
+              </div>
+            </div>
+            <div className="shrink-0">
+              <LightSubLabel tip="whale-flow">Biggest recent bets</LightSubLabel>
+              <div className="mt-1.5">
+                {m.whales.slice(0, 6).map((w, i) => (
+                  <TxRow
+                    key={`light:${w.digest}:${i}`}
+                    digest={w.digest}
+                    className={cn(
+                      "grid grid-cols-[2.6rem_1fr_auto] items-center gap-x-2 border-b border-hairline/40 px-0 py-1 text-data tabular last:border-b-0",
+                      account &&
+                        account.address === w.trader &&
+                        "bg-accent-brand/10",
+                    )}
+                  >
+                    <span className={w.is_up ? "text-safe" : "text-breach"}>
+                      {w.is_up ? "UP▲" : "DN▼"}
+                    </span>
+                    <span className="truncate text-text-sec">
+                      {fmtPrice(w.strike)}
+                    </span>
+                    <span className="text-right text-text-dim">
+                      {fmtUsdCompact(fromUnits(w.cost, DUSDC_DECIMALS))}
+                    </span>
+                  </TxRow>
+                ))}
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Net flow",
+                  value: `${fmtUsdCompact(
+                    fromUnits(Math.abs(m.net), DUSDC_DECIMALS),
+                  )} ${m.net >= 0 ? "up" : "down"}`,
+                  tone: m.net >= 0 ? "safe" : "breach",
+                  tip: "net-flow",
+                },
+                {
+                  label: "Share up",
+                  value: `${m.upPct.toFixed(0)}%`,
+                  tip: "notional-positioning",
+                },
+                {
+                  label: "Opening vs closing",
+                  value: m.mintPrem >= m.redeemPay ? "Opening" : "Closing",
+                  tip: "mint-redeem-momentum",
+                },
+              ]}
+            />
+            <LightNote>
+              Counted by bet size, not by number of bets, so one whale outweighs
+              many small bets. Each row links to the trade on-chain.
+            </LightNote>
+          </LightCard>
+        ) : null
       }
     >
       {isError ? (

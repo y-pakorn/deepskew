@@ -7,6 +7,7 @@ import { fmtPctValue, fmtUsdCompact, fromUnits } from "@/lib/format";
 import { DUSDC_DECIMALS } from "@/lib/sui/constants";
 import { cn } from "@/lib/utils";
 import { Curve } from "../chart/curve";
+import { LightCard, LightFigures, LightLede, LightNote, Num } from "../light";
 import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
 import { Panel } from "../panel";
@@ -71,6 +72,59 @@ export function DrawdownPanel({ className }: { className?: string }) {
       code="PLP underwater"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
+      light={
+        !isError && m ? (
+          <LightCard fill>
+            <LightLede>
+              The worst dip so far is down{" "}
+              <Num tone="breach">{m.maxDD.toFixed(1)}%</Num>, and the pool has
+              earned about{" "}
+              {m.apy != null ? (
+                <Num tone={m.apy >= 0 ? "safe" : "breach"}>
+                  {fmtPctValue(m.apy * 100)}
+                </Num>
+              ) : (
+                <Num>—</Num>
+              )}{" "}
+              a year.
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <Curve
+                className="h-full min-h-0 flex-1"
+                baseline={0}
+                color="var(--breach)"
+                data={m.under}
+                hoverFormat={(p) => `${p.y.toFixed(2)}%`}
+              />
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Worst dip",
+                  value: `${m.maxDD.toFixed(1)}%`,
+                  tone: "breach",
+                  tip: "max-drawdown",
+                },
+                {
+                  label: "Yearly return",
+                  value: m.apy != null ? fmtPctValue(m.apy * 100) : "—",
+                  tip: "apy",
+                },
+                {
+                  label: "Pool size",
+                  value: fmtUsdCompact(fromUnits(m.tvl, DUSDC_DECIMALS)),
+                  tip: "vault-value",
+                },
+              ]}
+            />
+            <LightNote>
+              The line tracks how far the pool sits below its best-ever value:
+              the lowest point is the biggest loss from a peak, the standard way
+              LPs judge a vault.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
       right={
         <div className="flex items-center gap-0.5">
           {RANGES.map((r) => (

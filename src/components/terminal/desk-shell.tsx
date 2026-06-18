@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { DAppKitClientProvider } from "@/components/sui/dapp-kit-provider";
 import { CommandPalette } from "./command-palette";
 import { CommandStrip } from "./command-strip";
+import { ComplexityProvider } from "./complexity-context";
 import { DeskNav } from "./desk-nav";
 import { MarketProvider } from "./market-context";
 import { StatusBar } from "./status-bar";
@@ -51,13 +52,15 @@ export function DeskShell({ children }: { children: React.ReactNode }) {
   return (
     <DAppKitClientProvider>
       <MarketProvider>
-        <div className="flex min-h-dvh flex-col bg-canvas lg:h-dvh lg:overflow-hidden">
-          <CommandStrip />
-          <DeskNav />
-          <main className="flex min-h-0 flex-1 flex-col">{children}</main>
-          <StatusBar />
-        </div>
-        <CommandPalette />
+        <ComplexityProvider>
+          <div className="flex min-h-dvh flex-col bg-canvas lg:h-dvh lg:overflow-hidden">
+            <CommandStrip />
+            <DeskNav />
+            <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+            <StatusBar />
+          </div>
+          <CommandPalette />
+        </ComplexityProvider>
       </MarketProvider>
     </DAppKitClientProvider>
   );

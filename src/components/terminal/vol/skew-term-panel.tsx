@@ -15,6 +15,14 @@ import { cn } from "@/lib/utils";
 import { Curve } from "../chart/curve";
 import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
+import {
+  LightCard,
+  LightFigures,
+  LightLede,
+  LightNote,
+  LightSubLabel,
+  Num,
+} from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 
@@ -51,6 +59,56 @@ export function SkewTermPanel({ className }: { className?: string }) {
       code="25Δ · ATM term"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
+      light={
+        front && front.skew && hasCurve ? (
+          <LightCard fill>
+            <LightLede>
+              The market is pricing a{" "}
+              <Num>±{(front.move * 100).toFixed(1)}%</Num> move by this expiry,
+              leaning toward{" "}
+              {front.skew.rr25 < 0 ? "downside protection" : "upside bets"}.
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <LightSubLabel tip="atm-term-curve">
+                Expected move across expiries
+              </LightSubLabel>
+              <div className="mt-1.5 flex min-h-0 flex-1 flex-col">
+                <Curve
+                  className="h-full min-h-28"
+                  data={rows.map((r) => ({ x: r.days, y: r.atmIV * 100 }))}
+                  hoverFormat={(p) => `${p.y.toFixed(1)}%`}
+                />
+              </div>
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Expected move",
+                  value: `±${(front.move * 100).toFixed(1)}%`,
+                  tip: "implied-move",
+                },
+                {
+                  label: "Skew",
+                  value: fmtSigned(front.skew.rr25, 1),
+                  tone: front.skew.rr25 < 0 ? "warn" : "default",
+                  tip: "rr25",
+                },
+                {
+                  label: "Longer expiries",
+                  value: termDir >= 0 ? "Bigger moves" : "Smaller moves",
+                  tip: "atm-term-curve",
+                },
+              ]}
+            />
+            <LightNote>
+              The line is the annual vol priced into each expiry;{" "}
+              {termDir >= 0
+                ? "rising means longer-dated bets expect bigger moves (contango)."
+                : "falling means near-term bets expect bigger moves (backwardation)."}
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       {!front ? (
         <PanelState kind="empty">Resolving term structure…</PanelState>

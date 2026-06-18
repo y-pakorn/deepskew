@@ -37,6 +37,7 @@ import { fmtDuration, fmtNum, fmtPct, fmtUsdCompact, fromUnits } from "@/lib/for
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 import { LabelTip } from "../label-tip";
+import { LightLede, Num } from "../light";
 import { Panel } from "../panel";
 import { PanelState } from "../panel-state";
 import { Pill } from "../pill";
@@ -322,6 +323,207 @@ export function TradePanel({ className }: { className?: string }) {
       title="Trade"
       code="Mint · redeem"
       className={className}
+      light={
+        marketReady ? (
+          <div className="flex min-h-0 flex-col gap-3">
+            <div className="flex items-center justify-between rounded-md border border-hairline bg-panel-elev/40 px-3 py-1.5">
+              <span className="label-micro">Trading account</span>
+              {owner ? (
+                managerId ? (
+                  <span className="tabular text-val font-medium text-foreground">
+                    {fmtNum(mgrBalHuman, 2)}{" "}
+                    <span className="text-text-faint">dUSDC</span>
+                  </span>
+                ) : (
+                  <span className="text-data font-medium text-warn">
+                    No account yet
+                  </span>
+                )
+              ) : (
+                <span className="text-data text-text-dim">
+                  Wallet not connected
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
+              {(["buy", "sell", "account"] as Tab[]).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTab(t)}
+                  className={cn(
+                    "py-1.5 text-data font-medium transition-colors",
+                    tab === t
+                      ? "bg-panel-elev text-foreground"
+                      : "bg-panel text-text-dim hover:text-text-sec",
+                  )}
+                >
+                  {t === "buy" ? "Bet" : t === "sell" ? "Cash out" : "Account"}
+                </button>
+              ))}
+            </div>
+
+            {tab === "buy" ? (
+              <>
+                <LightLede>
+                  Bet on whether BTC finishes above or below your target price{" "}
+                  {expired ? (
+                    "(this market has expired)"
+                  ) : (
+                    <>
+                      in <Num>{fmtDuration(ttx)}</Num>
+                    </>
+                  )}
+                  . Pay a small premium now, win the full amount if you are
+                  right.
+                </LightLede>
+
+                <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
+                  {[true, false].map((up) => (
+                    <button
+                      key={String(up)}
+                      type="button"
+                      onClick={() => setSide(up)}
+                      className={cn(
+                        "py-2.5 text-val font-medium transition-colors",
+                        side === up
+                          ? up
+                            ? "bg-safe/15 text-safe"
+                            : "bg-breach/15 text-breach"
+                          : "bg-panel text-text-dim hover:text-text-sec",
+                      )}
+                    >
+                      {up ? "▲ BTC goes up" : "▼ BTC goes down"}
+                    </button>
+                  ))}
+                </div>
+
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="label-micro">
+                      {side
+                        ? "Above this price (USD)"
+                        : "Below this price (USD)"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setStrikeInput("")}
+                      className="text-data tabular text-text-faint hover:text-text-sec"
+                    >
+                      Now {fmtNum(forward, 0)}
+                    </button>
+                  </div>
+                  <input
+                    inputMode="decimal"
+                    placeholder={fmtNum(atmRaw / PRICE_FIXED_POINT, 0)}
+                    value={strikeInput}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "" || /^\d*\.?\d*$/.test(v)) setStrikeInput(v);
+                    }}
+                    className="tabular w-full rounded-md border border-hairline bg-panel-elev px-3 py-2 text-md font-medium text-foreground outline-none focus:border-accent-brand/60"
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="label-micro">How much to win (dUSDC)</span>
+                    <span className="text-data text-text-faint">
+                      you have {fmtNum(mgrBalHuman, 2)}
+                    </span>
+                  </div>
+                  <input
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={payoutInput}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "" || /^\d*\.?\d*$/.test(v)) setPayoutInput(v);
+                    }}
+                    className="tabular w-full rounded-md border border-hairline bg-panel-elev px-3 py-2 text-md font-medium text-foreground outline-none focus:border-accent-brand/60"
+                  />
+                </div>
+
+                <p className="text-data leading-relaxed text-text-dim">
+                  You pay{" "}
+                  <Num tone="accent">
+                    {quote ? "" : "≈ "}
+                    {fmtNum(costHuman, 2)} dUSDC
+                  </Num>{" "}
+                  now and win <Num tone="safe">{fmtNum(payout, 2)} dUSDC</Num> if
+                  BTC is {side ? "above" : "below"}{" "}
+                  <Num>{fmtNum(strikeF, 0)}</Num>
+                  {fair != null ? (
+                    <>
+                      {" "}
+                      (the model gives this about <Num>{fmtPct(fair, 0)}</Num>)
+                    </>
+                  ) : null}
+                  .
+                </p>
+
+                <BuyButton
+                  owner={owner}
+                  hasManager={!!managerId}
+                  pending={pending}
+                  disabled={
+                    payout <= 0 ||
+                    askOutOfBounds ||
+                    tradingPaused ||
+                    !oracleLive ||
+                    !canAfford
+                  }
+                  reason={
+                    tradingPaused
+                      ? "Trading paused"
+                      : expired
+                        ? "Market expired"
+                        : !oracleLive
+                          ? "Market not live"
+                          : askOutOfBounds
+                            ? "Outside mintable band"
+                            : payout <= 0
+                              ? "Enter how much to win"
+                              : !canAfford
+                                ? "Add funds in the Account tab"
+                                : null
+                  }
+                  side={side}
+                  onCreate={createAccount}
+                  onBuy={buy}
+                />
+              </>
+            ) : tab === "sell" ? (
+              <SellTab
+                positions={openPositions}
+                selKey={selPos}
+                onSelect={setSelPos}
+                pos={pos}
+                redeemInput={redeemInput}
+                setRedeemInput={setRedeemInput}
+                owner={owner}
+                pending={pending}
+                onSell={sell}
+              />
+            ) : (
+              <AccountTab
+                owner={owner}
+                managerId={managerId}
+                pending={pending}
+                mode={acctMode}
+                setMode={setAcctMode}
+                input={acctInput}
+                setInput={setAcctInput}
+                walletHuman={walletHuman}
+                mgrBalHuman={mgrBalHuman}
+                onCreate={createAccount}
+                onSubmit={acct}
+              />
+            )}
+          </div>
+        ) : null
+      }
       right={
         owner ? (
           managerId ? (

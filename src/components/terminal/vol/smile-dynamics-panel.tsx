@@ -5,6 +5,7 @@ import { useOracleState, useSviHistory } from "@/lib/indexer/hooks";
 import { fmtSigned } from "@/lib/format";
 import { decodeSvi, skewMetrics, yearsToExpiry } from "@/lib/svi";
 import { Curve } from "../chart/curve";
+import { LightCard, LightFigures, LightLede, LightNote, Num } from "../light";
 import { Hero, StatTile, TileGrid } from "../stat";
 import { LabelTip } from "../label-tip";
 import { useMarket } from "../market-context";
@@ -74,6 +75,69 @@ export function SmileDynamicsPanel({ className }: { className?: string }) {
       code="SVI trajectory"
       className={className}
       bodyClassName="flex flex-col gap-2 overflow-hidden 2xl:gap-3"
+      light={
+        selectedOracleId &&
+        !isError &&
+        !isLoading &&
+        model &&
+        model.withRr.length >= 2 ? (
+          <LightCard fill>
+            <LightLede>
+              {Math.abs(model.slope) > 0.5 ? (
+                <>
+                  The crash-vs-rally lean is shifting fast right now, by about{" "}
+                  <Num>{fmtSigned(model.slope, 1)}</Num> vol points an hour, so
+                  traders are repricing crash risk.
+                </>
+              ) : (
+                <>
+                  The crash-vs-rally lean is holding steady, drifting only{" "}
+                  <Num>{fmtSigned(model.slope, 1)}</Num> vol points an hour, so
+                  pricing of crash risk is calm.
+                </>
+              )}
+            </LightLede>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <Curve
+                className="h-full min-h-[80px]"
+                fill={false}
+                baseline={0}
+                color="var(--warn)"
+                data={model.withRr.map((r) => ({ x: r.ts, y: r.rr }))}
+                hoverFormat={(p) => `${fmtSigned(p.y, 1)} vol`}
+              />
+            </div>
+            <LightFigures
+              items={[
+                {
+                  label: "Shift speed / hr",
+                  value: fmtSigned(model.slope, 1),
+                  tip: "skew-rotation",
+                },
+                {
+                  label: "Current lean",
+                  value:
+                    model.last.rr != null ? fmtSigned(model.last.rr, 1) : "—",
+                  tip: "rr25",
+                },
+                {
+                  label: "Annual vol",
+                  value:
+                    model.last.atm != null
+                      ? `${model.last.atm.toFixed(0)}%`
+                      : "—",
+                  tip: "atm-iv",
+                },
+              ]}
+            />
+            <LightNote>
+              When this line moves, traders are repricing crash versus rally risk
+              in real time; below zero means they pay more for downside
+              protection.
+            </LightNote>
+          </LightCard>
+        ) : null
+      }
     >
       {!selectedOracleId ? (
         <PanelState kind="empty">No active market</PanelState>
