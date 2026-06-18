@@ -296,15 +296,13 @@ call wing on the right). Source: `src/components/terminal/logo.tsx` (`DeepSkewMa
   (180px, generated, black field with an iOS-safe inset). All cerulean on `--canvas`.
 - **Manifest, robots, sitemap.** `src/app/manifest.ts` (standalone PWA, black theme),
   `src/app/robots.ts`, and `src/app/sitemap.ts` cover the seven routes.
-- **Social cards.** Every route renders a bespoke 1200x630 Open Graph and Twitter card from one
-  renderer (`src/lib/og/card.tsx`). The layout is pure Tatem: black canvas, the cerulean mark and
-  deepskew wordmark, a tracked eyebrow, a large hero title naming the view, the route description,
-  and a hairline-divided stat strip (Spot, ATM IV, 24h vol, PLP value) in Geist Mono, with the
-  arbitrage verdict as a status pill. The skew curve is drawn once with the heat ramp (§3.4). Copy
-  is centralized in `src/lib/og/meta.ts`.
-- **Live data.** Card stats come from a live indexer snapshot (`src/lib/og/snapshot.ts`) computed
-  with the same SVI math as the desk, revalidated hourly, with a static fallback so the card always
-  renders and never claims a live read it does not have.
+- **Social cards.** Every route renders a 1200x630 Open Graph and Twitter card from one renderer
+  (`src/lib/og/card.tsx`). The layout is minimal and editorial: on the black canvas the page name
+  leads large (Geist Medium, weight 500) in the upper-left, the deepskew signature (the cerulean
+  skew-curve mark + the white wordmark) sits beneath it, and a hairline status-bar baseline (the
+  desk footer, `deepskew.xyz` left, `DeepBook Predict · Sui Testnet` right, Geist Mono) holds the
+  bottom. The home card drops the page name and centers the lockup big. No live data, no chart;
+  the identity is the lockup. Page names are centralized in `src/lib/og/meta.ts`.
 - **Fonts.** next/og cannot read the app's `next/font` CSS variables, so the card loads vendored
-  Geist and Geist Mono TTFs from `src/lib/og/fonts` (Satori needs binary font data, kept under the
-  500KB limit).
+  Geist (Regular / Medium / SemiBold) and Geist Mono TTFs from `src/lib/og/fonts` (Satori needs
+  binary font data, and weight 500 must be a real Medium face, not a synthesized one).
