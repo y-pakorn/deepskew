@@ -7,12 +7,13 @@ import {
   KeyVal,
   LI,
   P,
+  SourceChip,
   Step,
+  Steps,
   UL,
 } from "@/components/docs/doc-ui";
 import {
   DEFAULT_ORACLE_ID,
-  explorerObject,
   PREDICT_ID,
   PREDICT_PACKAGE_ID,
 } from "@/lib/sui/constants";
@@ -39,6 +40,7 @@ export default function DocsVerify() {
       }
     >
       <DocSection title="Verify in 60 Seconds">
+        <Steps>
         <Step n={1} title="Open the desk">
           The terminal is the root route. It loads the live volatility surface,
           the oracle, the PLP vault, and a tape of mints and redeems for the
@@ -62,6 +64,7 @@ export default function DocsVerify() {
           Glossary to read the same math typeset, with a pointer to where it is
           computed.
         </Step>
+        </Steps>
       </DocSection>
 
       <DocSection title="What's Verifiable">
@@ -95,19 +98,15 @@ export default function DocsVerify() {
           These are the exact Testnet identifiers the desk reads from. Each one
           opens its object on Suiscan.
         </P>
-        <div>
+        <div className="rounded-md border border-hairline bg-panel px-4 py-1">
           <KeyVal k="Predict package">
-            <DocLink href={explorerObject(PREDICT_PACKAGE_ID)}>
-              {PREDICT_PACKAGE_ID}
-            </DocLink>
+            <SourceChip id={PREDICT_PACKAGE_ID} />
           </KeyVal>
           <KeyVal k="Predict market">
-            <DocLink href={explorerObject(PREDICT_ID)}>{PREDICT_ID}</DocLink>
+            <SourceChip id={PREDICT_ID} />
           </KeyVal>
           <KeyVal k="Default oracle">
-            <DocLink href={explorerObject(DEFAULT_ORACLE_ID)}>
-              {DEFAULT_ORACLE_ID}
-            </DocLink>
+            <SourceChip id={DEFAULT_ORACLE_ID} />
           </KeyVal>
         </div>
         <Callout title="Nothing on screen is unverifiable" tone="accent">

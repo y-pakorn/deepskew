@@ -1,3 +1,12 @@
+import {
+  Activity,
+  ArrowLeftRight,
+  Gauge,
+  Landmark,
+  Scale,
+  Server,
+  Trophy,
+} from "lucide-react";
 import type { Metadata } from "next";
 import {
   Callout,
@@ -18,14 +27,14 @@ export const metadata: Metadata = {
 };
 
 const VIEWS = [
-  { title: "Desk", route: "/", anchor: "desk", blurb: "The single-viewport instrument: the 3D vol surface, the smile with its arbitrage verdict, oracle state, the vault, and a live tape of mints and redeems." },
-  { title: "Vol Analytics", route: "/vol", anchor: "vol-analytics", blurb: "The volatility desk in depth: the smile across log-moneyness, skew and term structure, the risk-neutral density, and smile dynamics over time." },
-  { title: "Flow & Edge", route: "/flow", anchor: "flow-edge", blurb: "Where the vault's edge is made or lost: every fill scored against its model-fair price, settlement calibration, whale flow, range-product flow, and a connect-gated ticket to mint and redeem binaries on-chain." },
-  { title: "Vault", route: "/risk", anchor: "vault", blurb: "The vault is the counterparty to every position. Per-expiry exposure, a 5-sigma breach point, exit capacity, a GREEN/AMBER/RED grade, and the supply/withdraw funnel." },
-  { title: "Managers", route: "/managers", anchor: "managers", blurb: "The desk leaderboard: every trading account ranked by volume with realized and unrealized PnL, drill-through to a per-desk page." },
-  { title: "Ops / Health", route: "/ops", anchor: "ops-health", blurb: "One read on whether the market is trustworthy right now: oracle-feed freshness and indexer lag against the chain head." },
-  { title: "Cross-Venue", route: "/cross-venue", anchor: "cross-venue", blurb: "On-chain volatility in context: Predict vs Deribit DVOL, the vol-risk-premium, and the DeepBook stack composability loop." },
-];
+  { title: "Desk", route: "/", anchor: "desk", icon: Gauge, blurb: "The single-viewport instrument: the 3D vol surface, the smile with its arbitrage verdict, oracle state, the vault, and a live tape of mints and redeems." },
+  { title: "Vol Analytics", route: "/vol", anchor: "vol-analytics", icon: Activity, blurb: "The volatility desk in depth: the smile across log-moneyness, skew and term structure, the risk-neutral density, and smile dynamics over time." },
+  { title: "Flow & Edge", route: "/flow", anchor: "flow-edge", icon: ArrowLeftRight, blurb: "Where the vault's edge is made or lost: every fill scored against its model-fair price, settlement calibration, whale flow, range-product flow, and a connect-gated ticket to mint and redeem binaries on-chain." },
+  { title: "Vault", route: "/risk", anchor: "vault", icon: Landmark, blurb: "The vault is the counterparty to every position. Per-expiry exposure, a 5-sigma breach point, exit capacity, a GREEN/AMBER/RED grade, and the supply/withdraw funnel." },
+  { title: "Managers", route: "/managers", anchor: "managers", icon: Trophy, blurb: "The desk leaderboard: every trading account ranked by volume with realized and unrealized PnL, drill-through to a per-desk page." },
+  { title: "Ops / Health", route: "/ops", anchor: "ops-health", icon: Server, blurb: "One read on whether the market is trustworthy right now: oracle-feed freshness and indexer lag against the chain head." },
+  { title: "Cross-Venue", route: "/cross-venue", anchor: "cross-venue", icon: Scale, blurb: "On-chain volatility in context: Predict vs Deribit DVOL, the vol-risk-premium, and the DeepBook stack composability loop." },
+] as const;
 
 export default function DocsOverview() {
   return (
@@ -49,8 +58,8 @@ export default function DocsOverview() {
           On-chain volatility has none of it. The data is public and the protocol
           is permissionless, but you still have to decode fixed-point parameters,
           run the vol math yourself, and rebuild state from a stream of events
-          before you can answer a basic question like {""}
-          <em>is this surface fair</em> or <em>can the vault take this trade</em>.
+          before you can answer a basic question like <em>is this surface fair</em>{" "}
+          or <em>can the vault take this trade</em>.
         </P>
         <P>
           deepskew closes that gap. It does the decoding, the math, and the
@@ -68,24 +77,25 @@ export default function DocsOverview() {
           selection, the wallet, and the live query cache live in the shell, so
           moving between views keeps the data warm.
         </P>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md border border-hairline bg-hairline sm:grid-cols-2">
           {VIEWS.map((v) => (
             <ViewCard
               key={v.title}
               title={v.title}
               blurb={v.blurb}
               route={v.route}
+              icon={v.icon}
               docHref={`/docs/views#${v.anchor}`}
             />
           ))}
         </div>
       </DocSection>
 
-      <Callout title="Verify it in 60 seconds" tone="accent">
+      <Callout kicker="Verify" tone="accent" title="Check it in 60 seconds">
         Every figure is computed from current on-chain state, and every figure is
         checkable. Open the desk, watch the cerulean pulse on each oracle tick,
-        click any settlement to see it on Suiscan, and read the formula behind
-        any number in the glossary. The full path is in{" "}
+        click any settlement to see it on Suiscan, and read the formula behind any
+        number in the glossary. The full path is in{" "}
         <DocLink href="/docs/verify">Verify It&rsquo;s Real</DocLink>.
       </Callout>
 
@@ -99,8 +109,8 @@ export default function DocsOverview() {
           <LI>
             <strong className="text-text-sec">Read the vault.</strong> The PLP
             vault repriced out to five sigma, per-expiry concentration, exit
-            capacity against the withdrawal limiter, and one graded verdict on
-            the Vault view.
+            capacity against the withdrawal limiter, and one graded verdict on the
+            Vault view.
           </LI>
           <LI>
             <strong className="text-text-sec">Trade it.</strong> Mint and redeem
@@ -125,8 +135,8 @@ export default function DocsOverview() {
           <LI>Reads and transacts on Sui Testnet today.</LI>
           <LI>
             Follows Predict to Mainnet at launch: the read and write logic is
-            network-agnostic, so it is a network and market-resolution change,
-            not a rewrite.
+            network-agnostic, so it is a network and market-resolution change, not
+            a rewrite.
           </LI>
           <LI>
             Read-only to read-write is done: the desk now calls the contract, not
@@ -143,23 +153,23 @@ export default function DocsOverview() {
       <DocSection title="Start Here">
         <UL>
           <LI>
-            <DocLink href="/docs/views">The Desk Views</DocLink> — how to read
-            each of the seven views.
+            <DocLink href="/docs/views">The Desk Views</DocLink>. How to read each
+            of the seven views.
           </LI>
           <LI>
-            <DocLink href="/docs/math">Methodology</DocLink> — the volatility and
+            <DocLink href="/docs/math">Methodology</DocLink>. The volatility and
             risk math, typeset, with where each is computed.
           </LI>
           <LI>
-            <DocLink href="/docs/integration">On-Chain Integration</DocLink> — the
+            <DocLink href="/docs/integration">On-Chain Integration</DocLink>. The
             objects, the read path, and the write path.
           </LI>
           <LI>
-            <DocLink href="/docs/liquidity">Provide Liquidity</DocLink> — connect,
+            <DocLink href="/docs/liquidity">Provide Liquidity</DocLink>. Connect,
             fund, and supply or withdraw the vault.
           </LI>
           <LI>
-            <DocLink href="/">Open the desk</DocLink> — the live terminal.
+            <DocLink href="/">Open the desk</DocLink>. The live terminal.
           </LI>
         </UL>
       </DocSection>

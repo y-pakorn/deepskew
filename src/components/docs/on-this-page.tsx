@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { SkewSignature } from "./skew-signature";
 
 interface Item {
   id: string;
@@ -60,23 +61,35 @@ export function OnThisPage() {
 
   return (
     <nav aria-label="On this page" className="text-data">
-      <div className="label-micro mb-2 text-text-faint">On this page</div>
+      <div className="mb-2 flex items-center gap-1.5">
+        <SkewSignature variant="motif" className="size-3.5" />
+        <span className="label-micro text-text-faint">On this page</span>
+      </div>
       <ul className="flex flex-col">
-        {items.map((it) => (
-          <li key={it.id}>
-            <a
-              href={`#${it.id}`}
-              className={cn(
-                "block border-l py-1 pl-3 leading-snug transition-colors",
-                active === it.id
-                  ? "border-accent-brand text-foreground"
-                  : "border-hairline text-text-dim hover:border-divider hover:text-text-sec",
-              )}
-            >
-              {it.label}
-            </a>
-          </li>
-        ))}
+        {items.map((it, i) => {
+          const on = active === it.id;
+          return (
+            <li key={it.id}>
+              <a
+                href={`#${it.id}`}
+                aria-current={on ? "location" : undefined}
+                className={cn(
+                  "flex gap-2 border-l-2 py-1 pr-2 pl-3 leading-snug transition-colors",
+                  on
+                    ? "border-accent-brand text-foreground"
+                    : "border-hairline text-text-dim hover:border-divider hover:text-text-sec",
+                )}
+              >
+                <span
+                  className={cn("tabular", on ? "text-accent-brand" : "text-text-faint")}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0">{it.label}</span>
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

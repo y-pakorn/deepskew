@@ -6,6 +6,7 @@ import {
   DocLink,
   DocSection,
   Step,
+  Steps,
 } from "@/components/docs/doc-ui";
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export default function TradeBinaries() {
       }
     >
       <DocSection title="Walkthrough">
+        <Steps>
         <Step n={1} title="Connect a wallet">
           Use the Connect control at the top-right of the desk. deepskew reads
           balances and signs transactions through the connected Sui wallet, so
@@ -101,6 +103,7 @@ export default function TradeBinaries() {
           link, so the whole loop, create, deposit, mint, redeem, withdraw, is
           verifiable against the chain.
         </Step>
+        </Steps>
       </DocSection>
 
       <Callout title="Where your dUSDC lives" tone="accent">

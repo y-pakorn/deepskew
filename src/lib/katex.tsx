@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { cn } from "@/lib/utils";
 
 /** Render a LaTeX string to KaTeX HTML (never throws — bad input renders red). */
 export const renderMath = (tex: string, displayMode: boolean) =>
@@ -95,7 +96,16 @@ const INK_INSET = 10;
  * from an off-flow, always-full-size copy, which keeps the measurement stable
  * (no feedback loop) and survives late KaTeX web-font loads.
  */
-export function MathBlock({ tex, className }: { tex: string; className?: string }) {
+export function MathBlock({
+  tex,
+  className,
+  bare = false,
+}: {
+  tex: string;
+  className?: string;
+  /** Drop the bordered well so the block can sit inside a custom surface. */
+  bare?: boolean;
+}) {
   const html = useMemo(() => renderMath(tex, true), [tex]);
   const contentRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
@@ -120,10 +130,11 @@ export function MathBlock({ tex, className }: { tex: string; className?: string 
 
   return (
     <div
-      className={
-        "relative overflow-hidden rounded border border-hairline bg-canvas/50 px-2.5 py-1.5 text-text" +
-        (className ? ` ${className}` : "")
-      }
+      className={cn(
+        "relative overflow-hidden text-text",
+        !bare && "rounded-md border border-hairline bg-panel-elev px-3 py-2",
+        className,
+      )}
     >
       {/* off-flow full-size copy → stable natural width to scale against */}
       <div

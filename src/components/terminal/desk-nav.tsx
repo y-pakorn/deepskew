@@ -3,6 +3,7 @@
 import {
   Activity,
   ArrowLeftRight,
+  BookText,
   Gauge,
   Landmark,
   Scale,
@@ -21,6 +22,7 @@ export const NAV = [
   { href: "/managers", label: "Managers", icon: Trophy },
   { href: "/ops", label: "Ops / Health", icon: Server },
   { href: "/cross-venue", label: "Cross-Venue", icon: Scale },
+  { href: "/docs", label: "Docs", icon: BookText },
 ] as const;
 
 /** The desk's primary nav — real routes (not in-memory tabs). The market
