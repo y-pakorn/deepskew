@@ -8,7 +8,7 @@
 
 DeepBook Predict puts options-style volatility trading on-chain. An oracle publishes a volatility surface, a liquidity vault underwrites every position, and traders mint and redeem against it block by block. It all settles on Sui in the open. The problem is that none of it is readable. A raw SVI parameter set tells you nothing about whether the surface admits arbitrage. A vault balance tells you nothing about whether it survives a sharp move in BTC. The information is on-chain. The meaning is not.
 
-deepskew is the legibility layer. It reads the live surface, the vault, and the settlement flow straight from the chain and turns each one into a single clear read with the numbers that back it underneath. It is the screen a desk would keep open while the market is live. And it closes the loop: where a read leads to an action, you act on-chain without leaving the verdict. Trade the surface you just read by minting and redeeming binary positions against your own PredictManager, each priced off the model-fair N(d2) the desk scores every fill against, and supply or withdraw the PLP vault you just stress-tested.
+deepskew is the legibility layer. It reads the live surface, the vault, and the settlement flow straight from the chain and turns each one into a single clear read with the numbers that back it underneath. It is the screen a desk would keep open while the market is live. And it closes the loop: where a read leads to an action, you act on-chain without leaving the verdict. Trade the surface you just read by minting and redeeming binary positions against your own PredictManager, each priced off the model-fair N(d2) the desk scores every fill against, and supply or withdraw the PLP vault you just stress-tested. It reads at two levels: a dense Pro instrument by default, or a one-toggle Noob mode that folds every panel to a plain-language verdict.
 
 ## Why it exists
 
@@ -51,6 +51,10 @@ On-chain volatility in context. Predict's ATM vol against Deribit's DVOL index p
 ## How it reads
 
 An instrument, not a dashboard. Every panel answers one question and leads with the answer in a single large figure. Everything else on the panel is there to justify that figure. Color is reserved for meaning: green is safe, amber is caution, red is a breach, cerulean is data and interaction, and nothing is colored for decoration. The result is a screen you can read at a glance and trust on a second look. The full design system lives in [DESIGN.md](./DESIGN.md).
+
+## Two reading modes
+
+The desk ships in Pro by default: the dense instrument described above. A Noob/Pro toggle (in the command strip, or the Cmd-K palette, persisted across sessions) switches the whole desk to a plain-language lens without touching the data underneath. In Noob mode every panel folds to one card: a verdict sentence, the panel's own chart, and a few plain figures, with the full Pro body one click away behind "Details." The two action panels become simple forms wired to the same on-chain handlers, so a first-time reader can still mint a position or supply the vault. Same dark skin, same live state, two levels of density. It is the same idea as the rest of the desk, taken one step further: legibility for the quant who wants every parameter, and for the LP who just wants to know whether the vault is safe to back.
 
 ## Built on live state
 

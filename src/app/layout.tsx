@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 const SITE_URL = "https://deepskew.xyz";
 const TITLE = "deepskew · On-chain BTC vol surface and PLP risk terminal";
 const DESCRIPTION =
-  "deepskew is a dense quant terminal for DeepBook Predict on Sui: a live on-chain BTC implied-volatility surface, an arbitrage-free checker, a PLP vault risk simulator out to five sigma, and a live settlement tape. Make Predict legible.";
+  "deepskew is a quant terminal for DeepBook Predict on Sui: a live on-chain BTC implied-volatility surface, an arbitrage-free checker, a PLP vault risk simulator out to five sigma, and a live settlement tape, readable as a dense Pro instrument or a one-toggle Noob mode. Make Predict legible.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
